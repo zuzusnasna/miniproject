@@ -4,7 +4,6 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function initLayout() {
-    // 1버전 프론트의 상단 헤더/카테고리/사이드바 구조를 유지한다.
     if (document.querySelector(".site-header-wrapper")) {
         return;
     }
@@ -16,7 +15,7 @@ function initLayout() {
             <div class="custom-container header-inner">
                 <a href="home.html" class="logo">Game Hub</a>
                 <div class="user-menu">
-                    <a href="login.html">로그인</a>
+                    <a href="login.html" id="navAuthLink">로그인</a>
                     <a href="signup.html">회원가입</a>
                     <a href="mypage.html">마이페이지</a>
                 </div>
@@ -24,17 +23,17 @@ function initLayout() {
         </div>
         <nav class="category-nav">
             <div class="custom-container category-list">
-                <a href="post.html">격투</a>
-                <a href="post.html">레이싱</a>
-                <a href="post.html">롤플레잉(RPG) ▾</a>
-                <a href="post.html">보드</a>
-                <a href="post.html">슈팅(FPS) ▾</a>
-                <a href="post.html">스포츠 ▾</a>
-                <a href="post.html">시뮬레이션</a>
-                <a href="post.html">아케이드</a>
-                <a href="post.html">어드벤처</a>
-                <a href="post.html">전략 ▾</a>
-                <a href="post.html">퍼즐</a>
+                <a href="post.html?categoryId=1">격투</a>
+                <a href="post.html?categoryId=2">레이싱</a>
+                <a href="post.html?categoryId=3">롤플레잉(RPG) ▾</a>
+                <a href="post.html?categoryId=4">보드</a>
+                <a href="post.html?categoryId=5">슈팅(FPS) ▾</a>
+                <a href="post.html?categoryId=6">스포츠 ▾</a>
+                <a href="post.html?categoryId=7">시뮬레이션</a>
+                <a href="post.html?categoryId=8">아케이드</a>
+                <a href="post.html?categoryId=9">어드벤처</a>
+                <a href="post.html?categoryId=10">전략 ▾</a>
+                <a href="post.html?categoryId=11">퍼즐</a>
             </div>
         </nav>
     `;
@@ -77,70 +76,100 @@ function initMemberInfoBox() {
     }
 
     const memberBox = wrapper.querySelector(".common-member-info");
+
+    // 1. 저장된 위치 복원
     restoreMemberBoxPosition(memberBox);
+
+    // 2. 드래그 기능 할당
     makeMemberBoxDraggable(memberBox);
+
+    // 3. 회원정보 API 로드
     loadMemberInfo();
 }
 
 function loadMemberInfo() {
     const content = document.getElementById("commonMemberContent");
-    if (!content) return;
 
     fetch("member-info", {
         method: "GET",
         credentials: "include"
     })
         .then(response => {
-            if (response.status === 401) {
+            if (response.status === 401 || !response.ok) {
                 throw new Error("로그인이 필요합니다.");
-            }
-            if (!response.ok) {
-                throw new Error("회원정보를 불러오지 못했습니다.");
             }
             return response.json();
         })
         .then(member => {
-            const likeCount = Number(member.receivedLikeCount) || 0;
-            const dislikeCount = Number(member.receivedDislikeCount) || 0;
+            // 상단 로그인 링크 -> 로그아웃 전환
+            const authLink = document.getElementById("navAuthLink") || document.querySelector('a[href*="login.html"]');
+            if (authLink) {
+                authLink.textContent = "로그아웃";
+                authLink.href = "logout";
+            }
 
-            const level = Math.floor(likeCount / 10) + 1;
-            const actualLevel = Math.min(level, 5);
-            let currentLikes = likeCount % 10;
-            if (actualLevel >= 5) currentLikes = 10;
+            // 우측 사이드바 버튼 전환
+            const sidebarCard = document.querySelector(".content-right .sidebar-card") || document.querySelector(".sidebar-card");
+            if (sidebarCard) {
+                sidebarCard.innerHTML = `
+                    <div class="p-2 text-center">
+                        <p class="mb-2 fw-bold text-dark">👋 ${escapeHtml(member.name)}님 환영합니다!</p>
+                        <a href="post-write.html" class="btn btn-primary w-100 mb-2 fw-bold">✏️ 글쓰기</a>
+                        <a href="logout" class="btn btn-outline-danger w-100 btn-sm">로그아웃</a>
+                    </div>
+                `;
+            }
 
-            const progress = Math.max(0, Math.min(100, currentLikes * 10));
-            const remaining = actualLevel >= 5 ? 0 : 10 - currentLikes;
+            // 회원 정보 박스 내 표기
+            if (content) {
+                const likeCount = Number(member.receivedLikeCount) || 0;
+                const dislikeCount = Number(member.receivedDislikeCount) || 0;
 
-            content.innerHTML = `
-                <div class="member-row">이름: <strong>${escapeHtml(member.name)}</strong></div>
-                <div class="member-row">아이디: <strong>${escapeHtml(member.username)}</strong></div>
-                <div class="member-row member-level">⭐ 레벨 <strong>${actualLevel}</strong></div>
-                <div class="level-section">
-                    <div class="level-progress-info">
-                        <span>Lv.${actualLevel}</span>
-                        <span>${actualLevel >= 5 ? "MAX" : "Lv." + (actualLevel + 1)}</span>
+                const level = Math.floor(likeCount / 10) + 1;
+                const actualLevel = Math.min(level, 10);
+                let currentLikes = likeCount % 10;
+                if (actualLevel >= 10) currentLikes = 10;
+
+                const progress = Math.max(0, Math.min(100, currentLikes * 10));
+                const remaining = actualLevel >= 10 ? 0 : 10 - currentLikes;
+
+                content.innerHTML = `
+                    <div class="member-row">이름: <strong>${escapeHtml(member.name)}</strong></div>
+                    <div class="member-row">아이디: <strong>${escapeHtml(member.username)}</strong></div>
+                    <div class="member-row">회원번호: <strong>${member.memberNo || '-'}</strong></div>
+                    <div class="member-row member-level">⭐ 레벨 <strong>${actualLevel}</strong></div>
+                    <div class="level-section">
+                        <div class="level-progress-info">
+                            <span>Lv.${actualLevel}</span>
+                            <span>${actualLevel >= 10 ? "MAX" : "Lv." + (actualLevel + 1)}</span>
+                        </div>
+                        <div class="level-progress">
+                            <div class="level-progress-fill" style="width: ${progress}%;"></div>
+                        </div>
+                        <div class="level-progress-text">
+                            <span>${currentLikes} / 10 좋아요</span>
+                            <span>${Math.round(progress)}%</span>
+                        </div>
+                        <div class="level-progress-remaining">
+                            ${actualLevel >= 10 ? "🎉 최고 레벨입니다!" : `다음 레벨까지 <strong>${remaining}</strong>개`}
+                        </div>
                     </div>
-                    <div class="level-progress">
-                        <div class="level-progress-fill" style="width: ${progress}%;"></div>
-                    </div>
-                    <div class="level-progress-text">
-                        <span>${currentLikes} / 10 좋아요</span>
-                        <span>${Math.round(progress)}%</span>
-                    </div>
-                    <div class="level-progress-remaining">
-                        ${actualLevel >= 5 ? "🎉 최고 레벨입니다!" : `다음 레벨까지 <strong>${remaining}</strong>개`}
-                    </div>
-                </div>
-                <div class="member-row like">👍 받은 좋아요: <strong>${likeCount}</strong></div>
-                <div class="member-row dislike">👎 받은 나빠요: <strong>${dislikeCount}</strong></div>
-            `;
+                    <div class="member-row like">👍 받은 좋아요: <strong>${likeCount}</strong></div>
+                    <div class="member-row dislike">👎 받은 나빠요: <strong>${dislikeCount}</strong></div>
+                `;
+            }
         })
         .catch(error => {
-            console.debug("회원정보 미표시:", error.message);
-            content.innerHTML = `<div class="member-error">로그인하면 회원정보가 표시됩니다.</div>`;
+            console.debug("비로그인 상태:", error.message);
+            if (content) {
+                content.innerHTML = `<div class="member-error">로그인하면 회원정보가 표시됩니다.</div>`;
+            }
         });
 }
 
+// -------------------------------------------------------------
+// 위치 저장/복원 및 드래그 로직 (모든 페이지 공통)
+// -------------------------------------------------------------
 function restoreMemberBoxPosition(memberBox) {
     if (!memberBox) return;
 
@@ -153,6 +182,7 @@ function restoreMemberBoxPosition(memberBox) {
         memberBox.style.top = savedTop + "px";
         memberBox.style.right = "auto";
         memberBox.style.bottom = "auto";
+        memberBox.style.zIndex = "9999";
     }
 }
 
@@ -183,6 +213,7 @@ function makeMemberBoxDraggable(memberBox) {
         memberBox.style.top = rect.top + "px";
         memberBox.style.right = "auto";
         memberBox.style.bottom = "auto";
+        memberBox.style.zIndex = "9999";
         dragHandle.style.cursor = "grabbing";
     });
 
@@ -207,6 +238,7 @@ function makeMemberBoxDraggable(memberBox) {
         dragHandle.style.cursor = "grab";
 
         const rect = memberBox.getBoundingClientRect();
+        localStorage.getItem("gameCommunity_memberBoxLeft");
         localStorage.setItem("gameCommunity_memberBoxLeft", Math.round(rect.left));
         localStorage.setItem("gameCommunity_memberBoxTop", Math.round(rect.top));
     });
