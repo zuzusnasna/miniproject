@@ -42,8 +42,9 @@ function initLayout() {
     `;
     document.body.prepend(headerWrapper);
 
-    // post-write 페이지인 경우 우측 고정 사이드바(2열 그리드) 스킵
-    if (window.location.pathname.includes("post-write")) {
+    // post-write 및 post 페이지에서는 우측 고정 사이드바(2열 그리드) 생성 제외
+    const currentPath = window.location.pathname;
+    if (currentPath.includes("post-write") || currentPath.includes("post.html")) {
         return;
     }
 
@@ -111,7 +112,7 @@ function loadMemberInfo() {
                 authLink.href = "logout";
             }
 
-            // 로그인 시 우측 사이드바 카드 영역 UI 유지 및 변경
+            // post.html이 아닌 사이드바가 존재하는 페이지에서만 사이드바 카드 업데이트
             const sidebarCard = document.querySelector(".content-right .sidebar-card") || document.querySelector(".sidebar-card");
             if (sidebarCard) {
                 sidebarCard.className = "sidebar-card shadow-sm border-0 rounded-3 p-3 bg-white";
