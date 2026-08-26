@@ -148,10 +148,10 @@ body {
     color: #aaa;
 }
 
+
 .common-member-info {
     position: fixed;
-    top: 20px;
-    left: 20px;
+    /* top, left 속성을 여기서 지정하지 않습니다 */
     width: 230px;
     box-sizing: border-box;
     padding: 15px;
