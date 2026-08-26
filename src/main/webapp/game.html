@@ -22,7 +22,7 @@
 <main id="main-content">
     <div class="game-shell">
         <header class="game-banner">
-            <a class="back-home" href="home.html">← 전체 게임 커뮤니티</a>
+            <a class="back-home" href="home.html">← Game Hub 홈</a>
             <small id="genreName">GAME COMMUNITY</small>
             <h1 id="gameName">게임 커뮤니티</h1>
             <p id="gameDescription">게시판을 선택해 게임 이야기를 나눠보세요.</p>
@@ -30,13 +30,14 @@
         <div class="community-layout">
             <aside class="board-sidebar" id="boardMenu"><h3>게시판</h3></aside>
             <section class="board-content">
-                <div class="board-head"><div><h2 id="boardTitle">게시판</h2><p id="boardDescription">최신 게시글을 확인하세요.</p></div><a href="post-write.html" class="btn btn-sm btn-primary">글쓰기</a></div>
+                <div class="board-head"><div><h2 id="boardTitle">게시판</h2><p>선택한 게임의 게시글을 확인하세요.</p></div><a href="post-write.html" class="btn btn-sm btn-primary">글쓰기</a></div>
                 <div id="postList"><div class="post-empty">게시글을 불러오는 중입니다...</div></div>
             </section>
         </div>
     </div>
 </main>
 <script src="js/common.js"></script>
+<script src="js/game-nav.js"></script>
 <script>
 const GAME_DATA={
   110:{name:'리니지',genre:'RPG',description:'리니지 유저들의 정보와 이야기를 나누는 공간입니다.',boards:[{id:1,name:'자유게시판'},{id:111,name:'질문게시판'},{id:112,name:'공략게시판'}]},
