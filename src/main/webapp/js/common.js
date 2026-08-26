@@ -42,7 +42,7 @@ function initLayout() {
     `;
     document.body.prepend(headerWrapper);
 
-    // post-write 페이지인 경우 우측 고정 사이드바(2열 그리드)만 스킵
+    // post-write 페이지인 경우 우측 고정 사이드바(2열 그리드) 스킵
     if (window.location.pathname.includes("post-write")) {
         return;
     }
@@ -51,6 +51,8 @@ function initLayout() {
     if (mainContent && !mainContent.closest(".layout-grid")) {
         const layoutContainer = document.createElement("div");
         layoutContainer.className = "custom-container layout-grid";
+
+        mainContent.parentNode.insertBefore(layoutContainer, mainContent);
 
         mainContent.classList.add("content-left");
         layoutContainer.appendChild(mainContent);
@@ -64,7 +66,6 @@ function initLayout() {
             </div>
         `;
         layoutContainer.appendChild(sidebar);
-        headerWrapper.after(layoutContainer);
     }
 }
 
@@ -110,13 +111,15 @@ function loadMemberInfo() {
                 authLink.href = "logout";
             }
 
+            // 로그인 시 우측 사이드바 카드 영역 UI 유지 및 변경
             const sidebarCard = document.querySelector(".content-right .sidebar-card") || document.querySelector(".sidebar-card");
             if (sidebarCard) {
+                sidebarCard.className = "sidebar-card shadow-sm border-0 rounded-3 p-3 bg-white";
                 sidebarCard.innerHTML = `
-                    <div class="p-2 text-center">
-                        <p class="mb-2 fw-bold text-dark">👋 ${escapeHtml(member.name)}님 환영합니다!</p>
-                        <a href="post-write.html" class="btn btn-primary w-100 mb-2 fw-bold">✏️ 글쓰기</a>
-                        <a href="logout" class="btn btn-outline-danger w-100 btn-sm">로그아웃</a>
+                    <div class="text-center">
+                        <p class="mb-3 fw-bold text-dark fs-6">👋 <span class="text-primary">${escapeHtml(member.name)}</span>님 환영합니다!</p>
+                        <a href="post-write.html" class="btn btn-primary w-100 mb-2 fw-bold py-2">✏️ 글쓰기</a>
+                        <a href="logout" class="btn btn-outline-danger w-100 btn-sm fw-bold">로그아웃</a>
                     </div>
                 `;
             }
