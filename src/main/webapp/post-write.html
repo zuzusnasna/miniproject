@@ -4,44 +4,58 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>글쓰기 - Game Hub</title>
-
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- 공통 CSS -->
     <link rel="stylesheet" href="css/gamehub.css">
 </head>
-
 <body>
-
-<!-- 중앙 정렬 및 여백을 위한 컨테이너 (max-width 적용) -->
 <main id="main-content" class="container my-5" style="max-width: 800px;">
     <div class="card p-4 p-md-5 shadow-sm border-0 rounded-3">
-        <h2 class="mb-4 fw-bold text-dark border-bottom pb-3">게시글 작성</h2>
+        <div class="border-bottom pb-3 mb-4">
+            <div id="writeLocation" class="text-primary small fw-bold mb-1">게시판 확인 중...</div>
+            <h2 class="mb-0 fw-bold text-dark">게시글 작성</h2>
+        </div>
 
-        <form action="post-write" method="post">
-            <!-- 제목 입력 -->
+        <form action="post-write" method="post" id="postWriteForm">
+            <input type="hidden" id="categoryId" name="categoryId">
+            <input type="hidden" id="gameId" name="gameId">
+
             <div class="mb-3">
                 <label for="title" class="form-label fw-bold">제목</label>
                 <input type="text" class="form-control form-control-lg" id="title" name="title" maxlength="300" placeholder="제목을 입력하세요" required>
             </div>
 
-            <!-- 내용 입력 -->
             <div class="mb-4">
                 <label for="content" class="form-label fw-bold">내용</label>
                 <textarea class="form-control" id="content" name="content" rows="12" placeholder="내용을 입력하세요" required style="resize: vertical;"></textarea>
             </div>
 
-            <!-- 버튼 영역 (우측 정렬) -->
             <div class="d-flex gap-2 justify-content-end pt-3 border-top">
-                <button type="button" class="btn btn-outline-secondary px-4 fw-bold" onclick="location.href='post.html'">취소</button>
+                <button type="button" id="cancelButton" class="btn btn-outline-secondary px-4 fw-bold">취소</button>
                 <button type="submit" class="btn btn-primary px-4 fw-bold">작성</button>
             </div>
         </form>
     </div>
 </main>
-
-<!-- 공통 JS -->
 <script src="js/common.js"></script>
+<script>
+const GAME_NAMES={110:'리니지',120:'블레이드앤소울',130:'메이플스토리',140:'로스트아크',210:'서든어택',220:'오버워치',230:'발로란트',240:'배틀그라운드',310:'리그 오브 레전드',320:'도타 2',410:'FC 온라인',420:'eFootball',430:'NBA 2K',510:'스타크래프트',520:'문명 VI',530:'에이지 오브 엠파이어 IV',610:'심즈 4',620:'시티즈: 스카이라인 II',630:'유로 트럭 시뮬레이터 2',910:'마인크래프트',920:'GTA V',930:'철권 8',940:'포르자 호라이즌 5',950:'데드 바이 데이라이트',960:'몬스터헌터 와일즈'};
+const BOARD_NAMES={1:'자유게시판',2:'질문게시판',3:'공략게시판'};
+const params=new URLSearchParams(location.search);
+const gameId=Number(params.get('gameId'));
+const categoryId=Number(params.get('categoryId'));
+const validGame=Object.prototype.hasOwnProperty.call(GAME_NAMES,gameId);
+const boardSuffix=categoryId-(gameId*10);
+const validBoard=validGame&&[1,2,3].includes(boardSuffix);
 
+if(!validBoard){
+    alert('게시판 정보가 올바르지 않습니다. 게임 게시판에서 다시 글쓰기를 눌러주세요.');
+    location.href='home.html';
+}else{
+    document.getElementById('categoryId').value=categoryId;
+    document.getElementById('gameId').value=gameId;
+    document.getElementById('writeLocation').textContent=`${GAME_NAMES[gameId]} > ${BOARD_NAMES[boardSuffix]}`;
+    document.getElementById('cancelButton').addEventListener('click',()=>location.href=`game.html?gameId=${gameId}&categoryId=${categoryId}`);
+}
+</script>
 </body>
 </html>

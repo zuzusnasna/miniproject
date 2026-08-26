@@ -117,6 +117,7 @@
 
 <!-- 공통 JS (이 스크립트가 실행되면서 상단 헤더와 우측 사이드바가 자동으로 붙습니다) -->
 <script src="js/common.js"></script>
+<script src="js/game-nav.js"></script>
 
 <script>
     // 페이지 로드 시 게시글 목록을 가져와서 '인기글' 3개만 추려냅니다.
@@ -136,10 +137,10 @@
 
             // 핵심 로직: 좋아요 수와 조회수를 합산한 점수로 내림차순 정렬
             const popularPosts = posts.sort((a, b) => {
-                const scoreA = a.viewCount + (a.likeCount * 5); // 좋아요 1개를 조회수 5와 동일하게 가중치 부여
+                const scoreA = a.viewCount + (a.likeCount * 5);
                 const scoreB = b.viewCount + (b.likeCount * 5);
                 return scoreB - scoreA;
-            }).slice(0, 3); // 상위 3개만 자르기
+            }).slice(0, 3);
 
             // 화면에 렌더링
             popularPosts.forEach(post => {
@@ -169,7 +170,7 @@
 
     function escapeHtml(value) {
         if (!value) return "";
-        return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;").replace(/'/g, "&#039;");
     }
 </script>
 
