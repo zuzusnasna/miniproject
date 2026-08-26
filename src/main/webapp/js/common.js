@@ -1,12 +1,15 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // 1. 공통 헤더/네비바 생성
+    // 1. 공통 헤더/네비바 및 레이아웃 컨테이너 생성
     initLayout();
 
-    // 2. 글쓰기 페이지를 포함한 모든 페이지에서 드래그 박스 생성
+    // 2. 회원정보 드래그 박스 생성
     initMemberInfoBox();
 });
 
 function initLayout() {
+    // 1280px 고정 스타일 최우선 주입
+    injectCustomStyles();
+
     if (document.querySelector(".site-header-wrapper")) {
         return;
     }
@@ -42,8 +45,9 @@ function initLayout() {
     `;
     document.body.prepend(headerWrapper);
 
-    // post-write 및 post 페이지에서는 우측 고정 사이드바(2열 그리드) 생성 제외
     const currentPath = window.location.pathname;
+
+    // post-write 및 post 페이지에서는 우측 사이드바 생성 제외
     if (currentPath.includes("post-write") || currentPath.includes("post.html")) {
         return;
     }
@@ -61,13 +65,70 @@ function initLayout() {
         const sidebar = document.createElement("aside");
         sidebar.className = "content-right";
         sidebar.innerHTML = `
-            <div class="sidebar-card">
+            <div class="sidebar-card shadow-sm border-0 rounded-3 p-3 bg-white">
                 <p class="mb-2 text-muted fw-bold">커뮤니티를 더 즐겁게 이용해보세요!</p>
-                <a href="login.html" class="btn btn-primary-custom w-100">로그인 하기</a>
+                <a href="login.html" class="btn btn-primary w-100 fw-bold">로그인 하기</a>
             </div>
         `;
         layoutContainer.appendChild(sidebar);
     }
+}
+
+// 좁아지는 모바일 레이아웃 스타일을 강제로 1280px로 고정하는 CSS 함수
+function injectCustomStyles() {
+    if (document.getElementById("custom-layout-style")) return;
+
+    const style = document.createElement("style");
+    style.id = "custom-layout-style";
+    style.innerHTML = `
+        /* 헤더 및 전체 컨테이너 폭 1280px 고정 */
+        body .custom-container,
+        body .site-header-wrapper .custom-container,
+        body .header-inner,
+        body .category-list {
+            width: 100% !important;
+            max-width: 1280px !important;
+            margin: 0 auto !important;
+            padding: 0 16px !important;
+            box-sizing: border-box !important;
+        }
+
+        /* post.html 등 개별 페이지 기본 container 폭 제한 해제 */
+        body #main-content,
+        body .content-left,
+        body .container,
+        body .container-sm,
+        body .container-md,
+        body .container-lg,
+        body .container-xl {
+            width: 100% !important;
+            max-width: 1280px !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+        }
+
+        /* 2열 배치 flex 그리드 (메인 홈 전용) */
+        body .layout-grid {
+            display: flex !important;
+            flex-direction: row !important;
+            gap: 24px !important;
+            width: 100% !important;
+            max-width: 1280px !important;
+            margin: 24px auto !important;
+            align-items: flex-start !important;
+        }
+
+        body .content-left {
+            flex: 1 1 0% !important;
+            min-width: 0 !important;
+        }
+
+        body .content-right {
+            width: 300px !important;
+            flex-shrink: 0 !important;
+        }
+    `;
+    document.head.appendChild(style);
 }
 
 function initMemberInfoBox() {
@@ -112,8 +173,8 @@ function loadMemberInfo() {
                 authLink.href = "logout";
             }
 
-            // post.html이 아닌 사이드바가 존재하는 페이지에서만 사이드바 카드 업데이트
-            const sidebarCard = document.querySelector(".content-right .sidebar-card") || document.querySelector(".sidebar-card");
+            // 사이드바가 있는 페이지에서만 사이드바 카드 업데이트 (오류 발생 방지)
+            const sidebarCard = document.querySelector(".content-right .sidebar-card");
             if (sidebarCard) {
                 sidebarCard.className = "sidebar-card shadow-sm border-0 rounded-3 p-3 bg-white";
                 sidebarCard.innerHTML = `
