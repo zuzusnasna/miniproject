@@ -1,0 +1,426 @@
+:root {
+    --primary-color: #6f42c1;
+    --primary-hover: #59359a;
+    --bg-light: #f8f9fa;
+    --text-dark: #2f4f4f;
+    --border-color: #dee2e6;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background-color: var(--bg-light);
+    font-family: 'Pretendard', 'Malgun Gothic', sans-serif;
+    color: var(--text-dark);
+}
+
+.login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.login-wrapper {
+    width: 100%;
+    max-width: 420px;
+}
+
+.login-logo {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.login-logo a {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--primary-color);
+    text-decoration: none;
+    letter-spacing: -1px;
+}
+
+.login-card {
+    width: 100%;
+    padding: 35px 30px;
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.login-input {
+    margin-bottom: 26px;
+}
+
+.login-input label {
+    display: block;
+    margin-bottom: 9px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #444;
+}
+
+.login-input .form-control {
+    display: block;
+    width: 100%;
+    height: 48px;
+    padding: 0 14px;
+    border: 1px solid #d5d5d5;
+    border-radius: 8px;
+    outline: none;
+    background-color: #ffffff;
+    font-family: inherit;
+    font-size: 15px;
+    color: #333;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.login-input .form-control::placeholder {
+    color: #aaa;
+}
+
+.login-input .form-control:hover {
+    border-color: #bdbdbd;
+}
+
+.login-input .form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(111, 66, 193, 0.12);
+}
+
+.btn-login {
+    display: block;
+    width: 100%;
+    height: 48px;
+    padding: 0;
+    margin-top: 4px;
+    border: none;
+    border-radius: 8px;
+    background-color: var(--primary-color);
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.btn-login:hover {
+    background-color: var(--primary-hover);
+}
+
+.btn-login:active {
+    transform: scale(0.99);
+}
+
+.login-links {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 24px;
+    font-size: 13px;
+    color: #888;
+}
+
+.login-links a {
+    color: #777;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.login-links a:hover {
+    color: var(--primary-color);
+}
+
+.login-links .divider {
+    margin: 0 10px;
+    color: #ddd;
+}
+
+.login-footer {
+    margin-top: 25px;
+    text-align: center;
+    font-size: 12px;
+    color: #aaa;
+}
+
+.common-member-info {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    width: 230px;
+    box-sizing: border-box;
+    padding: 15px;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+    font-size: 14px;
+    z-index: 9999;
+}
+
+.member-title {
+    margin-bottom: 12px;
+    padding-bottom: 9px;
+    border-bottom: 1px solid #eee;
+    font-size: 16px;
+    font-weight: 700;
+    color: #333;
+}
+
+.member-row {
+    margin-bottom: 8px;
+    line-height: 1.5;
+    color: #555;
+}
+
+.member-row strong {
+    color: #333;
+}
+
+.member-level {
+    margin-top: 8px;
+    margin-bottom: 9px;
+    font-size: 15px;
+}
+
+.level-section {
+    margin-top: 8px;
+    margin-bottom: 13px;
+}
+
+.level-progress-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+    font-size: 11px;
+    color: #999;
+}
+
+.level-progress-info span:first-child {
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.level-progress-info span:last-child {
+    color: #aaa;
+}
+
+.level-progress {
+    width: 100%;
+    height: 9px;
+    overflow: hidden;
+    background-color: #e9ecef;
+    border-radius: 10px;
+}
+
+.level-progress-fill {
+    height: 100%;
+    min-width: 0;
+    max-width: 100%;
+    background-color: var(--primary-color);
+    border-radius: 10px;
+    transition: width 0.4s ease;
+}
+
+.level-progress-text {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 5px;
+    font-size: 11px;
+    color: #666;
+}
+
+.level-progress-text span {
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.level-progress-remaining {
+    margin-top: 4px;
+    font-size: 11px;
+    color: #888;
+}
+
+.level-progress-remaining strong {
+    color: var(--primary-color);
+}
+
+.common-member-info .like {
+    margin-bottom: 7px;
+    color: #1976d2;
+    font-weight: 700;
+}
+
+.common-member-info .dislike {
+    margin-bottom: 0;
+    color: #d32f2f;
+    font-weight: 700;
+}
+
+.member-error {
+    color: #d32f2f;
+}
+
+body:not(.login-page) {
+    min-width: 1000px;
+}
+
+@media (max-width: 600px) {
+    .login-page {
+        padding: 20px 15px;
+    }
+
+    .login-card {
+        padding: 30px 22px;
+    }
+
+    .login-logo a {
+        font-size: 28px;
+    }
+
+    .common-member-info {
+        width: 210px;
+        left: 10px;
+        top: 10px;
+    }
+}
+/* 공통 변수 및 초기화 */
+:root {
+    --primary-color: #6941C6;      /* 헤더 보라색 */
+    --primary-hover: #5332a6;
+    --bg-gray: #F8F9FA;
+    --border-color: #E9ECEF;
+    --max-width: 1280px;
+}
+
+body {
+    background-color: var(--bg-gray);
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #333;
+}
+
+.custom-container {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 0 16px;
+}
+
+/* 1. 상단 보라색 헤더 */
+.main-header {
+    background-color: var(--primary-color);
+    color: #fff;
+    padding: 12px 0;
+}
+.header-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.header-inner .logo {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #fff;
+    text-decoration: none;
+}
+.user-menu {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.user-menu a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+.btn-theme {
+    background: #fff;
+    color: #333;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+/* 2. 카테고리 네비바 */
+.category-nav {
+    background-color: #fff;
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+.category-list {
+    display: flex;
+    gap: 20px;
+    padding: 12px 16px;
+    overflow-x: auto;
+}
+.category-list a {
+    color: #111;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+/* 3. 그리드 레이아웃 (좌측 본문 : 우측 사이드바 = 약 7:3 비율) */
+.layout-grid {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 24px;
+    margin-top: 24px;
+    margin-bottom: 40px;
+}
+
+/* 4. 우측 사이드바 컴포넌트 */
+.sidebar-card {
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+.btn-primary-custom {
+    background-color: var(--primary-color);
+    border: none;
+    color: #fff;
+    padding: 8px;
+    font-weight: 600;
+    border-radius: 6px;
+    display: block;
+    text-decoration: none;
+}
+.btn-primary-custom:hover {
+    background-color: var(--primary-hover);
+    color: #fff;
+}
+
+.sidebar-ad {
+    text-align: center;
+}
+.ad-label {
+    font-size: 0.75rem;
+    color: #888;
+    display: block;
+    margin-bottom: 6px;
+}
+.ad-image {
+    width: 100%;
+    border-radius: 8px;
+    object-fit: cover;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+/* 모바일/태블릿 반응형 대응 */
+@media (max-width: 992px) {
+    .layout-grid {
+        grid-template-columns: 1fr;
+    }
+}

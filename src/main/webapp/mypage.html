@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마이페이지</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/gamehub.css">
+
+    <style>
+        .mypage-container {
+            max-width: 600px;
+            margin: 40px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .mypage-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .stat-box {
+            display: flex;
+            justify-content: space-around;
+            background: var(--bg-light);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .stat-box div strong {
+            display: block;
+            font-size: 20px;
+            color: var(--primary-color);
+            margin-top: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            font-weight: bold;
+            margin-bottom: 8px;
+            display: block;
+            color: #444;
+        }
+    </style>
+</head>
+<body>
+
+<main id="main-content">
+    <div class="mypage-container">
+
+        <div class="mypage-header">
+            <h2>👤 마이페이지</h2>
+            <p class="text-muted">내 정보를 확인하고 수정할 수 있습니다.</p>
+        </div>
+
+        <!-- 활동 요약 통계 -->
+        <div class="stat-box">
+            <div>레벨<strong id="myLevel">-</strong></div>
+            <div>받은 좋아요<strong id="myLikes" style="color:#1976d2;">-</strong></div>
+            <div>받은 나빠요<strong id="myDislikes" style="color:#d32f2f;">-</strong></div>
+        </div>
+
+        <!-- 정보 수정 폼 -->
+        <form action="member-update" method="post" id="updateForm">
+
+            <div class="form-group">
+                <label>아이디 (수정 불가)</label>
+                <input type="text" id="username" class="form-control" readonly style="background-color: #e9ecef;">
+            </div>
+
+            <div class="form-group">
+                <label for="name">이름</label>
+                <input type="text" id="name" name="name" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="nickname">닉네임</label>
+                <input type="text" id="nickname" name="nickname" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">새 비밀번호 (변경할 때만 입력)</label>
+                <input type="password" id="password" name="password" class="form-control" placeholder="변경하지 않으면 비워두세요">
+            </div>
+
+            <div class="form-group">
+                <label for="phone">전화번호</label>
+                <input type="text" id="phone" name="phone" class="form-control" placeholder="010-0000-0000" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary-custom w-100 mt-3" style="padding: 12px; font-size: 16px;">
+                정보 수정하기
+            </button>
+
+        </form>
+
+    </div>
+</main>
+
+<script src="js/common.js"></script>
+
+<script>
+    // 1. 수정 성공 메시지 확인
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('success') === 'true') {
+        alert("회원 정보가 성공적으로 수정되었습니다!");
+        // URL을 깔끔하게 정리
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    // 2. 기존 회원 정보 불러와서 화면에 채우기
+    fetch("member-info")
+        .then(response => {
+            if (response.status === 401) {
+                alert("로그인이 필요합니다.");
+                location.href = "login.html";
+                throw new Error("Unauthorized");
+            }
+            return response.json();
+        })
+        .then(member => {
+            // 활동 내역
+            document.getElementById("myLevel").textContent = member.userLevel;
+            document.getElementById("myLikes").textContent = member.receivedLikeCount;
+            document.getElementById("myDislikes").textContent = member.receivedDislikeCount;
+
+            // 폼 데이터 (비밀번호는 보안상 비워둠)
+            document.getElementById("username").value = member.username;
+            document.getElementById("name").value = member.name;
+            document.getElementById("nickname").value = member.nickname || "";
+            document.getElementById("phone").value = member.phone || "";
+        })
+        .catch(error => console.error("회원정보 로드 실패:", error));
+</script>
+
+</body>
+</html>

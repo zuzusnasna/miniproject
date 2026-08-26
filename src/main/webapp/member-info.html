@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>회원정보</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: transparent;
+        }
+
+        #memberBox {
+            width: 240px;
+            box-sizing: border-box;
+            padding: 15px;
+
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        h3 {
+            margin: 0 0 12px 0;
+        }
+
+        p {
+            margin: 6px 0;
+            font-size: 14px;
+        }
+
+        .like {
+            color: #1976d2;
+            font-weight: bold;
+        }
+
+        .dislike {
+            color: #d32f2f;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="memberBox">
+
+    <h3>회원 정보</h3>
+
+    <div id="memberInfo">
+        회원 정보를 불러오는 중...
+    </div>
+
+</div>
+
+<script>
+
+    fetch("member-info", {
+        method: "GET",
+        credentials: "include"
+    })
+        .then(response => {
+
+            if (!response.ok) {
+                throw new Error("로그인이 필요합니다.");
+            }
+
+            return response.json();
+        })
+        .then(member => {
+
+            document.getElementById("memberInfo").innerHTML = `
+
+            <p>
+                <strong>${escapeHtml(member.name)}</strong>
+                (${escapeHtml(member.username)})
+            </p>
+
+            <p>
+                회원번호: ${member.memberNo}
+            </p>
+
+            <p>
+                레벨: ${member.userLevel}
+            </p>
+
+            <p class="like">
+                👍 받은 좋아요:
+                ${member.receivedLikeCount}
+            </p>
+
+            <p class="dislike">
+                👎 받은 나빠요:
+                ${member.receivedDislikeCount}
+            </p>
+
+        `;
+        })
+        .catch(error => {
+
+            console.error(error);
+
+            document.getElementById("memberInfo").innerHTML = `
+            <p style="color:red;">
+                회원정보를 불러올 수 없습니다.
+            </p>
+        `;
+        });
+
+
+    function escapeHtml(value) {
+
+        if (value == null) {
+            return "";
+        }
+
+        return String(value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+</script>
+
+</body>
+</html>

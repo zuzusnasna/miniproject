@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 공통 CSS 경로 확인 (이름을 gamehub.css로 저장하셨다면 그대로 유지) -->
+    <link rel="stylesheet" href="css/gamehub.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>글쓰기</title>
+</head>
+
+<body>
+
+<!--
+    기존에 띄우시던 iframe은 상단 헤더/사이드바와 겹칠 수 있습니다.
+    만약 새 레이아웃 우측 상단으로 로그인 정보를 뺄 계획이시라면 이 부분은 추후 제거하셔도 좋습니다.
+-->
+<iframe src="member-info.html" style="position: fixed; top: 20px; left: 20px; width: 250px; height: 230px; border: none; z-index: 9999;"></iframe>
+
+<!-- ★ 중요: 여기서부터 페이지 고유 영역을 id="main-content"로 감싸줍니다 ★ -->
+<main id="main-content">
+    <h1>게시글 작성</h1>
+
+    <form action="post-write" method="post">
+        <div>
+            <label for="title">제목</label>
+            <br>
+            <input type="text" id="title" name="title" maxlength="300" required>
+        </div>
+        <br>
+        <div>
+            <label for="content">내용</label>
+            <br>
+            <textarea id="content" name="content" rows="15" cols="70" required></textarea>
+        </div>
+        <br>
+        <button type="submit">작성</button>
+        <button type="button" onclick="location.href='post.html'">취소</button>
+    </form>
+</main>
+
+<script src="js/common.js"></script>
+
+</body>
+</html>

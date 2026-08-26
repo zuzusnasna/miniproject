@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>게임 커뮤니티 게시판</title>
+
+    <!-- 1. Bootstrap CSS CDN (카테고리 드롭다운 및 테이블 스타일용) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- 2. 공통 CSS -->
+    <link rel="stylesheet" href="css/gamehub.css">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            width: 1000px;
+            margin: 40px auto;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        /* 상단 버튼 */
+        .top {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        button {
+            padding: 8px 15px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            background-color: white;
+            border-radius: 4px;
+        }
+
+        button:hover {
+            background-color: #f5f5f5;
+        }
+
+        /* 게시글 목록 */
+        table.board-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table.board-table th,
+        table.board-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+
+        table.board-table th {
+            background-color: #f5f5f5;
+        }
+
+        .title {
+            text-align: left;
+        }
+
+        .title button {
+            border: none;
+            background: none;
+            padding: 0;
+            font-size: 16px;
+            cursor: pointer;
+            color: #222;
+        }
+
+        .title button:hover {
+            text-decoration: underline;
+            background: none;
+        }
+
+        .empty {
+            padding: 40px;
+            text-align: center;
+        }
+
+        /* 게시글 상세 */
+        .detail {
+            display: none;
+            margin-top: 30px;
+            border: 1px solid #ddd;
+            padding: 25px;
+            background-color: #fafafa;
+        }
+
+        .detail h2 {
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        .detail-info {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .detail-content {
+            min-height: 200px;
+            padding: 20px;
+            background-color: white;
+            border: 1px solid #eee;
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+
+        /* 좋아요 / 나빠요 */
+        .reaction {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .reaction button {
+            margin: 0 5px;
+            padding: 10px 20px;
+            font-size: 15px;
+        }
+
+        #likeCount {
+            font-weight: bold;
+            color: #1976d2;
+        }
+
+        #dislikeCount {
+            font-weight: bold;
+            color: #d32f2f;
+        }
+
+        /* 닫기 */
+        .close-button {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- [게시판 메인 콘텐츠] -->
+<h1>게임 커뮤니티 게시판</h1>
+
+<div class="top">
+    <button type="button" onclick="location.href='index.html'">메인으로</button>
+    <button type="button" onclick="location.href='post-write.html'">글쓰기</button>
+</div>
+
+<!-- 일반 전체 게시글 목록 테이블 -->
+<table class="board-table">
+    <thead>
+    <tr>
+        <th>번호</th>
+        <th>제목</th>
+        <th>작성자</th>
+        <th>조회수</th>
+        <th>좋아요</th>
+        <th>나빠요</th>
+        <th>작성일</th>
+    </tr>
+    </thead>
+    <tbody id="postList">
+    <tr>
+        <td colspan="7" class="empty">게시글을 불러오는 중...</td>
+    </tr>
+    </tbody>
+</table>
+
+<!-- 게시글 상세 영역 -->
+<div id="postDetail" class="detail">
+    <h2 id="detailTitle"></h2>
+    <div id="detailInfo" class="detail-info"></div>
+    <div id="detailContent" class="detail-content"></div>
+
+    <div class="reaction">
+        <button type="button" onclick="likePost()">
+            👍 좋아요 <span id="likeCount">0</span>
+        </button>
+        <button type="button" onclick="dislikePost()">
+            👎 나빠요 <span id="dislikeCount">0</span>
+        </button>
+    </div>
+
+    <div class="close-button">
+        <button type="button" onclick="closeDetail()">닫기</button>
+    </div>
+</div>
+
+<!-- 1. Bootstrap JS (드롭다운 동작용) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- 2. 공통 JS (카테고리, 인기글, 회원정보 로드) -->
+<script src="js/common.js"></script>
+
+<!-- 3. 게시판 전용 비즈니스 로직 -->
+<script>
+    let selectedPost = null;
+
+    /* =========================
+       게시글 목록 불러오기
+       ========================= */
+    fetch("posts")
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("게시글을 불러오지 못했습니다.");
+            }
+            return response.json();
+        })
+        .then(posts => {
+            const postList = document.getElementById("postList");
+            postList.innerHTML = "";
+
+            if (posts.length === 0) {
+                postList.innerHTML = `
+                        <tr>
+                            <td colspan="7" class="empty">등록된 게시글이 없습니다.</td>
+                        </tr>
+                    `;
+                return;
+            }
+
+            posts.forEach(post => {
+                postList.innerHTML += `
+                        <tr>
+                            <td>${post.postId}</td>
+                            <td class="title">
+                                <button type="button" onclick="showPost(${post.postId})">
+                                    ${escapeHtml(post.title)}
+                                </button>
+                            </td>
+                            <td>${escapeHtml(post.username)}</td>
+                            <td>${post.viewCount}</td>
+                            <td>${post.likeCount}</td>
+                            <td>${post.dislikeCount}</td>
+                            <td>${post.createdAt}</td>
+                        </tr>
+                    `;
+            });
+        })
+        .catch(error => {
+            console.error(error);
+            document.getElementById("postList").innerHTML = `
+                    <tr>
+                        <td colspan="7" class="empty">게시글을 불러오지 못했습니다.</td>
+                    </tr>
+                `;
+        });
+
+    /* =========================
+       게시글 상세
+       ========================= */
+    function showPost(postId) {
+        fetch("posts")
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("게시글을 불러오지 못했습니다.");
+                }
+                return response.json();
+            })
+            .then(posts => {
+                const post = posts.find(p => Number(p.postId) === Number(postId));
+
+                if (!post) {
+                    alert("게시글을 찾을 수 없습니다.");
+                    return;
+                }
+
+                selectedPost = post;
+
+                document.getElementById("detailTitle").textContent = post.title;
+                document.getElementById("detailInfo").textContent =
+                    "작성자: " + post.username + " | 조회수: " + post.viewCount + " | 작성일: " + post.createdAt;
+                document.getElementById("detailContent").textContent = post.content;
+                document.getElementById("likeCount").textContent = post.likeCount;
+                document.getElementById("dislikeCount").textContent = post.dislikeCount;
+
+                const detail = document.getElementById("postDetail");
+                detail.style.display = "block";
+                detail.scrollIntoView({ behavior: "smooth" });
+            })
+            .catch(error => {
+                console.error(error);
+                alert("게시글을 불러오지 못했습니다.");
+            });
+    }
+
+    /* =========================
+       좋아요
+       ========================= */
+    function likePost() {
+        if (!selectedPost) return;
+        const postId = selectedPost.postId;
+
+        fetch("post-like", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            credentials: "include",
+            body: "postId=" + encodeURIComponent(postId) + "&likeType=LIKE"
+        })
+            .then(response => {
+                if (response.status === 401) {
+                    alert("로그인이 필요합니다.");
+                    location.href = "login.html";
+                    return null;
+                }
+                if (!response.ok) {
+                    throw new Error("좋아요 처리에 실패했습니다. (" + response.status + ")");
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data) return;
+
+                if (data.success) {
+                    selectedPost.likeCount = data.likeCount;
+                    selectedPost.dislikeCount = data.dislikeCount;
+
+                    document.getElementById("likeCount").textContent = data.likeCount;
+                    document.getElementById("dislikeCount").textContent = data.dislikeCount;
+
+                    if (typeof loadMemberInfo === "function") {
+                        loadMemberInfo();
+                    }
+                    alert("좋아요를 눌렀습니다.");
+                } else {
+                    alert(data.message || "좋아요 처리에 실패했습니다.");
+                }
+            })
+            .catch(error => {
+                console.error("좋아요 처리 오류:", error);
+                alert("좋아요 처리 중 오류가 발생했습니다.");
+            });
+    }
+
+    /* =========================
+       나빠요
+       ========================= */
+    function dislikePost() {
+        if (!selectedPost) return;
+        const postId = selectedPost.postId;
+
+        fetch("post-like", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            credentials: "include",
+            body: "postId=" + encodeURIComponent(postId) + "&likeType=DISLIKE"
+        })
+            .then(response => {
+                if (response.status === 401) {
+                    alert("로그인이 필요합니다.");
+                    location.href = "login.html";
+                    return null;
+                }
+                if (!response.ok) {
+                    throw new Error("나빠요 처리에 실패했습니다. (" + response.status + ")");
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data) return;
+
+                if (data.success) {
+                    selectedPost.likeCount = data.likeCount;
+                    selectedPost.dislikeCount = data.dislikeCount;
+
+                    document.getElementById("likeCount").textContent = data.likeCount;
+                    document.getElementById("dislikeCount").textContent = data.dislikeCount;
+
+                    if (typeof loadMemberInfo === "function") {
+                        loadMemberInfo();
+                    }
+                    alert("나빠요를 눌렀습니다.");
+                } else {
+                    alert(data.message || "나빠요 처리에 실패했습니다.");
+                }
+            })
+            .catch(error => {
+                console.error("나빠요 처리 오류:", error);
+                alert("나빠요 처리 중 오류가 발생했습니다.");
+            });
+    }
+
+    /* =========================
+       상세 닫기
+       ========================= */
+    function closeDetail() {
+        document.getElementById("postDetail").style.display = "none";
+        selectedPost = null;
+    }
+</script>
+</body>
+
+</html>
