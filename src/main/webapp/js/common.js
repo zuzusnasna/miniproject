@@ -1,5 +1,8 @@
 document.addEventListener("DOMContentLoaded", function () {
+    // 1. 공통 헤더/네비바 생성
     initLayout();
+
+    // 2. 글쓰기 페이지를 포함한 모든 페이지에서 드래그 박스 생성
     initMemberInfoBox();
 });
 
@@ -39,6 +42,11 @@ function initLayout() {
     `;
     document.body.prepend(headerWrapper);
 
+    // post-write 페이지인 경우 우측 고정 사이드바(2열 그리드)만 스킵
+    if (window.location.pathname.includes("post-write")) {
+        return;
+    }
+
     const mainContent = document.getElementById("main-content");
     if (mainContent && !mainContent.closest(".layout-grid")) {
         const layoutContainer = document.createElement("div");
@@ -77,13 +85,8 @@ function initMemberInfoBox() {
 
     const memberBox = wrapper.querySelector(".common-member-info");
 
-    // 1. 저장된 위치 복원
     restoreMemberBoxPosition(memberBox);
-
-    // 2. 드래그 기능 할당
     makeMemberBoxDraggable(memberBox);
-
-    // 3. 회원정보 API 로드
     loadMemberInfo();
 }
 
@@ -101,14 +104,12 @@ function loadMemberInfo() {
             return response.json();
         })
         .then(member => {
-            // 상단 로그인 링크 -> 로그아웃 전환
             const authLink = document.getElementById("navAuthLink") || document.querySelector('a[href*="login.html"]');
             if (authLink) {
                 authLink.textContent = "로그아웃";
                 authLink.href = "logout";
             }
 
-            // 우측 사이드바 버튼 전환
             const sidebarCard = document.querySelector(".content-right .sidebar-card") || document.querySelector(".sidebar-card");
             if (sidebarCard) {
                 sidebarCard.innerHTML = `
@@ -120,7 +121,6 @@ function loadMemberInfo() {
                 `;
             }
 
-            // 회원 정보 박스 내 표기
             if (content) {
                 const likeCount = Number(member.receivedLikeCount) || 0;
                 const dislikeCount = Number(member.receivedDislikeCount) || 0;
@@ -167,9 +167,6 @@ function loadMemberInfo() {
         });
 }
 
-// -------------------------------------------------------------
-// 위치 저장/복원 및 드래그 로직 (모든 페이지 공통)
-// -------------------------------------------------------------
 function restoreMemberBoxPosition(memberBox) {
     if (!memberBox) return;
 
@@ -238,7 +235,6 @@ function makeMemberBoxDraggable(memberBox) {
         dragHandle.style.cursor = "grab";
 
         const rect = memberBox.getBoundingClientRect();
-        localStorage.getItem("gameCommunity_memberBoxLeft");
         localStorage.setItem("gameCommunity_memberBoxLeft", Math.round(rect.left));
         localStorage.setItem("gameCommunity_memberBoxTop", Math.round(rect.top));
     });
