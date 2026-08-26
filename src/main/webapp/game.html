@@ -30,7 +30,13 @@
         <div class="community-layout">
             <aside class="board-sidebar" id="boardMenu"><h3>게시판</h3></aside>
             <section class="board-content">
-                <div class="board-head"><div><h2 id="boardTitle">게시판</h2><p>선택한 게임의 게시글을 확인하세요.</p></div><a href="post-write.html" class="btn btn-sm btn-primary">글쓰기</a></div>
+                <div class="board-head">
+                    <div>
+                        <h2 id="boardTitle">게시판</h2>
+                        <p>선택한 게임의 게시글을 확인하세요.</p>
+                    </div>
+                    <a id="writeLink" href="#" class="btn btn-sm btn-primary">글쓰기</a>
+                </div>
                 <div id="postList"><div class="post-empty">게시글을 불러오는 중입니다...</div></div>
             </section>
         </div>
@@ -40,17 +46,88 @@
 <script src="js/game-nav.js"></script>
 <script>
 const GAME_DATA={
-  110:{name:'리니지',genre:'RPG',description:'리니지 유저들의 정보와 이야기를 나누는 공간입니다.',boards:[{id:1,name:'자유게시판'},{id:111,name:'질문게시판'},{id:112,name:'공략게시판'}]},
-  120:{name:'블레이드앤소울',genre:'RPG',description:'블레이드앤소울 유저 커뮤니티입니다.',boards:[{id:121,name:'자유게시판'},{id:122,name:'질문게시판'},{id:123,name:'공략게시판'}]},
-  210:{name:'서든어택',genre:'FPS',description:'서든어택 유저 커뮤니티입니다.',boards:[{id:211,name:'자유게시판'},{id:212,name:'질문게시판'},{id:213,name:'공략게시판'}]},
-  220:{name:'오버워치',genre:'FPS',description:'오버워치 유저 커뮤니티입니다.',boards:[{id:221,name:'자유게시판'},{id:222,name:'질문게시판'},{id:223,name:'공략게시판'}]}
+  110:{name:'리니지',genre:'RPG'},
+  120:{name:'블레이드앤소울',genre:'RPG'},
+  130:{name:'메이플스토리',genre:'RPG'},
+  140:{name:'로스트아크',genre:'RPG'},
+  210:{name:'서든어택',genre:'FPS/TPS'},
+  220:{name:'오버워치',genre:'FPS/TPS'},
+  230:{name:'발로란트',genre:'FPS/TPS'},
+  240:{name:'배틀그라운드',genre:'FPS/TPS'},
+  310:{name:'리그 오브 레전드',genre:'MOBA'},
+  320:{name:'도타 2',genre:'MOBA'},
+  410:{name:'FC 온라인',genre:'스포츠'},
+  420:{name:'eFootball',genre:'스포츠'},
+  430:{name:'NBA 2K',genre:'스포츠'},
+  510:{name:'스타크래프트',genre:'전략'},
+  520:{name:'문명 VI',genre:'전략'},
+  530:{name:'에이지 오브 엠파이어 IV',genre:'전략'},
+  610:{name:'심즈 4',genre:'시뮬레이션'},
+  620:{name:'시티즈: 스카이라인 II',genre:'시뮬레이션'},
+  630:{name:'유로 트럭 시뮬레이터 2',genre:'시뮬레이션'},
+  910:{name:'마인크래프트',genre:'그 외 장르'},
+  920:{name:'GTA V',genre:'그 외 장르'},
+  930:{name:'철권 8',genre:'그 외 장르'},
+  940:{name:'포르자 호라이즌 5',genre:'그 외 장르'},
+  950:{name:'데드 바이 데이라이트',genre:'그 외 장르'},
+  960:{name:'몬스터헌터 와일즈',genre:'그 외 장르'}
 };
-const params=new URLSearchParams(location.search);const gameId=Number(params.get('gameId'))||110;const game=GAME_DATA[gameId]||GAME_DATA[110];let currentBoard=Number(params.get('categoryId'))||game.boards[0].id;let allPosts=[];
-document.getElementById('genreName').textContent=game.genre+' COMMUNITY';document.getElementById('gameName').textContent=game.name;document.getElementById('gameDescription').textContent=game.description;
-function renderMenu(){const menu=document.getElementById('boardMenu');menu.innerHTML='<h3>게시판</h3>'+game.boards.map(b=>`<button class="board-menu ${b.id===currentBoard?'active':''}" data-id="${b.id}">${b.name}</button>`).join('');menu.querySelectorAll('.board-menu').forEach(btn=>btn.addEventListener('click',()=>{currentBoard=Number(btn.dataset.id);history.replaceState(null,'',`game.html?gameId=${gameId}&categoryId=${currentBoard}`);renderMenu();renderPosts();}));}
-function renderPosts(){const board=game.boards.find(b=>b.id===currentBoard)||game.boards[0];document.getElementById('boardTitle').textContent=board.name;const list=allPosts.filter(p=>Number(p.categoryId)===currentBoard);const box=document.getElementById('postList');if(!list.length){box.innerHTML='<div class="post-empty">아직 등록된 게시글이 없습니다.<br><small>첫 번째 글을 작성해보세요.</small></div>';return;}box.innerHTML=list.map(p=>`<div class="post-row" onclick="location.href='post-detail?postId=${p.postId}'"><div class="post-meta">#${p.postId}</div><div class="post-title">${esc(p.title)}</div><div class="post-meta">👤 ${esc(p.username)}</div><div class="post-meta views">조회 ${p.viewCount}</div></div>`).join('');}
-function esc(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#039;');}
-renderMenu();fetch('posts').then(r=>{if(!r.ok)throw new Error();return r.json();}).then(posts=>{allPosts=posts;renderPosts();}).catch(()=>{document.getElementById('postList').innerHTML='<div class="post-empty text-danger">게시글을 불러오지 못했습니다.</div>';});
+
+const params=new URLSearchParams(location.search);
+const requestedGameId=Number(params.get('gameId'));
+const gameId=GAME_DATA[requestedGameId]?requestedGameId:110;
+const game=GAME_DATA[gameId];
+const boards=[
+  {id:gameId*10+1,name:'자유게시판'},
+  {id:gameId*10+2,name:'질문게시판'},
+  {id:gameId*10+3,name:'공략게시판'}
+];
+const requestedCategoryId=Number(params.get('categoryId'));
+let currentBoard=boards.some(board=>board.id===requestedCategoryId)?requestedCategoryId:boards[0].id;
+let allPosts=[];
+
+document.getElementById('genreName').textContent=game.genre+' COMMUNITY';
+document.getElementById('gameName').textContent=game.name;
+document.getElementById('gameDescription').textContent=game.name+' 유저들의 정보와 이야기를 나누는 공간입니다.';
+
+function updateWriteLink(){
+    document.getElementById('writeLink').href=`post-write.html?gameId=${gameId}&categoryId=${currentBoard}`;
+}
+
+function renderMenu(){
+    const menu=document.getElementById('boardMenu');
+    menu.innerHTML='<h3>게시판</h3>'+boards.map(board=>`<button class="board-menu ${board.id===currentBoard?'active':''}" data-id="${board.id}">${board.name}</button>`).join('');
+    menu.querySelectorAll('.board-menu').forEach(btn=>btn.addEventListener('click',()=>{
+        currentBoard=Number(btn.dataset.id);
+        history.replaceState(null,'',`game.html?gameId=${gameId}&categoryId=${currentBoard}`);
+        renderMenu();
+        renderPosts();
+        updateWriteLink();
+    }));
+}
+
+function renderPosts(){
+    const board=boards.find(item=>item.id===currentBoard)||boards[0];
+    document.getElementById('boardTitle').textContent=board.name;
+    const list=allPosts.filter(post=>Number(post.categoryId)===currentBoard);
+    const box=document.getElementById('postList');
+    if(!list.length){
+        box.innerHTML='<div class="post-empty">아직 등록된 게시글이 없습니다.<br><small>첫 번째 글을 작성해보세요.</small></div>';
+        return;
+    }
+    box.innerHTML=list.map(post=>`<div class="post-row" onclick="location.href='post-detail?postId=${post.postId}'"><div class="post-meta">#${post.postId}</div><div class="post-title">${esc(post.title)}</div><div class="post-meta">👤 ${esc(post.username)}</div><div class="post-meta views">조회 ${post.viewCount}</div></div>`).join('');
+}
+
+function esc(value){
+    return String(value??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#039;');
+}
+
+renderMenu();
+updateWriteLink();
+fetch('posts')
+    .then(response=>{if(!response.ok)throw new Error();return response.json();})
+    .then(posts=>{allPosts=posts;renderPosts();})
+    .catch(()=>{document.getElementById('postList').innerHTML='<div class="post-empty text-danger">게시글을 불러오지 못했습니다.</div>';});
 </script>
 </body>
 </html>
