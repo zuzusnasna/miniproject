@@ -18,34 +18,56 @@ public class CategoryServlet extends HttpServlet {
     private final CategoryDAO categoryDAO = new CategoryDAO();
 
     @Override
+    public void init() throws ServletException {
+        super.init();
+
+        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!");
+        System.out.println("CATEGORY SERVLET INIT 됨!");
+        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!");
+    }
+
+    @Override
     protected void doGet(
             HttpServletRequest request,
             HttpServletResponse response)
             throws ServletException, IOException {
+        System.err.println("🔥🔥🔥 CATEGORY SERVLET 진입 🔥🔥🔥");
+        System.out.println();
+        System.out.println("=================================");
+        System.out.println("========== CATEGORY SERVLET ==========");
+        System.out.println("CATEGORY SERVLET 진입!");
+        System.out.println("URI = " + request.getRequestURI());
+        System.out.println("Query = " + request.getQueryString());
+        System.out.println("=================================");
 
         response.setContentType("application/json; charset=UTF-8");
+        response.setCharacterEncoding("UTF-8");
 
         String depthParam = request.getParameter("depth");
 
+        System.out.println("depthParam = " + depthParam);
+
         List<CategoryDTO> categoryList;
 
-        // =========================================
-        // 하위 카테고리 조회
-        // /categories?depth=2
-        // =========================================
-        if ("2".equals(depthParam)) {
+        if (depthParam != null && !depthParam.isBlank()) {
 
-            categoryList = categoryDAO.findByDepth(2);
+            int depth = Integer.parseInt(depthParam);
+
+            System.out.println("DAO findByDepth 호출!");
+            System.out.println("depth = " + depth);
+
+            categoryList = categoryDAO.findByDepth(depth);
 
         } else {
 
-            // 전체 카테고리
+            System.out.println("DAO findAll 호출!");
+
             categoryList = categoryDAO.findAll();
         }
 
-        // =========================================
-        // JSON 생성
-        // =========================================
+        System.out.println(
+                "DAO 결과 개수 = " + categoryList.size()
+        );
 
         StringBuilder json = new StringBuilder("[");
 
@@ -58,7 +80,6 @@ public class CategoryServlet extends HttpServlet {
             }
 
             json.append("{")
-
                     .append("\"categoryId\":")
                     .append(category.getCategoryId())
                     .append(",")
@@ -85,6 +106,10 @@ public class CategoryServlet extends HttpServlet {
                     .append(escape(category.getIsActive()))
                     .append("\",")
 
+                    .append("\"createdAt\":\"")
+                    .append(escape(category.getCreatedAt()))
+                    .append("\",")
+
                     .append("\"iconUrl\":\"")
                     .append(escape(category.getIconUrl()))
                     .append("\",")
@@ -97,13 +122,14 @@ public class CategoryServlet extends HttpServlet {
 
         json.append("]");
 
+        System.out.println("최종 JSON = " + json);
+
         response.getWriter().write(json.toString());
+
+        System.out.println("JSON 응답 완료!");
+        System.out.println("=================================");
     }
 
-
-    // =========================================
-    // JSON escape
-    // =========================================
 
     private String escape(String value) {
 

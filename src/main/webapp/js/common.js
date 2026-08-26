@@ -132,3 +132,4 @@ function makeMemberBoxDraggable(memberBox) {
     document.addEventListener("mouseup",()=>{if(!isDragging)return;isDragging=false;dragHandle.style.cursor="grab";const rect=memberBox.getBoundingClientRect();localStorage.setItem("gameCommunity_memberBoxLeft",Math.round(rect.left));localStorage.setItem("gameCommunity_memberBoxTop",Math.round(rect.top));});
 }
 function escapeHtml(value){if(value==null)return"";return String(value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");}
+
