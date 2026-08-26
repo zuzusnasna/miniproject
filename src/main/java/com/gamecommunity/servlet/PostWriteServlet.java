@@ -25,72 +25,65 @@ public class PostWriteServlet extends HttpServlet {
             throws ServletException, IOException {
 
         System.out.println("========== POST-WRITE 요청 들어옴 ==========");
-
         request.setCharacterEncoding("UTF-8");
 
-        System.out.println("1. 인코딩 완료");
-
         HttpSession session = request.getSession(false);
-
-        System.out.println("2. 세션 = " + session);
-
         if (session == null) {
-            System.out.println("세션 없음");
-
-            response.sendRedirect(
-                    request.getContextPath() + "/login.html"
-            );
+            response.sendRedirect(request.getContextPath() + "/login.html");
             return;
         }
 
-        MemberDTO member =
-                (MemberDTO) session.getAttribute("member");
-
-        System.out.println("3. 회원 = " + member);
-
+        MemberDTO member = (MemberDTO) session.getAttribute("member");
         if (member == null) {
-            System.out.println("회원 정보 없음");
-
-            response.sendRedirect(
-                    request.getContextPath() + "/login.html"
-            );
+            response.sendRedirect(request.getContextPath() + "/login.html");
             return;
         }
-
-        System.out.println("4. 회원번호 = " + member.getMemberNo());
 
         String title = request.getParameter("title");
         String content = request.getParameter("content");
+        String categoryIdParam = request.getParameter("categoryId");
+        String gameIdParam = request.getParameter("gameId");
 
-        System.out.println("5. 제목 = " + title);
-        System.out.println("6. 내용 = " + content);
+        long categoryId;
+        long gameId;
+
+        try {
+            categoryId = Long.parseLong(categoryIdParam);
+            gameId = Long.parseLong(gameIdParam);
+        } catch (NumberFormatException | NullPointerException e) {
+            response.sendError(
+                    HttpServletResponse.SC_BAD_REQUEST,
+                    "게시판 정보가 올바르지 않습니다."
+            );
+            return;
+        }
+
+        // CATEGORY 규칙 검증:
+        // 게임 110 -> 게시판 1101/1102/1103처럼 게임ID*10 + 1~3만 허용한다.
+        long boardType = categoryId - (gameId * 10);
+        if (boardType < 1 || boardType > 3) {
+            response.sendError(
+                    HttpServletResponse.SC_BAD_REQUEST,
+                    "게임과 게시판 정보가 일치하지 않습니다."
+            );
+            return;
+        }
 
         PostDTO post = new PostDTO();
-
-        post.setCategoryId(1L);
+        post.setCategoryId(categoryId);
         post.setMemberNo(member.getMemberNo());
         post.setTitle(title);
         post.setContent(content);
 
-        System.out.println("7. PostDTO 생성 완료");
-        System.out.println("8. PostDAO.save() 호출 직전");
-
         boolean result = postDAO.save(post);
 
-        System.out.println("9. PostDAO.save() 결과 = " + result);
-
         if (result) {
-
-            System.out.println("10. 게시글 작성 성공");
-
             response.sendRedirect(
-                    request.getContextPath() + "/post.html"
+                    request.getContextPath()
+                            + "/game.html?gameId=" + gameId
+                            + "&categoryId=" + categoryId
             );
-
         } else {
-
-            System.out.println("10. 게시글 작성 실패");
-
             response.sendError(
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                     "게시글 작성에 실패했습니다."
