@@ -59,7 +59,7 @@ public class MemberDAO {
                 FROM MEMBER
                 WHERE NAME = ?
                   AND PHONE = ?
-                  AND JOIN_STATUS = 'Y'
+                  AND JOIN_STATUS = 'APPROVED'
                 """;
 
         try (
@@ -90,7 +90,7 @@ public class MemberDAO {
                 WHERE USERNAME = ?
                   AND NAME = ?
                   AND PHONE = ?
-                  AND JOIN_STATUS = 'Y'
+                  AND JOIN_STATUS = 'APPROVED'
                 """;
 
         try (
