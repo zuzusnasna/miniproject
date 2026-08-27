@@ -27,7 +27,6 @@ function initLayout() {
                 <a href="home.html" class="logo">Game Hub</a>
                 <div class="user-menu">
                     <a href="login.html" id="navAuthLink">로그인</a>
-                    <a href="signup.html">회원가입</a>
                     <a href="mypage.html">마이페이지</a>
                 </div>
             </div>
