@@ -356,6 +356,28 @@ public class PostDAO {
             return false;
         }
     }
+    public boolean increaseViewCount(Long postId) {
+
+        String sql = """
+            UPDATE POST
+            SET VIEW_COUNT = VIEW_COUNT + 1
+            WHERE POST_ID = ?
+              AND IS_DELETED = 'N'
+            """;
+
+        try (
+                java.sql.Connection conn = DBUtil.getConnection();
+                java.sql.PreparedStatement pstmt = conn.prepareStatement(sql)
+        ) {
+            pstmt.setLong(1, postId);
+            return pstmt.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            System.out.println("VIEW COUNT ERROR");
+            e.printStackTrace();
+            return false;
+        }
+    }
     // =========================================================
 // 공지사항 목록 조회
 // =========================================================
