@@ -71,6 +71,71 @@ public class PostDAO {
         return postList;
     }
 
+    // =========================================================
+// 카테고리별 게시글 목록
+// =========================================================
+    public List<PostDTO> findByCategoryId(long categoryId) {
+
+        List<PostDTO> postList = new ArrayList<>();
+
+        String sql = """
+        SELECT
+            P.POST_ID,
+            P.CATEGORY_ID,
+            P.MEMBER_NO,
+            M.USERNAME,
+            P.TITLE,
+            P.CONTENT,
+            P.VIEW_COUNT,
+            P.LIKE_COUNT,
+            P.DISLIKE_COUNT,
+            P.IS_NOTICE,
+            P.IS_DELETED,
+            TO_CHAR(P.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT
+        FROM POST P
+        JOIN MEMBER M
+            ON P.MEMBER_NO = M.MEMBER_NO
+        WHERE P.IS_DELETED = 'N'
+          AND P.CATEGORY_ID = ?
+        ORDER BY P.POST_ID DESC
+        """;
+
+        try (
+                Connection conn = DBUtil.getConnection();
+                PreparedStatement pstmt = conn.prepareStatement(sql)
+        ) {
+
+            pstmt.setLong(1, categoryId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+
+                while (rs.next()) {
+
+                    PostDTO post = new PostDTO();
+
+                    post.setPostId(rs.getLong("POST_ID"));
+                    post.setCategoryId(rs.getLong("CATEGORY_ID"));
+                    post.setMemberNo(rs.getLong("MEMBER_NO"));
+                    post.setUsername(rs.getString("USERNAME"));
+                    post.setTitle(rs.getString("TITLE"));
+                    post.setContent(rs.getString("CONTENT"));
+                    post.setViewCount(rs.getInt("VIEW_COUNT"));
+                    post.setLikeCount(rs.getInt("LIKE_COUNT"));
+                    post.setDislikeCount(rs.getInt("DISLIKE_COUNT"));
+                    post.setIsNotice(rs.getString("IS_NOTICE"));
+                    post.setIsDeleted(rs.getString("IS_DELETED"));
+                    post.setCreatedAt(rs.getString("CREATED_AT"));
+
+                    postList.add(post);
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return postList;
+    }
 
     // =========================================================
 // 게시글 작성

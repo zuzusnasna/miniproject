@@ -25,7 +25,31 @@ public class PostListServlet extends HttpServlet {
 
         response.setContentType("application/json; charset=UTF-8");
 
-        List<PostDTO> postList = postDAO.findAll();
+        String categoryIdParam = request.getParameter("categoryId");
+
+        List<PostDTO> postList;
+
+        if (categoryIdParam != null && !categoryIdParam.isBlank()) {
+
+            try {
+                long categoryId = Long.parseLong(categoryIdParam);
+
+                postList = postDAO.findByCategoryId(categoryId);
+
+            } catch (NumberFormatException e) {
+
+                response.sendError(
+                        HttpServletResponse.SC_BAD_REQUEST,
+                        "잘못된 categoryId입니다."
+                );
+
+                return;
+            }
+
+        } else {
+
+            postList = postDAO.findAll();
+        }
 
         StringBuilder json = new StringBuilder("[");
 
