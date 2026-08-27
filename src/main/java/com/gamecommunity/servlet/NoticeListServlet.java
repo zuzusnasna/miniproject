@@ -1,4 +1,4 @@
-package gmaecommunity1.src.main.java.com.gamecommunity.servlet;
+package com.gamecommunity.servlet;
 
 import com.gamecommunity.dao.PostDAO;
 import com.gamecommunity.dto.PostDTO;

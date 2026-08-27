@@ -44,6 +44,17 @@ public class PostWriteServlet extends HttpServlet {
         String categoryIdParam = request.getParameter("categoryId");
         String gameIdParam = request.getParameter("gameId");
 
+        // 제목/내용 필수값 검증
+        if (title == null || title.isBlank()
+                || content == null || content.isBlank()) {
+
+            response.sendError(
+                    HttpServletResponse.SC_BAD_REQUEST,
+                    "제목과 내용을 입력해주세요."
+            );
+            return;
+        }
+
         long categoryId;
         long gameId;
 

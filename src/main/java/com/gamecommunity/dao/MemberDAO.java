@@ -226,6 +226,38 @@ public class MemberDAO {
 
         return false;
     }
+    public boolean existsByNicknameExceptMember(
+            String nickname,
+            long memberNo) {
+
+        String sql = """
+        SELECT COUNT(*)
+        FROM MEMBER
+        WHERE NICKNAME = ?
+          AND MEMBER_NO <> ?
+        """;
+
+        try (
+                Connection conn = DBUtil.getConnection();
+                PreparedStatement pstmt = conn.prepareStatement(sql)
+        ) {
+
+            pstmt.setString(1, nickname);
+            pstmt.setLong(2, memberNo);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
 
     // 회원이 작성한 게시글이 받은 좋아요 총 개수
     public int getReceivedLikeCount(long memberNo) {
