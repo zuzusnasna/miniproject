@@ -6,34 +6,99 @@
     <title>글쓰기 - Game Hub</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/gamehub.css">
+    <style>
+        .write-layout {
+            display:grid;
+            grid-template-columns:220px minmax(0,1fr);
+            gap:16px;
+            align-items:start;
+            width:100%;
+        }
+        .write-board-sidebar {
+            background:#f8f7fb;
+            border:1px solid #ece9f3;
+            border-radius:12px;
+            padding:22px 14px;
+        }
+        .write-board-sidebar h3 {
+            font-size:.9rem;
+            font-weight:800;
+            color:#777;
+            padding:0 10px 12px;
+            margin:0;
+        }
+        .write-board-link {
+            display:block;
+            width:100%;
+            padding:12px 14px;
+            border-radius:8px;
+            color:#333;
+            font-weight:700;
+            margin-bottom:5px;
+            text-decoration:none;
+        }
+        .write-board-link:hover,
+        .write-board-link.active {
+            background:#6941c6;
+            color:#fff;
+        }
+        .write-content { min-width:0; }
+        .write-card {
+            width:100%;
+            background:#fff;
+            border-radius:12px;
+        }
+        @media(max-width:800px) {
+            .write-layout { grid-template-columns:1fr; }
+            .write-board-sidebar {
+                display:flex;
+                gap:6px;
+                overflow:auto;
+            }
+            .write-board-sidebar h3 { display:none; }
+            .write-board-link {
+                white-space:nowrap;
+                width:auto;
+                margin:0;
+            }
+        }
+    </style>
 </head>
 <body>
-<main id="main-content" class="container my-5" style="max-width: 800px;">
-    <div class="card p-4 p-md-5 shadow-sm border-0 rounded-3">
-        <div class="border-bottom pb-3 mb-4">
-            <div id="writeLocation" class="text-primary small fw-bold mb-1">게시판 확인 중...</div>
-            <h2 class="mb-0 fw-bold text-dark">게시글 작성</h2>
-        </div>
+<main id="main-content" class="my-5">
+    <div class="write-layout">
+        <aside class="write-board-sidebar" id="writeBoardMenu">
+            <h3>게시판</h3>
+        </aside>
 
-        <form action="post-write" method="post" id="postWriteForm">
-            <input type="hidden" id="categoryId" name="categoryId">
-            <input type="hidden" id="gameId" name="gameId">
+        <section class="write-content">
+            <div class="card write-card p-4 p-md-5 shadow-sm border-0 rounded-3">
+                <div class="border-bottom pb-3 mb-4">
+                    <div id="writeLocation" class="text-primary small fw-bold mb-1">게시판 확인 중...</div>
+                    <h2 class="mb-0 fw-bold text-dark">게시글 작성</h2>
+                </div>
 
-            <div class="mb-3">
-                <label for="title" class="form-label fw-bold">제목</label>
-                <input type="text" class="form-control form-control-lg" id="title" name="title" maxlength="300" placeholder="제목을 입력하세요" required>
+                <form action="post-write" method="post" id="postWriteForm">
+                    <input type="hidden" id="categoryId" name="categoryId">
+                    <input type="hidden" id="gameId" name="gameId">
+
+                    <div class="mb-3">
+                        <label for="title" class="form-label fw-bold">제목</label>
+                        <input type="text" class="form-control form-control-lg" id="title" name="title" maxlength="300" placeholder="제목을 입력하세요" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="content" class="form-label fw-bold">내용</label>
+                        <textarea class="form-control" id="content" name="content" rows="12" placeholder="내용을 입력하세요" required style="resize: vertical;"></textarea>
+                    </div>
+
+                    <div class="d-flex gap-2 justify-content-end pt-3 border-top">
+                        <button type="button" id="cancelButton" class="btn btn-outline-secondary px-4 fw-bold">취소</button>
+                        <button type="submit" class="btn btn-primary px-4 fw-bold">작성</button>
+                    </div>
+                </form>
             </div>
-
-            <div class="mb-4">
-                <label for="content" class="form-label fw-bold">내용</label>
-                <textarea class="form-control" id="content" name="content" rows="12" placeholder="내용을 입력하세요" required style="resize: vertical;"></textarea>
-            </div>
-
-            <div class="d-flex gap-2 justify-content-end pt-3 border-top">
-                <button type="button" id="cancelButton" class="btn btn-outline-secondary px-4 fw-bold">취소</button>
-                <button type="submit" class="btn btn-primary px-4 fw-bold">작성</button>
-            </div>
-        </form>
+        </section>
     </div>
 </main>
 <script src="js/common.js"></script>
@@ -47,6 +112,16 @@ const validGame=Object.prototype.hasOwnProperty.call(GAME_NAMES,gameId);
 const boardSuffix=categoryId-(gameId*10);
 const validBoard=validGame&&[1,2,3].includes(boardSuffix);
 
+function renderWriteBoardMenu(){
+    const menu=document.getElementById('writeBoardMenu');
+    if(!menu||!validGame)return;
+    menu.innerHTML='<h3>게시판</h3>'+[1,2,3].map(type=>{
+        const boardId=gameId*10+type;
+        const active=boardId===categoryId?' active':'';
+        return `<a class="write-board-link${active}" href="game.html?gameId=${gameId}&categoryId=${boardId}">${BOARD_NAMES[type]}</a>`;
+    }).join('');
+}
+
 if(!validBoard){
     alert('게시판 정보가 올바르지 않습니다. 게임 게시판에서 다시 글쓰기를 눌러주세요.');
     location.href='home.html';
@@ -55,6 +130,7 @@ if(!validBoard){
     document.getElementById('gameId').value=gameId;
     document.getElementById('writeLocation').textContent=`${GAME_NAMES[gameId]} > ${BOARD_NAMES[boardSuffix]}`;
     document.getElementById('cancelButton').addEventListener('click',()=>location.href=`game.html?gameId=${gameId}&categoryId=${categoryId}`);
+    renderWriteBoardMenu();
 }
 </script>
 </body>
