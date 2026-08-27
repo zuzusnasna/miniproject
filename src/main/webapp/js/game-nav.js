@@ -2,92 +2,165 @@ document.addEventListener("DOMContentLoaded", function () {
     const categoryList = document.querySelector(".category-list");
     if (!categoryList) return;
 
-    const menuData = [
-        {
-            label: "RPG",
-            games: [
-                { name: "리니지", gameId: 110 },
-                { name: "블레이드앤소울", gameId: 120 },
-                { name: "메이플스토리", gameId: 130 },
-                { name: "로스트아크", gameId: 140 }
-            ]
-        },
-        {
-            label: "FPS/TPS",
-            games: [
-                { name: "서든어택", gameId: 210 },
-                { name: "오버워치", gameId: 220 },
-                { name: "발로란트", gameId: 230 },
-                { name: "배틀그라운드", gameId: 240 }
-            ]
-        },
-        {
-            label: "MOBA",
-            games: [
-                { name: "리그 오브 레전드", gameId: 310 },
-                { name: "도타 2", gameId: 320 }
-            ]
-        },
-        {
-            label: "스포츠",
-            games: [
-                { name: "FC 온라인", gameId: 410 },
-                { name: "eFootball", gameId: 420 },
-                { name: "NBA 2K", gameId: 430 }
-            ]
-        },
-        {
-            label: "전략",
-            games: [
-                { name: "스타크래프트", gameId: 510 },
-                { name: "문명 VI", gameId: 520 },
-                { name: "에이지 오브 엠파이어 IV", gameId: 530 }
-            ]
-        },
-        {
-            label: "시뮬레이션",
-            games: [
-                { name: "심즈 4", gameId: 610 },
-                { name: "시티즈: 스카이라인 II", gameId: 620 },
-                { name: "유로 트럭 시뮬레이터 2", gameId: 630 }
-            ]
-        },
-        {
-            label: "그 외 장르",
-            games: [
-                { name: "마인크래프트", gameId: 910 },
-                { name: "GTA V", gameId: 920 },
-                { name: "철권 8", gameId: 930 },
-                { name: "포르자 호라이즌 5", gameId: 940 },
-                { name: "데드 바이 데이라이트", gameId: 950 },
-                { name: "몬스터헌터 와일즈", gameId: 960 }
-            ]
+    loadGameCategories(categoryList);
+});
+
+
+// =========================================================
+// CATEGORY 조회
+// =========================================================
+
+async function loadGameCategories(categoryList) {
+
+    try {
+
+        const response = await fetch("categories?depth=2");
+
+        if (!response.ok) {
+            throw new Error("카테고리 조회 실패 : " + response.status);
         }
-    ];
+
+        const games = await response.json();
+
+        console.log("게임 카테고리:", games);
+
+        // DB의 DEPTH 2 데이터를 장르별로 그룹화
+        const menuData = makeMenuData(games);
+
+        renderGameNav(categoryList, menuData);
+
+    } catch (error) {
+
+        console.error("게임 카테고리 불러오기 실패:", error);
+
+    }
+}
+
+
+// =========================================================
+// 장르별 그룹 만들기
+// =========================================================
+
+function makeMenuData(games) {
+
+    const genreMap = {
+        100: "RPG",
+        200: "FPS/TPS",
+        300: "MOBA",
+        400: "스포츠",
+        500: "전략",
+        600: "시뮬레이션",
+        900: "그 외 장르"
+    };
+
+    const groups = {};
+
+    games.forEach(game => {
+
+        const parentId = game.parentId;
+
+        if (!groups[parentId]) {
+
+            groups[parentId] = {
+                label: genreMap[parentId] || "그 외 장르",
+                games: []
+            };
+
+        }
+
+        groups[parentId].games.push(game);
+
+    });
+
+    // DB의 SORT_ORDER 기준 정렬
+    Object.values(groups).forEach(group => {
+
+        group.games.sort((a, b) => {
+
+            return (a.sortOrder || 0) -
+                (b.sortOrder || 0);
+
+        });
+
+    });
+
+    return Object.values(groups);
+}
+
+
+// =========================================================
+// 화면 출력
+// =========================================================
+
+function renderGameNav(categoryList, menuData) {
 
     categoryList.innerHTML = menuData.map(group => `
+
         <div class="game-nav-item">
-            <a class="game-nav-trigger" href="javascript:void(0)">${escapeGameNav(group.label)} ▾</a>
+
+            <a
+                class="game-nav-trigger"
+                href="javascript:void(0)"
+            >
+                ${escapeGameNav(group.label)} ▾
+            </a>
+
             <div class="game-nav-dropdown">
+
                 ${group.games.map(game => `
-                    <a class="game-nav-link" href="game.html?gameId=${game.gameId}">
-                        <span>${escapeGameNav(game.name)}</span>
-                        <small>커뮤니티 →</small>
+
+                    <a
+                        class="game-nav-link"
+                        href="game.html?gameId=${game.categoryId}"
+                    >
+
+                        <span class="game-nav-game">
+
+                            <img
+                                class="game-nav-icon"
+                                src="${game.iconUrl}"
+                                alt=""
+                                onerror="this.style.display='none'"
+                            >
+
+                            <span>
+                                ${escapeGameNav(game.categoryName)}
+                            </span>
+
+                        </span>
+
+                        <small>
+                            커뮤니티 →
+                        </small>
+
                     </a>
+
                 `).join("")}
+
             </div>
+
         </div>
+
     `).join("");
 
     injectGameNavStyles();
-});
+}
+
+
+// =========================================================
+// CSS
+// =========================================================
 
 function injectGameNavStyles() {
+
     if (document.getElementById("game-nav-style")) return;
 
     const style = document.createElement("style");
+
     style.id = "game-nav-style";
+
     style.textContent = `
+
         .category-nav,
         .category-list {
             overflow: visible !important;
@@ -141,7 +214,10 @@ function injectGameNavStyles() {
             visibility: hidden;
             pointer-events: none;
             transform: translate(-50%, -7px);
-            transition: opacity .16s ease, transform .16s ease, visibility .16s ease;
+            transition:
+                opacity .16s ease,
+                transform .16s ease,
+                visibility .16s ease;
         }
 
         .game-nav-dropdown::before {
@@ -166,12 +242,14 @@ function injectGameNavStyles() {
             justify-content: space-between;
             align-items: center;
             gap: 12px;
-            padding: 11px 12px;
+            padding: 8px 12px;
             border-radius: 8px;
             color: #29252f !important;
             text-decoration: none;
             font-weight: 700 !important;
-            transition: background .15s ease, color .15s ease;
+            transition:
+                background .15s ease,
+                color .15s ease;
         }
 
         .game-nav-link:hover {
@@ -184,15 +262,44 @@ function injectGameNavStyles() {
             font-size: .72rem;
             font-weight: 600;
         }
+
+
+        /* =========================
+           게임 아이콘
+           ========================= */
+
+        .game-nav-game {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+        }
+
+        .game-nav-icon {
+            width: 30px;
+            height: 30px;
+            object-fit: cover;
+            border-radius: 6px;
+            flex-shrink: 0;
+        }
+
     `;
+
     document.head.appendChild(style);
 }
 
+
+// =========================================================
+// HTML escape
+// =========================================================
+
 function escapeGameNav(value) {
+
     return String(value ?? "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
+
 }
