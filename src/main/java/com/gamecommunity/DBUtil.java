@@ -6,7 +6,7 @@ import java.sql.DriverManager;
 public class DBUtil {
 
     private static final String URL =
-            "jdbc:oracle:thin:@localhost:1521:oracleDB";
+            "jdbc:oracle:thin:@//localhost:1521/freepdb1";
 
     private static final String USER =
             "gamecommunity";
