@@ -48,7 +48,6 @@ public class PostDetailServlet extends HttpServlet {
         long categoryId = post.getCategoryId() == null ? 0L : post.getCategoryId();
         long gameId = categoryId >= 1000 ? categoryId / 10 : categoryId;
         String gameName = getGameName(gameId);
-        String genreName = getGenreName(gameId);
 
         int likeCount = postLikeDAO.getLikeCount(postId);
         int dislikeCount = postLikeDAO.getDislikeCount(postId);
@@ -66,7 +65,6 @@ public class PostDetailServlet extends HttpServlet {
                         body { margin:0; font-family:Arial,sans-serif; background:#f8f9fa; }
                         .post-detail-wrap { width:100%; max-width:1100px; margin:32px auto; padding:0 16px; box-sizing:border-box; }
                         .post-context-banner { margin-bottom:16px; padding:22px 26px; border-radius:12px; background:linear-gradient(135deg,#352064,#6941c6); color:#fff; box-shadow:0 3px 12px rgba(53,32,100,.12); }
-                        .post-context-banner .genre { display:block; margin-bottom:4px; font-size:.78rem; font-weight:700; letter-spacing:.04em; opacity:.72; }
                         .post-context-banner .game-name { margin:0; font-size:1.55rem; font-weight:800; }
                         .post-context-banner .description { margin:5px 0 0; font-size:.92rem; opacity:.84; }
                         .post-community-layout { display:grid; grid-template-columns:200px minmax(0,1fr); gap:16px; align-items:start; }
@@ -93,7 +91,6 @@ public class PostDetailServlet extends HttpServlet {
 
         response.getWriter().println(
                 "<section class='post-context-banner'>" +
-                        "<span class='genre'>" + escapeHtml(genreName) + " COMMUNITY</span>" +
                         "<h2 class='game-name'>" + escapeHtml(gameName) + "</h2>" +
                         "<p class='description'>" + escapeHtml(gameName) + " 커뮤니티 게시글입니다.</p>" +
                         "</section>"
@@ -193,20 +190,6 @@ public class PostDetailServlet extends HttpServlet {
             case 950 -> "데드 바이 데이라이트";
             case 960 -> "몬스터헌터 와일즈";
             default -> "게임 커뮤니티";
-        };
-    }
-
-    private String getGenreName(long gameId) {
-        long genreId = (gameId / 100) * 100;
-        return switch ((int) genreId) {
-            case 100 -> "RPG";
-            case 200 -> "FPS/TPS";
-            case 300 -> "MOBA";
-            case 400 -> "스포츠";
-            case 500 -> "전략";
-            case 600 -> "시뮬레이션";
-            case 900 -> "그 외 장르";
-            default -> "GAME";
         };
     }
 
