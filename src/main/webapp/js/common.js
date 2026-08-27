@@ -68,7 +68,7 @@ function initLayout() {
             <div class="ad-slot" aria-label="광고 영역">
                 <span class="ad-label">ADVERTISEMENT</span>
                 <div class="ad-placeholder">광고 영역</div>
-                <small>추후 광고 이미지 또는 배너가 표시됩니다.</small>
+                <small>160 × 600</small>
             </div>
         `;
         layoutContainer.appendChild(adSidebar);
@@ -98,11 +98,11 @@ function injectCustomStyles() {
             align-items:flex-start !important;
         }
         body .content-left { flex:1 1 0% !important; min-width:0 !important; }
-        body .content-right { width:260px !important; flex:0 0 260px !important; }
+        body .content-right { width:160px !important; flex:0 0 160px !important; }
         body .ad-sidebar { position:relative; }
         body .ad-slot {
-            min-height:500px;
-            padding:18px;
+            min-height:600px;
+            padding:14px;
             border:1px solid rgba(105,65,198,.28);
             border-radius:12px;
             background:#f8f6fd;
@@ -117,12 +117,12 @@ function injectCustomStyles() {
         body .ad-label {
             position:absolute;
             top:14px;
-            font-size:.68rem;
+            font-size:.62rem;
             font-weight:800;
-            letter-spacing:.12em;
+            letter-spacing:.08em;
             color:#8a7aad;
         }
-        body .ad-placeholder { font-size:1.15rem; font-weight:800; margin-bottom:8px; }
+        body .ad-placeholder { font-size:1rem; font-weight:800; margin-bottom:8px; }
         body .ad-slot small { color:#938aa5; line-height:1.45; }
         @media (max-width: 980px) {
             body .layout-grid { flex-direction:column !important; }
