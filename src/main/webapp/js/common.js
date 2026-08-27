@@ -1,5 +1,12 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // 1. 공통 헤더/네비바 및 레이아웃 컨테이너 생성
+    const currentPath = window.location.pathname;
+
+    // 로그인/회원가입 화면은 공통 헤더/광고 레이아웃에서 제외
+    if (currentPath.includes("login.html") || currentPath.includes("signup.html")) {
+        return;
+    }
+
+    // 1. 공통 헤더/네비바 및 광고 레이아웃 생성
     initLayout();
 
     // 2. 게임 카테고리 드롭다운 생성
@@ -15,43 +22,39 @@ document.addEventListener("DOMContentLoaded", function () {
 function initLayout() {
     injectCustomStyles();
 
-    if (document.querySelector(".site-header-wrapper")) {
-        return;
-    }
-
-    const headerWrapper = document.createElement("header");
-    headerWrapper.className = "site-header-wrapper";
-    headerWrapper.innerHTML = `
-        <div class="main-header">
-            <div class="custom-container header-inner">
-                <a href="home.html" class="logo">Game Hub</a>
-                <div class="user-menu">
-                    <a href="login.html" id="navAuthLink">로그인</a>
-                    <a href="mypage.html">마이페이지</a>
+    if (!document.querySelector(".site-header-wrapper")) {
+        const headerWrapper = document.createElement("header");
+        headerWrapper.className = "site-header-wrapper";
+        headerWrapper.innerHTML = `
+            <div class="main-header">
+                <div class="custom-container header-inner">
+                    <a href="home.html" class="logo">Game Hub</a>
+                    <div class="user-menu">
+                        <a href="login.html" id="navAuthLink">로그인</a>
+                        <a href="mypage.html">마이페이지</a>
+                    </div>
                 </div>
             </div>
-        </div>
-        <nav class="category-nav">
-            <div class="custom-container category-list">
-                <a href="javascript:void(0)">RPG ▾</a>
-                <a href="javascript:void(0)">FPS/TPS ▾</a>
-                <a href="javascript:void(0)">MOBA ▾</a>
-                <a href="javascript:void(0)">스포츠 ▾</a>
-                <a href="javascript:void(0)">전략 ▾</a>
-                <a href="javascript:void(0)">시뮬레이션 ▾</a>
-                <a href="javascript:void(0)">그 외 장르 ▾</a>
-            </div>
-        </nav>
-    `;
-    document.body.prepend(headerWrapper);
-
-    const currentPath = window.location.pathname;
-
-    if (currentPath.includes("post-write") || currentPath.includes("post.html")) {
-        return;
+            <nav class="category-nav">
+                <div class="custom-container category-list">
+                    <a href="javascript:void(0)">RPG ▾</a>
+                    <a href="javascript:void(0)">FPS/TPS ▾</a>
+                    <a href="javascript:void(0)">MOBA ▾</a>
+                    <a href="javascript:void(0)">스포츠 ▾</a>
+                    <a href="javascript:void(0)">전략 ▾</a>
+                    <a href="javascript:void(0)">시뮬레이션 ▾</a>
+                    <a href="javascript:void(0)">그 외 장르 ▾</a>
+                </div>
+            </nav>
+        `;
+        document.body.prepend(headerWrapper);
     }
 
-    const mainContent = document.getElementById("main-content");
+    // 일반 페이지는 #main-content, 게시글 상세는 main, 기존 post.html은 .board-container를 사용
+    const mainContent = document.getElementById("main-content")
+        || document.querySelector("main")
+        || document.querySelector(".board-container");
+
     if (mainContent && !mainContent.closest(".layout-grid")) {
         const layoutContainer = document.createElement("div");
         layoutContainer.className = "custom-container layout-grid";
@@ -59,15 +62,16 @@ function initLayout() {
         mainContent.classList.add("content-left");
         layoutContainer.appendChild(mainContent);
 
-        const sidebar = document.createElement("aside");
-        sidebar.className = "content-right";
-        sidebar.innerHTML = `
-            <div class="sidebar-card shadow-sm border-0 rounded-3 p-3 bg-white">
-                <p class="mb-2 text-muted fw-bold">커뮤니티를 더 즐겁게 이용해보세요!</p>
-                <a href="login.html" class="btn btn-primary w-100 fw-bold">로그인 하기</a>
+        const adSidebar = document.createElement("aside");
+        adSidebar.className = "content-right ad-sidebar";
+        adSidebar.innerHTML = `
+            <div class="ad-slot" aria-label="광고 영역">
+                <span class="ad-label">ADVERTISEMENT</span>
+                <div class="ad-placeholder">광고 영역</div>
+                <small>추후 광고 이미지 또는 배너가 표시됩니다.</small>
             </div>
         `;
-        layoutContainer.appendChild(sidebar);
+        layoutContainer.appendChild(adSidebar);
     }
 }
 
@@ -80,11 +84,51 @@ function injectCustomStyles() {
             width:100% !important; max-width:1280px !important; margin:0 auto !important; padding:0 16px !important; box-sizing:border-box !important;
         }
         body #main-content, body .content-left, body .container, body .container-sm, body .container-md, body .container-lg, body .container-xl {
-            width:100% !important; max-width:1280px !important; margin-left:auto !important; margin-right:auto !important;
+            width:100% !important; margin-left:auto !important; margin-right:auto !important;
         }
-        body .layout-grid { display:flex !important; flex-direction:row !important; gap:24px !important; width:100% !important; max-width:1280px !important; margin:24px auto !important; align-items:flex-start !important; }
+        body .layout-grid {
+            display:flex !important;
+            flex-direction:row !important;
+            gap:24px !important;
+            width:100% !important;
+            max-width:1480px !important;
+            margin:24px auto !important;
+            padding:0 16px !important;
+            box-sizing:border-box !important;
+            align-items:flex-start !important;
+        }
         body .content-left { flex:1 1 0% !important; min-width:0 !important; }
-        body .content-right { width:300px !important; flex-shrink:0 !important; }
+        body .content-right { width:260px !important; flex:0 0 260px !important; }
+        body .ad-sidebar { position:relative; }
+        body .ad-slot {
+            min-height:500px;
+            padding:18px;
+            border:1px solid rgba(105,65,198,.28);
+            border-radius:12px;
+            background:#f8f6fd;
+            color:#6941c6;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            text-align:center;
+            box-sizing:border-box;
+        }
+        body .ad-label {
+            position:absolute;
+            top:14px;
+            font-size:.68rem;
+            font-weight:800;
+            letter-spacing:.12em;
+            color:#8a7aad;
+        }
+        body .ad-placeholder { font-size:1.15rem; font-weight:800; margin-bottom:8px; }
+        body .ad-slot small { color:#938aa5; line-height:1.45; }
+        @media (max-width: 980px) {
+            body .layout-grid { flex-direction:column !important; }
+            body .content-right { width:100% !important; flex:0 0 auto !important; }
+            body .ad-slot { min-height:140px; }
+        }
     `;
     document.head.appendChild(style);
 }
@@ -330,11 +374,6 @@ function loadMemberInfo() {
         .then(member => {
             const authLink = document.getElementById("navAuthLink") || document.querySelector('a[href*="login.html"]');
             if (authLink) { authLink.textContent="로그아웃"; authLink.href="logout"; }
-            const sidebarCard = document.querySelector(".content-right .sidebar-card");
-            if (sidebarCard) {
-                sidebarCard.className="sidebar-card shadow-sm border-0 rounded-3 p-3 bg-white";
-                sidebarCard.innerHTML=`<div class="text-center"><p class="mb-3 fw-bold text-dark fs-6">👋 <span class="text-primary">${escapeHtml(member.name)}</span>님 환영합니다!</p><a href="post-write.html" class="btn btn-primary w-100 mb-2 fw-bold py-2">✏️ 글쓰기</a><a href="logout" class="btn btn-outline-danger w-100 btn-sm fw-bold">로그아웃</a></div>`;
-            }
             if (content) {
                 const likeCount=Number(member.receivedLikeCount)||0, dislikeCount=Number(member.receivedDislikeCount)||0;
                 const level=Math.floor(likeCount/10)+1, actualLevel=Math.min(level,10); let currentLikes=likeCount%10; if(actualLevel>=10)currentLikes=10;
