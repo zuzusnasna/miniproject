@@ -63,11 +63,16 @@ public class PostDetailServlet extends HttpServlet {
                     <link rel="stylesheet" href="css/gamehub.css">
                     <style>
                         body { margin:0; font-family:Arial,sans-serif; background:#f8f9fa; }
-                        .post-detail-wrap { width:100%; max-width:900px; margin:32px auto; padding:0 16px; box-sizing:border-box; }
+                        .post-detail-wrap { width:100%; max-width:1100px; margin:32px auto; padding:0 16px; box-sizing:border-box; }
                         .post-context-banner { margin-bottom:16px; padding:22px 26px; border-radius:12px; background:linear-gradient(135deg,#352064,#6941c6); color:#fff; box-shadow:0 3px 12px rgba(53,32,100,.12); }
                         .post-context-banner .genre { display:block; margin-bottom:4px; font-size:.78rem; font-weight:700; letter-spacing:.04em; opacity:.72; }
                         .post-context-banner .game-name { margin:0; font-size:1.55rem; font-weight:800; }
                         .post-context-banner .description { margin:5px 0 0; font-size:.92rem; opacity:.84; }
+                        .post-community-layout { display:grid; grid-template-columns:200px minmax(0,1fr); gap:16px; align-items:start; }
+                        .post-board-sidebar { background:#f8f7fb; border:1px solid #ece9f3; border-radius:12px; padding:18px 12px; }
+                        .post-board-sidebar h3 { font-size:.9rem; font-weight:800; color:#777; padding:0 10px 10px; margin:0; }
+                        .post-board-link { display:block; width:100%; padding:12px 14px; margin-bottom:5px; border-radius:8px; color:#333; font-weight:700; text-decoration:none; }
+                        .post-board-link:hover, .post-board-link.active { background:#6941c6; color:#fff; }
                         .post-detail-card { background:#fff; border:1px solid #e9ecef; border-radius:12px; padding:28px; box-shadow:0 3px 12px rgba(0,0,0,.05); }
                         .post-detail-card h1 { margin-bottom:16px; font-size:1.8rem; font-weight:800; }
                         .info { color:#666; padding-bottom:15px; border-bottom:1px solid #ddd; }
@@ -78,6 +83,7 @@ public class PostDetailServlet extends HttpServlet {
                         .dislike-button { background-color:#ffecec; border:1px solid #f08a8a; }
                         .count { font-weight:bold; margin-left:5px; }
                         .buttons { margin-top:25px; text-align:right; }
+                        @media(max-width:800px) { .post-community-layout { grid-template-columns:1fr; } .post-board-sidebar { display:flex; gap:6px; overflow:auto; } .post-board-sidebar h3 { display:none; } .post-board-link { white-space:nowrap; width:auto; margin:0; } }
                     </style>
                 </head>
                 <body>
@@ -91,6 +97,13 @@ public class PostDetailServlet extends HttpServlet {
                         "<p class='description'>" + escapeHtml(gameName) + " 커뮤니티 게시글입니다.</p>" +
                         "</section>"
         );
+
+        response.getWriter().println("<div class='post-community-layout'>");
+        response.getWriter().println("<aside class='post-board-sidebar'><h3>게시판</h3>" +
+                boardLink(gameId, gameId * 10 + 1, categoryId, "자유게시판") +
+                boardLink(gameId, gameId * 10 + 2, categoryId, "질문게시판") +
+                boardLink(gameId, gameId * 10 + 3, categoryId, "공략게시판") +
+                "</aside>");
 
         response.getWriter().println("<div class='post-detail-card'>");
         response.getWriter().println("<h1>" + escapeHtml(post.getTitle()) + "</h1>");
@@ -110,6 +123,7 @@ public class PostDetailServlet extends HttpServlet {
         response.getWriter().println("""
                     <div class="buttons">
                         <button type="button" class="btn btn-outline-secondary" onclick="history.back()">목록으로</button>
+                    </div>
                     </div>
                     </div>
                 </main>
@@ -155,6 +169,11 @@ public class PostDetailServlet extends HttpServlet {
                 </body>
                 </html>
                 """);
+    }
+
+    private String boardLink(long gameId, long boardId, long currentCategoryId, String name) {
+        String activeClass = boardId == currentCategoryId ? " active" : "";
+        return "<a class='post-board-link" + activeClass + "' href='game.html?gameId=" + gameId + "&categoryId=" + boardId + "'>" + escapeHtml(name) + "</a>";
     }
 
     private String getGameName(long gameId) {
