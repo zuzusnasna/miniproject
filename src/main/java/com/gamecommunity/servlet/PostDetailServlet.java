@@ -63,7 +63,7 @@ public class PostDetailServlet extends HttpServlet {
                     <link rel="stylesheet" href="css/gamehub.css">
                     <style>
                         body { margin:0; font-family:Arial,sans-serif; background:#f8f9fa; }
-                        .post-detail-wrap { width:100%; max-width:1100px; margin:32px auto; padding:0 16px; box-sizing:border-box; }
+                        .post-detail-wrap { width:100%; max-width:1100px; margin:16px auto 32px; padding:0 16px; box-sizing:border-box; }
                         .post-context-banner { margin-bottom:16px; padding:22px 26px; border-radius:12px; background:linear-gradient(135deg,#352064,#6941c6); color:#fff; box-shadow:0 3px 12px rgba(53,32,100,.12); }
                         .post-context-banner .game-name { margin:0; font-size:1.55rem; font-weight:800; }
                         .post-context-banner .description { margin:5px 0 0; font-size:.92rem; opacity:.84; }
