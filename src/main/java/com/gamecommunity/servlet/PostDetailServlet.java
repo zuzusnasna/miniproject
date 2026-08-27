@@ -38,10 +38,7 @@ public class PostDetailServlet extends HttpServlet {
             return;
         }
 
-        // 🔥 [추가된 부분] 데이터를 화면에 뿌리기 전에 DB에서 조회수부터 1 증가시킵니다!
         postDAO.increaseViewCount(postId);
-
-        // 이후 기존 코드 유지
         PostDTO post = postDAO.findById(postId);
         if (post == null) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "게시글을 찾을 수 없습니다.");
@@ -133,25 +130,18 @@ public class PostDetailServlet extends HttpServlet {
                 </main>
 
                 <script src="js/common.js"></script>
+                <script src="js/comment.js"></script>
                 <script>
                     function recommendPost(type) {
                         const postId = new URLSearchParams(location.search).get("postId");
-                        if (!postId) {
-                            alert("게시글 번호가 없습니다.");
-                            return;
-                        }
-
+                        if (!postId) { alert("게시글 번호가 없습니다."); return; }
                         fetch("post-like", {
                             method: "POST",
                             headers: { "Content-Type": "application/x-www-form-urlencoded" },
                             body: "postId=" + encodeURIComponent(postId) + "&likeType=" + encodeURIComponent(type)
                         })
                         .then(response => {
-                            if (response.status === 401) {
-                                alert("로그인이 필요합니다.");
-                                location.href = "login.html";
-                                return null;
-                            }
+                            if (response.status === 401) { alert("로그인이 필요합니다."); location.href = "login.html"; return null; }
                             return response.json();
                         })
                         .then(data => {
@@ -160,14 +150,9 @@ public class PostDetailServlet extends HttpServlet {
                                 document.getElementById("likeCount").textContent = data.likeCount;
                                 document.getElementById("dislikeCount").textContent = data.dislikeCount;
                                 alert(type === "LIKE" ? "좋아요를 눌렀습니다." : "나빠요를 눌렀습니다.");
-                            } else {
-                                alert(data.message);
-                            }
+                            } else alert(data.message);
                         })
-                        .catch(error => {
-                            console.error(error);
-                            alert("추천 처리 중 오류가 발생했습니다.");
-                        });
+                        .catch(error => { console.error(error); alert("추천 처리 중 오류가 발생했습니다."); });
                     }
                 </script>
                 </body>
@@ -227,11 +212,7 @@ public class PostDetailServlet extends HttpServlet {
 
     private String escapeHtml(String value) {
         if (value == null) return "";
-        return value
-                .replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
-                .replace("\"", "&quot;")
-                .replace("'", "&#039;");
+        return value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                .replace("\"", "&quot;").replace("'", "&#039;");
     }
 }
