@@ -131,7 +131,11 @@ public class CommentDAO {
     }
 
     private long nextCommentId(Connection conn) throws Exception {
-        String sql = "SELECT NVL(MAX(COMMENT_ID), 0) + 1 FROM POST_COMMENT FOR UPDATE";
+        // 현재 DDL에 댓글 시퀀스가 확인되지 않아 테이블 잠금 후 안전하게 다음 번호를 만든다.
+        try (Statement lock = conn.createStatement()) {
+            lock.execute("LOCK TABLE POST_COMMENT IN EXCLUSIVE MODE");
+        }
+        String sql = "SELECT NVL(MAX(COMMENT_ID), 0) + 1 FROM POST_COMMENT";
         try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
             if (rs.next()) return rs.getLong(1);
         }
