@@ -19,38 +19,6 @@
             display: inline-block;
         }
 
-        /* 장르에 마우스를 올렸을 때 게임 목록을 2열 그리드로 표시 */
-        .game-nav-dropdown {
-            display: grid !important;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 4px;
-            width: 430px !important;
-            max-height: 420px;
-            overflow-y: auto;
-            padding: 10px !important;
-        }
-
-        .game-nav-link {
-            min-width: 0;
-            gap: 10px !important;
-            padding: 9px 12px !important;
-        }
-
-        .game-nav-game {
-            min-width: 0;
-        }
-
-        .game-nav-game > span {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .game-nav-link small {
-            white-space: nowrap;
-            font-size: .68rem !important;
-        }
-
         /* 인기글 카드 스타일 */
         .popular-post-card {
             background: #fff;
