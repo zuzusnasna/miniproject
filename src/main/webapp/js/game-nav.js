@@ -168,9 +168,11 @@ function injectGameNavStyles() {
         }
 
         .category-list {
-            align-items: center;
-            justify-content: space-between;
-            gap: 18px !important;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px !important;
+        overflow-x: visible !important;
+        overflow-y: visible !important;
         }
 
         .game-nav-item {
@@ -201,7 +203,7 @@ function injectGameNavStyles() {
             z-index: 10000;
             top: calc(100% + 2px);
             left: 50%;
-            width: 255px;
+            width: 340px;
             max-height: 420px;
             overflow-y: auto;
             padding: 9px;
@@ -242,8 +244,8 @@ function injectGameNavStyles() {
             display: flex !important;
             justify-content: space-between;
             align-items: center;
-            gap: 12px;
-            padding: 8px 12px;
+            gap: 16px;
+            padding: 9px 14px;
             border-radius: 8px;
             color: #29252f !important;
             text-decoration: none;
