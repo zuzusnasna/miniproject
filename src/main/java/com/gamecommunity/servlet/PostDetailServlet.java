@@ -44,6 +44,11 @@ public class PostDetailServlet extends HttpServlet {
             return;
         }
 
+        long categoryId = post.getCategoryId() == null ? 0L : post.getCategoryId();
+        long gameId = categoryId >= 1000 ? categoryId / 10 : categoryId;
+        String gameName = getGameName(gameId);
+        String genreName = getGenreName(gameId);
+
         int likeCount = postLikeDAO.getLikeCount(postId);
         int dislikeCount = postLikeDAO.getDislikeCount(postId);
 
@@ -59,6 +64,10 @@ public class PostDetailServlet extends HttpServlet {
                     <style>
                         body { margin:0; font-family:Arial,sans-serif; background:#f8f9fa; }
                         .post-detail-wrap { width:100%; max-width:900px; margin:32px auto; padding:0 16px; box-sizing:border-box; }
+                        .post-context-banner { margin-bottom:16px; padding:22px 26px; border-radius:12px; background:linear-gradient(135deg,#352064,#6941c6); color:#fff; box-shadow:0 3px 12px rgba(53,32,100,.12); }
+                        .post-context-banner .genre { display:block; margin-bottom:4px; font-size:.78rem; font-weight:700; letter-spacing:.04em; opacity:.72; }
+                        .post-context-banner .game-name { margin:0; font-size:1.55rem; font-weight:800; }
+                        .post-context-banner .description { margin:5px 0 0; font-size:.92rem; opacity:.84; }
                         .post-detail-card { background:#fff; border:1px solid #e9ecef; border-radius:12px; padding:28px; box-shadow:0 3px 12px rgba(0,0,0,.05); }
                         .post-detail-card h1 { margin-bottom:16px; font-size:1.8rem; font-weight:800; }
                         .info { color:#666; padding-bottom:15px; border-bottom:1px solid #ddd; }
@@ -73,9 +82,17 @@ public class PostDetailServlet extends HttpServlet {
                 </head>
                 <body>
                 <main class="post-detail-wrap">
-                    <div class="post-detail-card">
                 """);
 
+        response.getWriter().println(
+                "<section class='post-context-banner'>" +
+                        "<span class='genre'>" + escapeHtml(genreName) + " COMMUNITY</span>" +
+                        "<h2 class='game-name'>" + escapeHtml(gameName) + "</h2>" +
+                        "<p class='description'>" + escapeHtml(gameName) + " 커뮤니티 게시글입니다.</p>" +
+                        "</section>"
+        );
+
+        response.getWriter().println("<div class='post-detail-card'>");
         response.getWriter().println("<h1>" + escapeHtml(post.getTitle()) + "</h1>");
         response.getWriter().println(
                 "<div class='info'>작성자: " + escapeHtml(post.getUsername()) +
@@ -138,6 +155,51 @@ public class PostDetailServlet extends HttpServlet {
                 </body>
                 </html>
                 """);
+    }
+
+    private String getGameName(long gameId) {
+        return switch ((int) gameId) {
+            case 110 -> "리니지";
+            case 120 -> "블레이드앤소울";
+            case 130 -> "메이플스토리";
+            case 140 -> "로스트아크";
+            case 210 -> "서든어택";
+            case 220 -> "오버워치";
+            case 230 -> "발로란트";
+            case 240 -> "배틀그라운드";
+            case 310 -> "리그 오브 레전드";
+            case 320 -> "도타 2";
+            case 410 -> "FC 온라인";
+            case 420 -> "eFootball";
+            case 430 -> "NBA 2K";
+            case 510 -> "스타크래프트";
+            case 520 -> "문명 VI";
+            case 530 -> "에이지 오브 엠파이어 IV";
+            case 610 -> "심즈 4";
+            case 620 -> "시티즈: 스카이라인 II";
+            case 630 -> "유로 트럭 시뮬레이터 2";
+            case 910 -> "마인크래프트";
+            case 920 -> "GTA V";
+            case 930 -> "철권 8";
+            case 940 -> "포르자 호라이즌 5";
+            case 950 -> "데드 바이 데이라이트";
+            case 960 -> "몬스터헌터 와일즈";
+            default -> "게임 커뮤니티";
+        };
+    }
+
+    private String getGenreName(long gameId) {
+        long genreId = (gameId / 100) * 100;
+        return switch ((int) genreId) {
+            case 100 -> "RPG";
+            case 200 -> "FPS/TPS";
+            case 300 -> "MOBA";
+            case 400 -> "스포츠";
+            case 500 -> "전략";
+            case 600 -> "시뮬레이션";
+            case 900 -> "그 외 장르";
+            default -> "GAME";
+        };
     }
 
     private String escapeHtml(String value) {
