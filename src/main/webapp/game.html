@@ -8,13 +8,17 @@
     <link rel="stylesheet" href="css/gamehub.css">
     <style>
         .game-shell{background:#fff;border:1px solid #e7e7eb;border-radius:14px;overflow:hidden;box-shadow:0 5px 20px rgba(0,0,0,.05)}
-        .game-banner{padding:28px 32px;background:linear-gradient(135deg,#352064,#6941c6);color:#fff}
-        .game-banner small{opacity:.72}.game-banner h1{font-size:2rem;font-weight:800;margin:5px 0}.game-banner p{margin:0;opacity:.85}
+        .game-banner{padding:0;background:linear-gradient(135deg,#352064,#6941c6);color:#fff;display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,46%);min-height:190px}
+        .game-banner-main{padding:28px 32px;display:flex;flex-direction:column;justify-content:center;min-width:0}.game-banner small{opacity:.72}.game-banner h1{font-size:2rem;font-weight:800;margin:5px 0}.game-banner p{margin:0;opacity:.85}
+        .game-hot{margin:18px 22px 18px 0;padding:15px 18px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.18);border-radius:13px;backdrop-filter:blur(3px);align-self:stretch;overflow:hidden}
+        .game-hot-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}.game-hot-title{font-size:.83rem;font-weight:800;letter-spacing:.01em}.game-hot-sub{font-size:.68rem;opacity:.65}
+        .game-hot-row{display:grid;grid-template-columns:20px minmax(0,1fr) 46px;gap:7px;align-items:center;height:25px;border-top:1px solid rgba(255,255,255,.09);cursor:pointer}.game-hot-row:first-child{border-top:0}.game-hot-row:hover .game-hot-post{text-decoration:underline}.game-hot-rank{font-size:.7rem;font-weight:800;opacity:.72}.game-hot-post{font-size:.78rem;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.game-hot-like{font-size:.68rem;text-align:right;opacity:.72;white-space:nowrap}.game-hot-empty{font-size:.78rem;opacity:.68;padding:32px 0;text-align:center}
         .community-layout{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:520px}
         .board-sidebar{background:#f8f7fb;border-right:1px solid #ece9f3;padding:22px 14px}.board-sidebar h3{font-size:.9rem;font-weight:800;color:#777;padding:0 10px 12px;margin:0}
         .board-menu{display:block;width:100%;border:0;background:transparent;text-align:left;padding:12px 14px;border-radius:8px;color:#333;font-weight:700;margin-bottom:5px;cursor:pointer}.board-menu:hover,.board-menu.active{background:#6941c6;color:#fff}
         .board-content{padding:26px 30px}.board-head{display:flex;justify-content:space-between;align-items:end;border-bottom:2px solid #6941c6;padding-bottom:14px;margin-bottom:8px}.board-head h2{font-size:1.35rem;font-weight:800;margin:0}.board-head p{font-size:.85rem;color:#888;margin:0}
         .post-row{display:grid;grid-template-columns:70px minmax(0,1fr) 110px 90px;gap:12px;align-items:center;padding:14px 8px;border-bottom:1px solid #eee;cursor:pointer}.post-row:hover{background:#faf9fd}.post-title{font-weight:700;color:#222;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.post-meta{font-size:.82rem;color:#777}.post-empty{text-align:center;color:#999;padding:80px 20px}.back-home{color:#fff;text-decoration:none;font-size:.9rem;opacity:.85}.back-home:hover{opacity:1}
+        @media(max-width:900px){.game-banner{grid-template-columns:1fr}.game-hot{margin:0 22px 20px}.game-banner-main{padding-bottom:18px}}
         @media(max-width:800px){.community-layout{grid-template-columns:1fr}.board-sidebar{border-right:0;border-bottom:1px solid #ece9f3;display:flex;gap:6px;overflow:auto}.board-sidebar h3{display:none}.board-menu{white-space:nowrap;width:auto;margin:0}.post-row{grid-template-columns:55px minmax(0,1fr) 80px}.post-row .views{display:none}}
     </style>
 </head>
@@ -22,10 +26,19 @@
 <main id="main-content">
     <div class="game-shell">
         <header class="game-banner">
-            <a class="back-home" href="home.html">← Game Hub 홈</a>
-            <small id="genreName">GAME COMMUNITY</small>
-            <h1 id="gameName">게임 커뮤니티</h1>
-            <p id="gameDescription">게시판을 선택해 게임 이야기를 나눠보세요.</p>
+            <div class="game-banner-main">
+                <a class="back-home" href="home.html">← Game Hub 홈</a>
+                <small id="genreName">GAME COMMUNITY</small>
+                <h1 id="gameName">게임 커뮤니티</h1>
+                <p id="gameDescription">게시판을 선택해 게임 이야기를 나눠보세요.</p>
+            </div>
+            <aside class="game-hot" aria-label="게임 인기 게시글">
+                <div class="game-hot-head">
+                    <span class="game-hot-title">🔥 지금 인기 있는 글</span>
+                    <span class="game-hot-sub">전체 게시판 TOP 5</span>
+                </div>
+                <div id="gameHotPosts"><div class="game-hot-empty">인기글을 불러오는 중입니다...</div></div>
+            </aside>
         </header>
         <div class="community-layout">
             <aside class="board-sidebar" id="boardMenu"><h3>게시판</h3></aside>
@@ -48,8 +61,10 @@ document.getElementById('genreName').textContent=game.genre+' COMMUNITY';documen
 function updateWriteLink(){document.getElementById('writeLink').href=`post-write.html?gameId=${gameId}&categoryId=${currentBoard}`;}
 function renderMenu(){const menu=document.getElementById('boardMenu');menu.innerHTML='<h3>게시판</h3>'+boards.map(board=>`<button class="board-menu ${board.id===currentBoard?'active':''}" data-id="${board.id}">${board.name}</button>`).join('');menu.querySelectorAll('.board-menu').forEach(btn=>btn.addEventListener('click',()=>{currentBoard=Number(btn.dataset.id);history.replaceState(null,'',`game.html?gameId=${gameId}&categoryId=${currentBoard}`);renderMenu();renderPosts();updateWriteLink();}));}
 function renderPosts(){const board=boards.find(item=>item.id===currentBoard)||boards[0];document.getElementById('boardTitle').textContent=board.name;const list=allPosts.filter(post=>Number(post.categoryId)===currentBoard);const box=document.getElementById('postList');if(!list.length){box.innerHTML='<div class="post-empty">아직 등록된 게시글이 없습니다.<br><small>첫 번째 글을 작성해보세요.</small></div>';return;}box.innerHTML=list.map(post=>`<div class="post-row" onclick="location.href='post-detail?postId=${post.postId}'"><div class="post-meta">#${post.postId}</div><div class="post-title">${esc(post.title)}</div><div class="post-meta">👤 ${esc(post.username)}</div><div class="post-meta views">조회 ${post.viewCount}</div></div>`).join('');}
+function getScore(post){return (Number(post.viewCount)||0)+(Number(post.likeCount)||0)*3;}
+function renderGameHotPosts(){const box=document.getElementById('gameHotPosts');const list=allPosts.filter(post=>Math.floor(Number(post.categoryId)/10)===gameId).sort((a,b)=>getScore(b)-getScore(a)||String(b.createdAt).localeCompare(String(a.createdAt))).slice(0,5);if(!list.length){box.innerHTML='<div class="game-hot-empty">아직 인기 게시글이 없습니다.</div>';return;}box.innerHTML=list.map((post,index)=>`<div class="game-hot-row" onclick="location.href='post-detail?postId=${post.postId}'" title="${esc(post.title)}"><span class="game-hot-rank">${index+1}</span><span class="game-hot-post">${esc(post.title)}</span><span class="game-hot-like">👍 ${Number(post.likeCount)||0}</span></div>`).join('');}
 function esc(value){return String(value??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#039;');}
-renderMenu();updateWriteLink();fetch('posts').then(response=>{if(!response.ok)throw new Error();return response.json();}).then(posts=>{allPosts=posts;renderPosts();}).catch(()=>{document.getElementById('postList').innerHTML='<div class="post-empty text-danger">게시글을 불러오지 못했습니다.</div>';});
+renderMenu();updateWriteLink();fetch('posts').then(response=>{if(!response.ok)throw new Error();return response.json();}).then(posts=>{allPosts=posts;renderPosts();renderGameHotPosts();}).catch(()=>{document.getElementById('postList').innerHTML='<div class="post-empty text-danger">게시글을 불러오지 못했습니다.</div>';document.getElementById('gameHotPosts').innerHTML='<div class="game-hot-empty">인기글을 불러오지 못했습니다.</div>';});
 </script>
 </body>
 </html>
