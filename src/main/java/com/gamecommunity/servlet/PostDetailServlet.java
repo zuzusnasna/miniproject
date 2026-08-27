@@ -38,6 +38,10 @@ public class PostDetailServlet extends HttpServlet {
             return;
         }
 
+        // 🔥 [추가된 부분] 데이터를 화면에 뿌리기 전에 DB에서 조회수부터 1 증가시킵니다!
+        postDAO.increaseViewCount(postId);
+
+        // 이후 기존 코드 유지
         PostDTO post = postDAO.findById(postId);
         if (post == null) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "게시글을 찾을 수 없습니다.");
