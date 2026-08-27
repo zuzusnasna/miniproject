@@ -27,6 +27,17 @@ public class SignupServlet extends HttpServlet {
         String nickname = request.getParameter("nickname");
         String phone = request.getParameter("phone");
 
+        if (name == null || name.isBlank()
+                || username == null || username.isBlank()
+                || password == null || password.isBlank()
+                || nickname == null || nickname.isBlank()
+                || phone == null || phone.isBlank()) {
+
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().println("필수 입력값을 모두 입력해주세요.");
+            return;
+        }
+
         MemberDTO member = new MemberDTO();
         member.setName(name);
         member.setUsername(username);

@@ -36,6 +36,27 @@ public class MemberUpdateServlet extends HttpServlet {
         String nickname = request.getParameter("nickname");
         String phone = request.getParameter("phone");
 
+        if (name == null || name.isBlank()
+                || nickname == null || nickname.isBlank()
+                || phone == null || phone.isBlank()) {
+
+            response.sendError(
+                    HttpServletResponse.SC_BAD_REQUEST,
+                    "필수 입력값을 모두 입력해주세요."
+            );
+            return;
+        }
+        if (memberDAO.existsByNicknameExceptMember(
+                nickname,
+                sessionMember.getMemberNo())) {
+
+            response.sendError(
+                    HttpServletResponse.SC_CONFLICT,
+                    "이미 사용 중인 닉네임입니다."
+            );
+            return;
+        }
+
         sessionMember.setName(name);
         if (password != null && !password.isBlank()) {
             sessionMember.setPassword(password);
