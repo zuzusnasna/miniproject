@@ -29,6 +29,13 @@ document.addEventListener('DOMContentLoaded', () => {
         .reply-form{display:flex;gap:7px;margin-top:9px;margin-left:34px}
         .reply-form .comment-input{min-height:36px;font-size:.86rem}
         .reply-form .comment-submit{height:36px;padding:0 12px;font-size:.82rem}
+        .comment-edit-form{margin-top:7px}
+        .comment-edit-input{width:100%;min-height:64px;max-height:150px;padding:9px 10px;border:1px solid #cfc7e6;border-radius:7px;resize:vertical;font:inherit;box-sizing:border-box;outline:none}
+        .comment-edit-input:focus{border-color:#6941c6;box-shadow:0 0 0 2px rgba(105,65,198,.08)}
+        .comment-edit-actions{display:flex;justify-content:flex-end;gap:7px;margin-top:7px}
+        .comment-edit-save,.comment-edit-cancel{height:32px;padding:0 12px;border-radius:6px;font-size:.78rem;font-weight:700;cursor:pointer}
+        .comment-edit-save{border:0;background:#6941c6;color:#fff}
+        .comment-edit-cancel{border:1px solid #d9dce1;background:#fff;color:#666}
         .comment-empty{padding:20px 0;text-align:center;color:#999}
         @media(max-width:600px){.comment-item.reply,.reply-form{margin-left:18px}}
     `;
@@ -95,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const actions=document.createElement('div'); actions.className='comment-actions';
         if(!c.deleted && c.parentCommentId===null) actions.append(textButton('답글',()=>showReply(item,c.commentId)));
         if(!c.deleted && c.mine){
-            actions.append(textButton('수정',()=>editComment(c)));
+            actions.append(textButton('수정',()=>showEdit(item,c)));
             actions.append(textButton('삭제',()=>deleteComment(c.commentId)));
         }
         bottom.appendChild(actions);
@@ -132,12 +139,57 @@ document.addEventListener('DOMContentLoaded', () => {
         item.appendChild(form); form.querySelector('textarea').focus();
     }
 
-    async function editComment(c){
-        const content=prompt('댓글을 수정하세요.',c.content);
-        if(content===null)return;
-        const value=content.trim(); if(!value){alert('댓글 내용을 입력해주세요.');return;}
-        const data=await request(`comments?commentId=${encodeURIComponent(c.commentId)}&content=${encodeURIComponent(value)}`,'PUT');
-        if(data?.success) await loadComments(); else if(data) alert(data.message||'수정에 실패했습니다.');
+    function showEdit(item,c){
+        document.querySelectorAll('.comment-edit-form').forEach(f=>f.remove());
+        const body=item.querySelector('.comment-body');
+        const bottom=item.querySelector('.comment-bottom');
+        if(!body || !bottom) return;
+
+        body.style.display='none';
+        bottom.style.display='none';
+
+        const form=document.createElement('form');
+        form.className='comment-edit-form';
+
+        const input=document.createElement('textarea');
+        input.className='comment-edit-input';
+        input.maxLength=1000;
+        input.value=c.content;
+        input.required=true;
+
+        const actionWrap=document.createElement('div');
+        actionWrap.className='comment-edit-actions';
+
+        const save=document.createElement('button');
+        save.type='submit';
+        save.className='comment-edit-save';
+        save.textContent='저장';
+
+        const cancel=document.createElement('button');
+        cancel.type='button';
+        cancel.className='comment-edit-cancel';
+        cancel.textContent='취소';
+        cancel.onclick=()=>{
+            form.remove();
+            body.style.display='';
+            bottom.style.display='';
+        };
+
+        actionWrap.append(save,cancel);
+        form.append(input,actionWrap);
+        body.insertAdjacentElement('afterend',form);
+
+        form.onsubmit=async e=>{
+            e.preventDefault();
+            const value=input.value.trim();
+            if(!value){alert('댓글 내용을 입력해주세요.');input.focus();return;}
+            const data=await request(`comments?commentId=${encodeURIComponent(c.commentId)}&content=${encodeURIComponent(value)}`,'PUT');
+            if(data?.success) await loadComments();
+            else if(data) alert(data.message||'수정에 실패했습니다.');
+        };
+
+        input.focus();
+        input.setSelectionRange(input.value.length,input.value.length);
     }
 
     async function deleteComment(commentId){
