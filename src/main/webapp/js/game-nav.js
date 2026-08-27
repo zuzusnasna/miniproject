@@ -1,3 +1,4 @@
+console.log("🔥 최신 game-nav.js 실행됨");
 document.addEventListener("DOMContentLoaded", function () {
     const categoryList = document.querySelector(".category-list");
     if (!categoryList) return;
@@ -269,21 +270,20 @@ function injectGameNavStyles() {
            ========================= */
 
         .game-nav-game {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
         }
 
         .game-nav-icon {
-            width: 30px;
-            height: 30px;
-            object-fit: cover;
-            border-radius: 6px;
-            flex-shrink: 0;
+        width: 32px;
+        height: 32px;
+        object-fit: cover;
+        border-radius: 6px;
+        flex-shrink: 0;
         }
 
-    `;
+        `;
 
     document.head.appendChild(style);
 }
