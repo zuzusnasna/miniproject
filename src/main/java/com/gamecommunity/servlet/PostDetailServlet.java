@@ -106,7 +106,7 @@ public class PostDetailServlet extends HttpServlet {
         response.getWriter().println("<div class='post-detail-card'>");
         response.getWriter().println("<h1>" + escapeHtml(post.getTitle()) + "</h1>");
         response.getWriter().println(
-                "<div class='info'>작성자: " + escapeHtml(post.getUsername()) +
+                "<div class='info'>작성자: " + escapeHtml(post.getNickname()) +
                         " | 조회수: " + post.getViewCount() +
                         " | 작성일: " + post.getCreatedAt() + "</div>"
         );

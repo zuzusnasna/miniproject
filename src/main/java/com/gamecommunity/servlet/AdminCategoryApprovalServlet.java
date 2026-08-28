@@ -26,20 +26,22 @@ public class AdminCategoryApprovalServlet extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("application/json; charset=UTF-8");
 
-        // 관리자 권한(SYS_MANAGER) 체크
+        // 관리자 권한(SYS_MANAGER) 체크[cite: 2]
         if (!isAdmin(request, response)) {
             return;
         }
 
+        // 승인 대기 목록 조회 (부모 게임명 포함)[cite: 2]
         List<CategoryDTO> list = categoryDAO.findPendingCategories();
 
         StringBuilder json = new StringBuilder("[");
         for (int i = 0; i < list.size(); i++) {
             CategoryDTO c = list.get(i);
             if (i > 0) json.append(",");
-            json.append(String.format("{\"categoryId\":%d,\"parentId\":%d,\"categoryName\":\"%s\",\"createdAt\":\"%s\"}",
+            json.append(String.format("{\"categoryId\":%d,\"parentId\":%d,\"parentCategoryName\":\"%s\",\"categoryName\":\"%s\",\"createdAt\":\"%s\"}",
                     c.getCategoryId(),
                     c.getParentId(),
+                    escapeJson(c.getParentCategoryName() == null ? "미지정" : c.getParentCategoryName()),
                     escapeJson(c.getCategoryName()),
                     c.getCreatedAt()));
         }
