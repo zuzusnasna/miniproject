@@ -198,7 +198,7 @@
                 <table class="table table-bordered align-middle text-center">
                     <thead class="table-light">
                     <tr>
-                        <th>게임 ID</th>
+                        <th>게임명</th>
                         <th>게시판 이름</th>
                         <th>신청 일시</th>
                         <th>관리</th>
@@ -211,20 +211,20 @@
             </div>
         </div>
 
-    </div> <!-- .mypage-container 끝 -->
+    </div>
 </main>
 
 <script src="js/common.js"></script>
 
 <script>
-    // 1. 수정 성공 메시지 확인
+    // 1. 수정 성공 메시지 확인[cite: 2]
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('success') === 'true') {
         alert("회원 정보가 성공적으로 수정되었습니다!");
         window.history.replaceState({}, document.title, window.location.pathname);
     }
 
-    // 2. 기존 회원 정보 불러와서 화면에 채우기
+    // 2. 기존 회원 정보 불러와서 화면에 채우기[cite: 2]
     fetch("member-info", { credentials: "include" })
         .then(response => {
             if (response.status === 401) {
@@ -258,27 +258,23 @@
                 ? "🎉 최고 레벨입니다!"
                 : "다음 레벨까지 <strong>" + remaining + "</strong>개";
 
-            // 폼 데이터
             document.getElementById("username").value = member.username || "";
             document.getElementById("name").value = member.name || "";
             document.getElementById("nickname").value = member.nickname || "";
             document.getElementById("phone").value = member.phone || "";
         })
         .catch(error => console.error("회원정보 로드 실패:", error));
-    // 대기 목록 불러오기
+
+    // 3. 승인 대기 목록 불러오기 (부모 게임명 바인딩)[cite: 2]
     function loadPendingCategories() {
         fetch("admin/categories")
             .then(res => {
-                // 403(권한 없음)이나 401(비로그인)이면 조용히 종료 (화면 띄우지 않음)
-                if (!res.ok) {
-                    return null;
-                }
+                if (!res.ok) return null;
                 return res.json();
             })
             .then(list => {
-                if (!list) return; // 관리자가 아니면 함수 종료
+                if (!list) return;
 
-                // 시스템 관리자임이 확인되었을 때만 섹션을 화면에 표시
                 document.getElementById("adminApprovalSection").style.display = "block";
 
                 const tbody = document.getElementById("pendingTableBody");
@@ -290,9 +286,11 @@
                 }
 
                 list.forEach(c => {
+                    const gameName = c.parentCategoryName || ("게임 ID: " + c.parentId);
+
                     tbody.innerHTML += `
                     <tr>
-                        <td>${c.parentId}</td>
+                        <td class="fw-bold text-secondary">${escapeHtml(gameName)}</td>
                         <td class="fw-bold text-primary">${escapeHtml(c.categoryName)}</td>
                         <td>${c.createdAt}</td>
                         <td>
@@ -300,7 +298,7 @@
                             <button class="btn btn-sm btn-danger" onclick="handleCategory(${c.categoryId}, 'reject')">거절</button>
                         </td>
                     </tr>
-                `;
+                    `;
                 });
             })
             .catch(err => {
@@ -308,7 +306,7 @@
             });
     }
 
-    // 시스템 관리자의 승인 또는 거절 요청
+    // 4. 시스템 관리자의 승인 또는 거절 요청[cite: 2]
     function handleCategory(categoryId, action) {
         const confirmMsg = action === 'approve' ? '게시판을 승인하여 공개할까요?' : '게시판 생성을 거절(삭제)할까요?';
         if (!confirm(confirmMsg)) return;
@@ -333,10 +331,10 @@
             });
     }
 
-    // 페이지 진입 시 실행
+    // 페이지 진입 시 대기 목록 로드 실행[cite: 2]
     loadPendingCategories();
 
-    // 1. 카테고리 관리자 권한 확인 및 폼 활성화
+    // 5. 카테고리 관리자 권한 확인 및 폼 활성화 (담당 게임명 바인딩)[cite: 2]
     function checkCategoryManager() {
         const section = document.getElementById("categoryManagerSection");
 
@@ -348,7 +346,8 @@
             .then(data => {
                 if (data && data.isManager) {
                     section.style.display = "block";
-                    document.getElementById("managedGameLabel").textContent = "게임 ID: " + data.categoryId;
+                    // 🔥 data.gameName을 우선 출력 (없을 경우 fallback)
+                    document.getElementById("managedGameLabel").textContent = data.gameName || ("게임 ID: " + data.categoryId);
                 } else {
                     section.style.display = "none";
                 }
@@ -358,7 +357,7 @@
             });
     }
 
-    // 2. 게시판 생성 요청 전송
+    // 6. 게시판 생성 요청 전송[cite: 2]
     function requestCreateCategory() {
         const input = document.getElementById("newCategoryName");
         const msgBox = document.getElementById("createCategoryMsg");
@@ -384,7 +383,6 @@
                     alert(data.message + "\n(시스템 관리자 승인 대기 목록에 등록되었습니다.)");
                     input.value = "";
                     msgBox.innerHTML = `<span class="text-success fw-bold">✓ ${escapeHtml(data.message)}</span>`;
-                    // 혹시 시스템 관리자 권한도 동시에 가지고 있다면 승인 대기 목록 즉시 갱신
                     if (typeof loadPendingCategories === "function") {
                         loadPendingCategories();
                     }
@@ -399,7 +397,7 @@
             });
     }
 
-    // 페이지 로드 시 실행
+    // 페이지 진입 시 관리자 권한 체크 실행[cite: 2]
     checkCategoryManager();
 
     function escapeHtml(value) {

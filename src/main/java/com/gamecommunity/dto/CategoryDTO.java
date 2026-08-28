@@ -4,7 +4,7 @@ public class CategoryDTO {
 
     private Long categoryId;
     private Long parentId;
-
+    private String parentCategoryName; // 🔥 부모 게임명 추가
     private String categoryName;
     private int depth;
     private String isActive;
@@ -12,6 +12,13 @@ public class CategoryDTO {
     private String iconUrl;
     private int sortOrder;
 
+    public String getParentCategoryName() {
+        return parentCategoryName;
+    }
+
+    public void setParentCategoryName(String parentCategoryName) {
+        this.parentCategoryName = parentCategoryName;
+    }
 
     // =========================================================
     // CATEGORY_ID
