@@ -26,7 +26,6 @@ public class PostDetailServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
         request.setCharacterEncoding("UTF-8");
         response.setContentType("text/html; charset=UTF-8");
 
@@ -58,17 +57,17 @@ public class PostDetailServlet extends HttpServlet {
         int likeCount = postLikeDAO.getLikeCount(postId);
         int dislikeCount = postLikeDAO.getDislikeCount(postId);
 
-        // 로그인 사용자의 삭제 권한 확인
+        // 삭제 권한: 시스템 관리자 / 담당 카테고리 관리자 / 작성자 본인
         HttpSession session = request.getSession(false);
         MemberDTO loginMember = session == null ? null : (MemberDTO) session.getAttribute("member");
         boolean canDelete = false;
 
-        if (loginMember != null) {
+        if (loginMember != null && loginMember.getMemberNo() != null) {
             long memberNo = loginMember.getMemberNo();
+            boolean isAuthor = post.getMemberNo() != null && post.getMemberNo().equals(memberNo);
             boolean isSystemManager = memberDAO.isSystemManager(memberNo);
             boolean isCategoryManager = categoryManagerDAO.isManagerOfCategory(memberNo, categoryId);
-            boolean isAuthor = memberNo == post.getMemberNo();
-            canDelete = isSystemManager || isCategoryManager || isAuthor;
+            canDelete = isAuthor || isSystemManager || isCategoryManager;
         }
 
         response.getWriter().println("""
@@ -125,29 +124,21 @@ public class PostDetailServlet extends HttpServlet {
 
         response.getWriter().println("<div class='post-detail-card'>");
         response.getWriter().println("<h1>" + escapeHtml(post.getTitle()) + "</h1>");
-        response.getWriter().println(
-                "<div class='info'>작성자: " + escapeHtml(post.getNickname()) +
-                        " | 조회수: " + post.getViewCount() +
-                        " | 작성일: " + post.getCreatedAt() + "</div>"
-        );
+        response.getWriter().println("<div class='info'>작성자: " + escapeHtml(post.getNickname()) +
+                " | 조회수: " + post.getViewCount() + " | 작성일: " + post.getCreatedAt() + "</div>");
         response.getWriter().println("<div class='content'>" + escapeHtml(post.getContent()) + "</div>");
-        response.getWriter().println(
-                "<div class='like-area'>" +
-                        "<button type='button' class='like-button' onclick=\"recommendPost('LIKE')\">👍 좋아요 <span id='likeCount' class='count'>" + likeCount + "</span></button>" +
-                        "<button type='button' class='dislike-button' onclick=\"recommendPost('DISLIKE')\">👎 나빠요 <span id='dislikeCount' class='count'>" + dislikeCount + "</span></button>" +
-                        "</div>"
-        );
+        response.getWriter().println("<div class='like-area'>" +
+                "<button type='button' class='like-button' onclick=\"recommendPost('LIKE')\">👍 좋아요 <span id='likeCount' class='count'>" + likeCount + "</span></button>" +
+                "<button type='button' class='dislike-button' onclick=\"recommendPost('DISLIKE')\">👎 나빠요 <span id='dislikeCount' class='count'>" + dislikeCount + "</span></button>" +
+                "</div>");
 
         response.getWriter().println("<div class='buttons'>");
         response.getWriter().println("<button type='button' class='btn btn-outline-secondary' onclick='history.back()'>목록으로</button>");
-
         if (canDelete) {
-            response.getWriter().println(
-                    "<button type='button' class='btn btn-outline-danger delete-button' onclick='deletePost(" + postId + ")'>삭제</button>"
-            );
+            response.getWriter().println("<button type='button' class='btn btn-outline-danger delete-button' onclick='deletePost(" + postId + ")'>삭제</button>");
         }
-
         response.getWriter().println("</div>");
+
         response.getWriter().println("""
                     </div>
                     </div>
@@ -185,16 +176,24 @@ public class PostDetailServlet extends HttpServlet {
                         fetch("post-delete", {
                             method: "POST",
                             headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                            credentials: "include",
                             body: "postId=" + encodeURIComponent(postId)
                         })
-                        .then(response => response.json().then(data => ({ status: response.status, data })))
-                        .then(result => {
-                            if (result.data.success) {
-                                alert(result.data.message);
-                                history.back();
+                        .then(async response => {
+                            const data = await response.json();
+                            if (response.status === 401) {
+                                alert("로그인이 필요합니다.");
+                                location.href = "login.html";
+                                return;
+                            }
+                            if (response.status === 403) {
+                                alert("이 게시글을 삭제할 권한이 없습니다.");
+                                return;
+                            }
+                            if (data.success) {
+                                alert(data.message || "게시글이 삭제되었습니다.");
+                                location.href = "game.html";
                             } else {
-                                alert(result.data.message || "게시글 삭제에 실패했습니다.");
+                                alert(data.message || "게시글 삭제에 실패했습니다.");
                             }
                         })
                         .catch(error => {
