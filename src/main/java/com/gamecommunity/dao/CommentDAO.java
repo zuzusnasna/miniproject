@@ -17,7 +17,7 @@ public class CommentDAO {
         List<CommentDTO> comments = new ArrayList<>();
         String sql = """
                 SELECT C.COMMENT_ID, C.POST_ID, C.PARENT_COMMENT_ID, C.MEMBER_NO,
-                       M.USERNAME, C.CONTENT, C.LIKE_COUNT, C.DISLIKE_COUNT,
+                       M.NICKNAME, C.CONTENT, C.LIKE_COUNT, C.DISLIKE_COUNT,
                        C.IS_DELETED, C.CREATED_AT, C.UPDATED_AT
                 FROM POST_COMMENT C
                 JOIN MEMBER M ON C.MEMBER_NO = M.MEMBER_NO
@@ -149,7 +149,9 @@ public class CommentDAO {
         long parentId = rs.getLong("PARENT_COMMENT_ID");
         dto.setParentCommentId(rs.wasNull() ? null : parentId);
         dto.setMemberNo(rs.getLong("MEMBER_NO"));
-        dto.setUsername(rs.getString("USERNAME"));
+        dto.setNickname(rs.getString("NICKNAME"));
+        dto.setNickname(rs.getString("NICKNAME"));
+        dto.setUsername(rs.getString("NICKNAME"));
         dto.setContent(rs.getString("CONTENT"));
         dto.setLikeCount(rs.getInt("LIKE_COUNT"));
         dto.setDislikeCount(rs.getInt("DISLIKE_COUNT"));
