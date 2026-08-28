@@ -53,17 +53,27 @@
 
     function loadCategoryManagerRequest() {
         fetch("category-manager-request", { credentials:"include" })
-            .then(res => res.ok ? res.json() : null)
+            .then(res => {
+                if (!res.ok) throw new Error("category-manager-request HTTP " + res.status);
+                return res.json();
+            })
             .then(data => {
-                if (!data || !data.eligible) return;
+                console.log("카테고리 관리자 신청 정보:", data);
+
+                if (!data || data.success !== true || Number(data.likes) < 50 || data.eligible !== true) return;
                 if (data.status === "APPROVED") return;
+
+                const oldBox = document.getElementById("categoryManagerRequest");
+                if (oldBox) oldBox.remove();
 
                 const box = document.createElement("div");
                 box.id = "categoryManagerRequest";
+
                 if (data.status === "PENDING") {
                     box.innerHTML = '<strong>🎮 카테고리 관리자</strong><div class="request-message">권한 신청이 승인 대기 중입니다.</div>';
                 } else {
-                    const options = data.games.map(g => `<option value="${g.categoryId}">${escapeHtml(g.categoryName)}</option>`).join("");
+                    const games = Array.isArray(data.games) ? data.games : [];
+                    const options = games.map(g => `<option value="${g.categoryId}">${escapeHtml(g.categoryName)}</option>`).join("");
                     box.innerHTML = `
                         <strong>🎮 카테고리 관리자 신청</strong>
                         <div class="request-message">받은 좋아요 ${data.likes}개로 신청할 수 있습니다.</div>
@@ -73,15 +83,17 @@
                     `;
                     box.querySelector("#managerRequestButton").addEventListener("click", submitCategoryManagerRequest);
                 }
+
                 memberInfo.appendChild(box);
             })
-            .catch(() => {});
+            .catch(error => console.error("카테고리 관리자 신청 정보 로딩 실패:", error));
     }
 
     function submitCategoryManagerRequest() {
         const select = document.getElementById("managerGameSelect");
         const button = document.getElementById("managerRequestButton");
         const message = document.getElementById("managerRequestMessage");
+        if (!select || !button || !message) return;
         if (!select.value) { message.textContent = "관리할 게임을 선택해주세요."; message.style.color = "#d32f2f"; return; }
         button.disabled = true;
         const body = new URLSearchParams({ categoryId: select.value });
