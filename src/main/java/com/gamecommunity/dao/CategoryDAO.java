@@ -647,12 +647,9 @@ public class CategoryDAO {
         return false;
     }
 
-    // 2. 하위 게시판(DEPTH 3) 안전 생성 로직 (규칙: parentId * 10 + 4~9)
+    // 2. 하위 게시판(DEPTH 3) 안전 생성 로직 (규칙: parentId * 10 + 4~9, IS_ACTIVE = 'N' 승인 대기 상태로 저장
     public int insertSubCategory(String categoryName, long parentId) {
-        // 리턴값 설명: 1 (성공), -1 (최대 개수 초과), 0 (오류 발생)
         long nextId = 0;
-
-        // [1단계] 해당 게임(parentId)의 현재 가장 큰 게시판 ID 찾기
         String checkSql = "SELECT NVL(MAX(CATEGORY_ID), ? * 10) + 1 FROM CATEGORY WHERE PARENT_ID = ?";
 
         try (
@@ -672,13 +669,11 @@ public class CategoryDAO {
             return 0;
         }
 
-        // [2단계] 생성 개수 제한 (XX1 ~ XX9 까지만 허용)
-        // 예: 310번 게임이면 3109를 초과할 수 없음
         if (nextId > (parentId * 10) + 9) {
-            return -1; // 최대 개수 초과
+            return -1; // 최대 9개 초과
         }
 
-        // [3단계] 계산된 nextId를 사용해 게시판 생성
+        // 🔥 기본 상태를 'N'으로 생성
         String insertSql = """
             INSERT INTO CATEGORY (
                 CATEGORY_ID, 
@@ -687,7 +682,7 @@ public class CategoryDAO {
                 DEPTH, 
                 IS_ACTIVE, 
                 CREATED_AT
-            ) VALUES (?, ?, ?, 3, 'Y', SYSDATE)
+            ) VALUES (?, ?, ?, 3, 'N', SYSDATE)
             """;
 
         try (
@@ -705,6 +700,67 @@ public class CategoryDAO {
         }
 
         return 0;
+    }
+
+    // 2. 승인 대기 목록 조회 (IS_ACTIVE = 'N'인 게시판만)
+    public List<CategoryDTO> findPendingCategories() {
+        List<CategoryDTO> list = new ArrayList<>();
+        String sql = """
+            SELECT CATEGORY_ID, PARENT_ID, CATEGORY_NAME, DEPTH, IS_ACTIVE,
+                   TO_CHAR(CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT
+            FROM CATEGORY
+            WHERE DEPTH = 3 AND IS_ACTIVE = 'N'
+            ORDER BY CREATED_AT DESC
+            """;
+
+        try (
+                Connection conn = DBUtil.getConnection();
+                PreparedStatement pstmt = conn.prepareStatement(sql);
+                ResultSet rs = pstmt.executeQuery()
+        ) {
+            while (rs.next()) {
+                CategoryDTO dto = new CategoryDTO();
+                dto.setCategoryId(rs.getLong("CATEGORY_ID"));
+                dto.setParentId(rs.getLong("PARENT_ID"));
+                dto.setCategoryName(rs.getString("CATEGORY_NAME"));
+                dto.setIsActive(rs.getString("IS_ACTIVE"));
+                dto.setCreatedAt(rs.getString("CREATED_AT"));
+                list.add(dto);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    // 3. 게시판 승인 (IS_ACTIVE = 'Y'로 변경)
+    public boolean approveCategory(long categoryId) {
+        String sql = "UPDATE CATEGORY SET IS_ACTIVE = 'Y' WHERE CATEGORY_ID = ?";
+        try (
+                Connection conn = DBUtil.getConnection();
+                PreparedStatement pstmt = conn.prepareStatement(sql)
+        ) {
+            pstmt.setLong(1, categoryId);
+            return pstmt.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // 4. 게시판 거절 (테이블에서 물리 삭제)
+    public boolean rejectCategory(long categoryId) {
+        String sql = "DELETE FROM CATEGORY WHERE CATEGORY_ID = ? AND IS_ACTIVE = 'N'";
+        try (
+                Connection conn = DBUtil.getConnection();
+                PreparedStatement pstmt = conn.prepareStatement(sql)
+        ) {
+            pstmt.setLong(1, categoryId);
+            return pstmt.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
     // --------카테고리 관리자 권한(게시탭 생성) 코드 끝----
 

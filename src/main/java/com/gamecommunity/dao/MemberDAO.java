@@ -386,4 +386,26 @@ public class MemberDAO {
 
         return false;
     }
+    // 시스템 관리자의 권한 확인 메소드(게시판 승인, 삭제 기능 구현간 추가)
+    public boolean isSystemManager(long memberNo) {
+        String sql = """
+        SELECT COUNT(*)
+        FROM MEMBER_ROLE MR
+        JOIN ROLE R ON MR.ROLE_ID = R.ROLE_ID
+        WHERE MR.MEMBER_NO = ?
+          AND R.ROLE_NAME = 'SYS_MANAGER'
+        """;
+        try (
+                Connection conn = DBUtil.getConnection();
+                PreparedStatement pstmt = conn.prepareStatement(sql)
+        ) {
+            pstmt.setLong(1, memberNo);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) return rs.getInt(1) > 0;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }

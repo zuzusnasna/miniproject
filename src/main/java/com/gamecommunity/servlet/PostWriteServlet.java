@@ -71,8 +71,18 @@ public class PostWriteServlet extends HttpServlet {
 
         // CATEGORY 규칙 검증:
         // 게임 110 -> 게시판 1101/1102/1103처럼 게임ID*10 + 1~3만 허용한다.
-        long boardType = categoryId - (gameId * 10);
+        // 기존 코드
+/*        long boardType = categoryId - (gameId * 10);
         if (boardType < 1 || boardType > 3) {
+            response.sendError(
+                    HttpServletResponse.SC_BAD_REQUEST,
+                    "게임과 게시판 정보가 일치하지 않습니다."
+            );
+            return;
+        }*/
+        // 수정 코드
+        long boardType = categoryId - (gameId * 10);
+        if (boardType < 1 || boardType > 9) {
             response.sendError(
                     HttpServletResponse.SC_BAD_REQUEST,
                     "게임과 게시판 정보가 일치하지 않습니다."

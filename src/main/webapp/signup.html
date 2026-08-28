@@ -23,5 +23,30 @@
     </div>
     <div class="login-footer">&copy; 2026 Game Hub. All rights reserved.</div>
 </div>
+
+<script>
+    const params = new URLSearchParams(location.search);
+    const error = params.get("error");
+
+    if (error === "username") {
+        alert("이미 사용 중인 아이디입니다.");
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    if (error === "nickname") {
+        alert("이미 사용 중인 닉네임입니다.");
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    if (error === "required") {
+        alert("필수 입력값을 모두 입력해주세요.");
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    if (error === "fail") {
+        alert("회원가입에 실패했습니다.");
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+</script>
 </body>
 </html>

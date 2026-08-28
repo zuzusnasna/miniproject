@@ -43,6 +43,54 @@
             margin-top: 5px;
         }
 
+        .level-section {
+            margin: 0 0 25px;
+            padding: 16px;
+            border: 1px solid var(--border-color, #e0e0e0);
+            border-radius: 10px;
+            background: #fff;
+        }
+
+        .level-progress-info,
+        .level-progress-text {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+        }
+
+        .level-progress-info {
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .level-progress {
+            width: 100%;
+            height: 10px;
+            overflow: hidden;
+            border-radius: 999px;
+            background: #e9ecef;
+        }
+
+        .level-progress-fill {
+            height: 100%;
+            border-radius: 999px;
+            background: var(--primary-color, #5a20b7);
+            transition: width .3s ease;
+        }
+
+        .level-progress-text {
+            margin-top: 7px;
+            color: #666;
+        }
+
+        .level-progress-remaining {
+            margin-top: 8px;
+            text-align: center;
+            font-size: 13px;
+            color: #777;
+        }
+
         .form-group {
             margin-bottom: 20px;
         }
@@ -70,6 +118,24 @@
             <div>레벨<strong id="myLevel">-</strong></div>
             <div>받은 좋아요<strong id="myLikes" style="color:#1976d2;">-</strong></div>
             <div>받은 나빠요<strong id="myDislikes" style="color:#d32f2f;">-</strong></div>
+        </div>
+
+        <!-- 레벨 게이지 -->
+        <div class="level-section">
+            <div class="level-progress-info">
+                <span>Lv.<span id="levelCurrent">1</span></span>
+                <span id="levelNext">Lv.2</span>
+            </div>
+            <div class="level-progress">
+                <div id="levelProgressFill" class="level-progress-fill" style="width:0%;"></div>
+            </div>
+            <div class="level-progress-text">
+                <span id="levelLikeText">0 / 10 좋아요</span>
+                <span id="levelProgressPercent">0%</span>
+            </div>
+            <div id="levelRemaining" class="level-progress-remaining">
+                다음 레벨까지 <strong>10</strong>개
+            </div>
         </div>
 
         <!-- 정보 수정 폼 -->
@@ -105,10 +171,47 @@
             </button>
 
         </form>
+        <!-- 회원 탈퇴 버튼 -->
         <div class="mt-4 pt-3 border-top text-end">
             <a href="mypage-withdraw.html" class="btn btn-outline-danger btn-sm">회원 탈퇴</a>
         </div>
-    </div>
+
+        <!-- 카테고리 관리자 전용: 내 게임 게시판 생성 영역 (기본 숨김) -->
+        <div id="categoryManagerSection" class="mt-4 pt-4 border-top" style="display: none;">
+            <h4 class="fw-bold text-dark mb-2">🎮 내 게임 게시판 생성</h4>
+            <p class="text-muted small mb-3">
+                현재 관리 중인 게임(<span id="managedGameLabel" class="fw-bold text-primary">-</span>) 하위에 새 게시판 생성을 요청합니다.<br>
+                생성된 게시판은 시스템 관리자의 승인 후 공개됩니다.
+            </p>
+
+            <div class="input-group mb-2">
+                <input type="text" id="newCategoryName" class="form-control" placeholder="생성할 게시판/탭 이름 (예: 공략 팁, 질문게시판)" maxlength="50">
+                <button type="button" class="btn btn-success fw-bold px-4" onclick="requestCreateCategory()">생성 요청</button>
+            </div>
+            <div id="createCategoryMsg" class="small mt-1"></div>
+        </div>
+
+        <!-- 시스템 관리자 전용 게시판 생성 승인 대기 목록 (기본 숨김) -->
+        <div id="adminApprovalSection" class="mt-5 pt-4 border-top" style="display: none;">
+            <h4 class="fw-bold text-dark mb-3">📋 게시판 생성 승인 대기 목록 (시스템 관리자 전용)</h4>
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle text-center">
+                    <thead class="table-light">
+                    <tr>
+                        <th>게임 ID</th>
+                        <th>게시판 이름</th>
+                        <th>신청 일시</th>
+                        <th>관리</th>
+                    </tr>
+                    </thead>
+                    <tbody id="pendingTableBody">
+                    <tr><td colspan="4" class="text-muted">불러오는 중...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div> <!-- .mypage-container 끝 -->
 </main>
 
 <script src="js/common.js"></script>
@@ -122,24 +225,38 @@
     }
 
     // 2. 기존 회원 정보 불러와서 화면에 채우기
-    fetch("member-info")
+    fetch("member-info", { credentials: "include" })
         .then(response => {
             if (response.status === 401) {
                 alert("로그인이 필요합니다.");
                 location.href = "login.html";
                 throw new Error("Unauthorized");
             }
+            if (!response.ok) {
+                throw new Error("회원정보 조회 실패");
+            }
             return response.json();
         })
         .then(member => {
-            // 활동 내역
             const likeCount = Number(member.receivedLikeCount) || 0;
-            const level = Math.floor(likeCount / 10) + 1;
-            const actualLevel = Math.min(level, 10);
+            const dislikeCount = Number(member.receivedDislikeCount) || 0;
+            const actualLevel = Math.min(Math.floor(likeCount / 10) + 1, 10);
+            const currentLikes = actualLevel >= 10 ? 10 : likeCount % 10;
+            const progress = Math.max(0, Math.min(100, currentLikes * 10));
+            const remaining = actualLevel >= 10 ? 0 : 10 - currentLikes;
 
-            document.getElementById("myLevel").textContent = member.userLevel || actualLevel;
+            document.getElementById("myLevel").textContent = actualLevel;
             document.getElementById("myLikes").textContent = likeCount;
-            document.getElementById("myDislikes").textContent = member.receivedDislikeCount || 0;
+            document.getElementById("myDislikes").textContent = dislikeCount;
+
+            document.getElementById("levelCurrent").textContent = actualLevel;
+            document.getElementById("levelNext").textContent = actualLevel >= 10 ? "MAX" : "Lv." + (actualLevel + 1);
+            document.getElementById("levelProgressFill").style.width = progress + "%";
+            document.getElementById("levelLikeText").textContent = currentLikes + " / 10 좋아요";
+            document.getElementById("levelProgressPercent").textContent = Math.round(progress) + "%";
+            document.getElementById("levelRemaining").innerHTML = actualLevel >= 10
+                ? "🎉 최고 레벨입니다!"
+                : "다음 레벨까지 <strong>" + remaining + "</strong>개";
 
             // 폼 데이터
             document.getElementById("username").value = member.username || "";
@@ -148,6 +265,147 @@
             document.getElementById("phone").value = member.phone || "";
         })
         .catch(error => console.error("회원정보 로드 실패:", error));
+    // 대기 목록 불러오기
+    function loadPendingCategories() {
+        fetch("admin/categories")
+            .then(res => {
+                // 403(권한 없음)이나 401(비로그인)이면 조용히 종료 (화면 띄우지 않음)
+                if (!res.ok) {
+                    return null;
+                }
+                return res.json();
+            })
+            .then(list => {
+                if (!list) return; // 관리자가 아니면 함수 종료
+
+                // 시스템 관리자임이 확인되었을 때만 섹션을 화면에 표시
+                document.getElementById("adminApprovalSection").style.display = "block";
+
+                const tbody = document.getElementById("pendingTableBody");
+                tbody.innerHTML = "";
+
+                if (!list.length) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-muted">승인 대기 중인 게시판이 없습니다.</td></tr>';
+                    return;
+                }
+
+                list.forEach(c => {
+                    tbody.innerHTML += `
+                    <tr>
+                        <td>${c.parentId}</td>
+                        <td class="fw-bold text-primary">${escapeHtml(c.categoryName)}</td>
+                        <td>${c.createdAt}</td>
+                        <td>
+                            <button class="btn btn-sm btn-success me-1" onclick="handleCategory(${c.categoryId}, 'approve')">승인</button>
+                            <button class="btn btn-sm btn-danger" onclick="handleCategory(${c.categoryId}, 'reject')">거절</button>
+                        </td>
+                    </tr>
+                `;
+                });
+            })
+            .catch(err => {
+                console.debug("관리자 권한 없음 또는 통신 오류");
+            });
+    }
+
+    // 시스템 관리자의 승인 또는 거절 요청
+    function handleCategory(categoryId, action) {
+        const confirmMsg = action === 'approve' ? '게시판을 승인하여 공개할까요?' : '게시판 생성을 거절(삭제)할까요?';
+        if (!confirm(confirmMsg)) return;
+
+        fetch("admin/categories", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: `categoryId=${categoryId}&action=${action}`
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert("처리가 완료되었습니다.");
+                    loadPendingCategories();
+                } else {
+                    alert("처리에 실패했습니다.");
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert("서버 통신 오류가 발생했습니다.");
+            });
+    }
+
+    // 페이지 진입 시 실행
+    loadPendingCategories();
+
+    // 1. 카테고리 관리자 권한 확인 및 폼 활성화
+    function checkCategoryManager() {
+        const section = document.getElementById("categoryManagerSection");
+
+        fetch("category-create")
+            .then(res => {
+                if (!res.ok) return null;
+                return res.json();
+            })
+            .then(data => {
+                if (data && data.isManager) {
+                    section.style.display = "block";
+                    document.getElementById("managedGameLabel").textContent = "게임 ID: " + data.categoryId;
+                } else {
+                    section.style.display = "none";
+                }
+            })
+            .catch(() => {
+                section.style.display = "none";
+            });
+    }
+
+    // 2. 게시판 생성 요청 전송
+    function requestCreateCategory() {
+        const input = document.getElementById("newCategoryName");
+        const msgBox = document.getElementById("createCategoryMsg");
+        const categoryName = input.value.trim();
+
+        if (!categoryName) {
+            alert("생성할 게시판 이름을 입력해주세요.");
+            input.focus();
+            return;
+        }
+
+        const formData = new URLSearchParams();
+        formData.append("categoryName", categoryName);
+
+        fetch("category-create", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: formData.toString()
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message + "\n(시스템 관리자 승인 대기 목록에 등록되었습니다.)");
+                    input.value = "";
+                    msgBox.innerHTML = `<span class="text-success fw-bold">✓ ${escapeHtml(data.message)}</span>`;
+                    // 혹시 시스템 관리자 권한도 동시에 가지고 있다면 승인 대기 목록 즉시 갱신
+                    if (typeof loadPendingCategories === "function") {
+                        loadPendingCategories();
+                    }
+                } else {
+                    alert(data.message);
+                    msgBox.innerHTML = `<span class="text-danger fw-bold">✕ ${escapeHtml(data.message)}</span>`;
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert("게시판 생성 요청 중 오류가 발생했습니다.");
+            });
+    }
+
+    // 페이지 로드 시 실행
+    checkCategoryManager();
+
+    function escapeHtml(value) {
+        if (!value) return "";
+        return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
 </script>
 
 </body>
