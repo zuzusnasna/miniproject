@@ -19,7 +19,8 @@ public class MemberDAO {
                        PHONE,
                        NICKNAME,
                        USER_LEVEL,
-                       JOIN_STATUS
+                       JOIN_STATUS,
+                       ACCOUNT_STATUS
                 FROM MEMBER
                 WHERE USERNAME = ?
                 """;
@@ -41,6 +42,7 @@ public class MemberDAO {
                     member.setUserLevel(rs.getInt("USER_LEVEL"));
                     member.setJoinStatus(rs.getString("JOIN_STATUS"));
                     member.setNickname(rs.getString("NICKNAME"));
+                    member.setAccountStatus(rs.getString("ACCOUNT_STATUS"));
                     return member;
                 }
             }
@@ -359,6 +361,29 @@ public class MemberDAO {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return false;
+    }
+    public boolean withdrawMember(long memberNo) {
+        // 회원 탈퇴
+        String sql = """
+            UPDATE MEMBER
+            SET ACCOUNT_STATUS = 'WITHDRAWN',
+                UPDATED_AT = SYSDATE
+            WHERE MEMBER_NO = ?
+            """;
+
+        try (
+                Connection conn = DBUtil.getConnection();
+                PreparedStatement pstmt = conn.prepareStatement(sql)
+        ) {
+            pstmt.setLong(1, memberNo);
+
+            return pstmt.executeUpdate() > 0; // 업데이트 성공 시 true 반환
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         return false;
     }
 }

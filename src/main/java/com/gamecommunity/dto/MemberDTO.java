@@ -10,8 +10,17 @@ public class MemberDTO {
     private int userLevel;
     private String joinStatus;
     private String nickname;
+    private String accountStatus;
     private int receivedLikeCount;
     private int receivedDislikeCount;
+
+    public String getAccountStatus() {
+        return accountStatus;
+    }
+
+    public void setAccountStatus(String accountStatus) {
+        this.accountStatus = accountStatus;
+    }
 
     public Long getMemberNo() {
         return memberNo;

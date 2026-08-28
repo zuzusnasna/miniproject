@@ -623,4 +623,89 @@ public class CategoryDAO {
                 rs.getInt("SORT_ORDER")
         );
     }
+    // --------카테고리 관리자 권한(게시탭 생성)----
+    // 1. 중복 카테고리명 검사 로직
+    public boolean existsByCategoryNameAndParent(String categoryName, long parentId) {
+        String sql = """
+            SELECT COUNT(*) 
+            FROM CATEGORY 
+            WHERE CATEGORY_NAME = ? 
+              AND PARENT_ID = ?
+            """;
+        try (
+                java.sql.Connection conn = DBUtil.getConnection();
+                java.sql.PreparedStatement pstmt = conn.prepareStatement(sql)
+        ) {
+            pstmt.setString(1, categoryName);
+            pstmt.setLong(2, parentId);
+            try (java.sql.ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) return rs.getInt(1) > 0;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // 2. 하위 게시판(DEPTH 3) 안전 생성 로직 (규칙: parentId * 10 + 4~9)
+    public int insertSubCategory(String categoryName, long parentId) {
+        // 리턴값 설명: 1 (성공), -1 (최대 개수 초과), 0 (오류 발생)
+        long nextId = 0;
+
+        // [1단계] 해당 게임(parentId)의 현재 가장 큰 게시판 ID 찾기
+        String checkSql = "SELECT NVL(MAX(CATEGORY_ID), ? * 10) + 1 FROM CATEGORY WHERE PARENT_ID = ?";
+
+        try (
+                Connection conn = DBUtil.getConnection();
+                PreparedStatement pstmt = conn.prepareStatement(checkSql)
+        ) {
+            pstmt.setLong(1, parentId);
+            pstmt.setLong(2, parentId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    nextId = rs.getLong(1);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+
+        // [2단계] 생성 개수 제한 (XX1 ~ XX9 까지만 허용)
+        // 예: 310번 게임이면 3109를 초과할 수 없음
+        if (nextId > (parentId * 10) + 9) {
+            return -1; // 최대 개수 초과
+        }
+
+        // [3단계] 계산된 nextId를 사용해 게시판 생성
+        String insertSql = """
+            INSERT INTO CATEGORY (
+                CATEGORY_ID, 
+                PARENT_ID, 
+                CATEGORY_NAME, 
+                DEPTH, 
+                IS_ACTIVE, 
+                CREATED_AT
+            ) VALUES (?, ?, ?, 3, 'Y', SYSDATE)
+            """;
+
+        try (
+                Connection conn = DBUtil.getConnection();
+                PreparedStatement pstmt = conn.prepareStatement(insertSql)
+        ) {
+            pstmt.setLong(1, nextId);
+            pstmt.setLong(2, parentId);
+            pstmt.setString(3, categoryName);
+
+            return pstmt.executeUpdate() > 0 ? 1 : 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
+    // --------카테고리 관리자 권한(게시탭 생성) 코드 끝----
+
 }

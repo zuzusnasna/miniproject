@@ -28,6 +28,13 @@ public class LoginServlet extends HttpServlet {
         MemberDTO member = memberDAO.findByUsername(username);
 
         if (member != null && member.getPassword().equals(password)) {
+
+            // 🔥 탈퇴한 회원인지 확인
+            if ("WITHDRAWN".equals(member.getAccountStatus())) {
+                response.sendRedirect(request.getContextPath() + "/login.html?error=withdrawn");
+                return;
+            }
+
             HttpSession session = request.getSession();
             session.setAttribute("member", member);
             response.sendRedirect(request.getContextPath() + "/home.html");
