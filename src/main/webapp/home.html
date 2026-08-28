@@ -9,43 +9,131 @@
     <link rel="stylesheet" href="css/gamehub.css">
 
     <style>
-        /* 섹션 제목 스타일 */
         .section-title {
             font-size: 1.25rem;
             font-weight: 800;
-            margin-bottom: 20px;
+            margin-bottom: 18px;
             padding-bottom: 10px;
             border-bottom: 2px solid var(--primary-color);
             display: inline-block;
         }
 
-        /* 인기글 카드 스타일 */
-        .popular-post-card {
+        .popular-wrap {
             background: #fff;
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
-            padding: 16px 20px;
-            margin-bottom: 12px;
+            border: 1px solid #ebe8f3;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 6px 20px rgba(55, 34, 95, 0.05);
+            margin-bottom: 42px;
+        }
+
+        .popular-game-tabs {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 8px;
+            padding: 14px;
+            background: #faf9fd;
+            border-bottom: 1px solid #ece9f3;
+        }
+
+        .popular-game-tab {
+            border: 1px solid #e4dff0;
+            background: #fff;
+            color: #514a5f;
+            border-radius: 9px;
+            min-height: 42px;
+            padding: 8px 10px;
+            font-size: .88rem;
+            font-weight: 750;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            transition: .18s ease;
+        }
+
+        .popular-game-tab:hover {
+            border-color: #9b7de2;
+            color: #6941c6;
+            transform: translateY(-1px);
+        }
+
+        .popular-game-tab.active {
+            background: #6941c6;
+            border-color: #6941c6;
+            color: #fff;
+            box-shadow: 0 4px 10px rgba(105, 65, 198, .18);
+        }
+
+        .popular-panel-head {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 16px 18px 10px;
         }
 
-        .popular-post-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            border-color: var(--primary-color);
+        .popular-panel-title {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #2e2838;
         }
 
-        .post-info span {
-            font-size: 0.85rem;
-            color: #666;
-            margin-right: 10px;
+        .popular-game-link {
+            color: #6941c6;
+            font-size: .8rem;
+            font-weight: 700;
+            text-decoration: none;
         }
 
-        /* 즐겨찾기 커뮤니티 그리드 */
+        .popular-list {
+            padding: 0 14px 14px;
+        }
+
+        .popular-post-row {
+            display: grid;
+            grid-template-columns: 34px minmax(0, 1fr) 95px 76px;
+            gap: 10px;
+            align-items: center;
+            min-height: 48px;
+            padding: 0 10px;
+            border-top: 1px solid #f0edf5;
+            cursor: pointer;
+            transition: background .15s ease;
+        }
+
+        .popular-post-row:hover {
+            background: #faf9fd;
+        }
+
+        .popular-rank {
+            font-size: .82rem;
+            font-weight: 800;
+            color: #8a78b3;
+        }
+
+        .popular-post-title {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: .9rem;
+            font-weight: 700;
+            color: #26222d;
+        }
+
+        .popular-stat {
+            font-size: .76rem;
+            color: #88818f;
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .popular-empty {
+            color: #999;
+            text-align: center;
+            padding: 34px 20px;
+            font-size: .88rem;
+        }
+
         .fav-community-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
@@ -68,30 +156,32 @@
             border-color: var(--primary-color);
         }
 
-        .fav-icon {
-            font-size: 2.5rem;
-            margin-bottom: 12px;
-        }
+        .fav-icon { font-size: 2.5rem; margin-bottom: 12px; }
+        .fav-name { font-weight: 600; font-size: 0.95rem; color: #333; }
 
-        .fav-name {
-            font-weight: 600;
-            font-size: 0.95rem;
-            color: #333;
+        @media (max-width: 760px) {
+            .popular-game-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .popular-post-row { grid-template-columns: 28px minmax(0, 1fr) 70px; }
+            .popular-post-row .popular-views { display: none; }
         }
     </style>
 </head>
 <body>
 
-<!-- ★ common.js가 이 main-content를 감싸서 레이아웃을 자동 생성합니다 ★ -->
 <main id="main-content">
 
-    <!-- 1. 주간 인기 게시글 영역 -->
-    <h2 class="section-title">🔥 주간 인기 게시글</h2>
-    <div id="popularPosts" class="mb-5">
-        <p class="text-muted p-3">인기글을 불러오는 중입니다...</p>
-    </div>
+    <h2 class="section-title">🔥 게임별 인기 게시글</h2>
+    <section class="popular-wrap" aria-label="게임별 인기 게시글">
+        <div id="popularGameTabs" class="popular-game-tabs"></div>
+        <div class="popular-panel-head">
+            <div id="popularPanelTitle" class="popular-panel-title">인기 게시글</div>
+            <a id="popularGameLink" class="popular-game-link" href="#">게임 커뮤니티 전체보기 →</a>
+        </div>
+        <div id="popularPosts" class="popular-list">
+            <div class="popular-empty">인기글을 불러오는 중입니다...</div>
+        </div>
+    </section>
 
-    <!-- 2. 내 즐겨찾기 커뮤니티 영역 -->
     <h2 class="section-title">⭐ 내 즐겨찾기</h2>
     <div class="fav-community-grid">
         <div class="fav-card" onclick="location.href='post.html'">
@@ -106,7 +196,6 @@
             <div class="fav-icon">⚽</div>
             <div class="fav-name">스포츠</div>
         </div>
-        <!-- 추가하기 버튼 (현재는 껍데기만) -->
         <div class="fav-card" style="border: 1px dashed #ccc;" onclick="alert('커뮤니티 즐겨찾기 기능은 준비 중입니다!')">
             <div class="fav-icon" style="filter: grayscale(100%); opacity: 0.5;">➕</div>
             <div class="fav-name" style="color: #888;">추가하기</div>
@@ -115,62 +204,119 @@
 
 </main>
 
-<!-- 공통 JS: 헤더, 게임 네비, 회원정보, 공통 레이아웃 -->
 <script src="js/common.js"></script>
-
 <script>
-    // 페이지 로드 시 게시글 목록을 가져와서 '인기글' 3개만 추려냅니다.
-    fetch("posts")
-        .then(response => {
-            if (!response.ok) throw new Error("게시글 로드 실패");
-            return response.json();
-        })
-        .then(posts => {
-            const container = document.getElementById("popularPosts");
-            container.innerHTML = "";
+const GAME_DATA={
+    110:'리니지',120:'블레이드앤소울',130:'메이플스토리',140:'로스트아크',
+    210:'서든어택',220:'오버워치',230:'발로란트',240:'배틀그라운드',
+    310:'리그 오브 레전드',320:'도타 2',410:'FC 온라인',420:'eFootball',430:'NBA 2K',
+    510:'스타크래프트',520:'문명 VI',530:'에이지 오브 엠파이어 IV',
+    610:'심즈 4',620:'시티즈: 스카이라인 II',630:'유로 트럭 시뮬레이터 2',
+    910:'마인크래프트',920:'GTA V',930:'철권 8',940:'포르자 호라이즌 5',950:'데드 바이 데이라이트',960:'몬스터헌터 와일즈'
+};
+const FALLBACK_GAMES=[310,130,140,240,230,220,410,510];
+const VIEW_WEIGHT=1;
+const LIKE_WEIGHT=3;
+let allPosts=[];
+let popularGameIds=[];
+let selectedGameId=null;
 
-            if (posts.length === 0) {
-                container.innerHTML = "<p class='text-muted p-3'>등록된 게시글이 없습니다.</p>";
-                return;
-            }
+function getGameIdFromCategory(categoryId){
+    return Math.floor(Number(categoryId)/10);
+}
 
-            // 핵심 로직: 좋아요 수와 조회수를 합산한 점수로 내림차순 정렬
-            const popularPosts = posts.sort((a, b) => {
-                const scoreA = a.viewCount + (a.likeCount * 5);
-                const scoreB = b.viewCount + (b.likeCount * 5);
-                return scoreB - scoreA;
-            }).slice(0, 3);
+function getPopularScore(post){
+    return (Number(post.viewCount)||0)*VIEW_WEIGHT + (Number(post.likeCount)||0)*LIKE_WEIGHT;
+}
 
-            // 화면에 렌더링
-            popularPosts.forEach(post => {
-                container.innerHTML += `
-                    <div class="popular-post-card" onclick="location.href='post-detail?postId=${post.postId}'">
-                        <div>
-                            <h5 class="mb-1" style="font-weight: 600; color: #111;">
-                                ${escapeHtml(post.title)}
-                            </h5>
-                            <div class="post-info">
-                                <span>👤 ${escapeHtml(post.username)}</span>
-                                <span>📅 ${post.createdAt.split(' ')[0]}</span>
-                            </div>
-                        </div>
-                        <div class="text-end" style="min-width: 80px;">
-                            <span style="color: #1976d2; font-weight: bold; font-size: 1.1rem;">👍 ${post.likeCount}</span>
-                            <div class="text-muted" style="font-size: 0.8rem;">조회 ${post.viewCount}</div>
-                        </div>
-                    </div>
-                `;
-            });
-        })
-        .catch(error => {
-            console.error(error);
-            document.getElementById("popularPosts").innerHTML = "<p class='text-danger p-3'>인기글을 불러오지 못했습니다.</p>";
+function selectPopularGames(posts){
+    const scoreByGame=new Map();
+    posts.forEach(post=>{
+        const gameId=getGameIdFromCategory(post.categoryId);
+        if(!GAME_DATA[gameId]) return;
+        scoreByGame.set(gameId,(scoreByGame.get(gameId)||0)+getPopularScore(post));
+    });
+
+    const ranked=[...scoreByGame.entries()]
+        .sort((a,b)=>b[1]-a[1])
+        .map(([gameId])=>gameId);
+
+    const merged=[...ranked,...FALLBACK_GAMES].filter((gameId,index,array)=>array.indexOf(gameId)===index);
+    return merged.slice(0,8);
+}
+
+function renderGameTabs(){
+    const tabs=document.getElementById('popularGameTabs');
+    tabs.innerHTML=popularGameIds.map(gameId=>`
+        <button type="button" class="popular-game-tab ${gameId===selectedGameId?'active':''}" data-game-id="${gameId}">
+            ${escapeHtml(GAME_DATA[gameId])}
+        </button>
+    `).join('');
+
+    tabs.querySelectorAll('.popular-game-tab').forEach(button=>{
+        button.addEventListener('click',()=>{
+            selectedGameId=Number(button.dataset.gameId);
+            renderGameTabs();
+            renderPopularPosts();
         });
+    });
+}
 
-    function escapeHtml(value) {
-        if (!value) return "";
-        return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;").replace(/'/g, "&#039;");
+function renderPopularPosts(){
+    const container=document.getElementById('popularPosts');
+    const title=document.getElementById('popularPanelTitle');
+    const gameLink=document.getElementById('popularGameLink');
+    const gameName=GAME_DATA[selectedGameId]||'게임';
+
+    title.textContent=`${gameName} 인기 게시글 TOP 10`;
+    gameLink.href=`game.html?gameId=${selectedGameId}`;
+
+    const posts=allPosts
+        .filter(post=>getGameIdFromCategory(post.categoryId)===selectedGameId)
+        .sort((a,b)=>getPopularScore(b)-getPopularScore(a) || String(b.createdAt).localeCompare(String(a.createdAt)))
+        .slice(0,10);
+
+    if(!posts.length){
+        container.innerHTML=`<div class="popular-empty">${escapeHtml(gameName)}에 아직 등록된 게시글이 없습니다.</div>`;
+        return;
     }
+
+    container.innerHTML=posts.map((post,index)=>`
+        <div class="popular-post-row" onclick="location.href='post-detail?postId=${post.postId}'">
+            <div class="popular-rank">${index+1}</div>
+            <div class="popular-post-title">${escapeHtml(post.title)}</div>
+            <div class="popular-stat">👍 ${Number(post.likeCount)||0}</div>
+            <div class="popular-stat popular-views">조회 ${Number(post.viewCount)||0}</div>
+        </div>
+    `).join('');
+}
+
+fetch('posts')
+    .then(response=>{
+        if(!response.ok) throw new Error('게시글 로드 실패');
+        return response.json();
+    })
+    .then(posts=>{
+        allPosts=Array.isArray(posts)?posts:[];
+        popularGameIds=selectPopularGames(allPosts);
+        selectedGameId=popularGameIds[0]||FALLBACK_GAMES[0];
+        renderGameTabs();
+        renderPopularPosts();
+    })
+    .catch(error=>{
+        console.error(error);
+        document.getElementById('popularPosts').innerHTML='<div class="popular-empty text-danger">인기글을 불러오지 못했습니다.</div>';
+    });
+
+function escapeHtml(value){
+    if(value===null||value===undefined) return '';
+    return String(value)
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;')
+        .replace(/\"/g,'&quot;')
+        .replace(/'/g,'&#039;');
+}
 </script>
 
 </body>

@@ -38,10 +38,7 @@ public class PostDetailServlet extends HttpServlet {
             return;
         }
 
-        // 🔥 [추가된 부분] 데이터를 화면에 뿌리기 전에 DB에서 조회수부터 1 증가시킵니다!
         postDAO.increaseViewCount(postId);
-
-        // 이후 기존 코드 유지
         PostDTO post = postDAO.findById(postId);
         if (post == null) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "게시글을 찾을 수 없습니다.");
@@ -51,7 +48,6 @@ public class PostDetailServlet extends HttpServlet {
         long categoryId = post.getCategoryId() == null ? 0L : post.getCategoryId();
         long gameId = categoryId >= 1000 ? categoryId / 10 : categoryId;
         String gameName = getGameName(gameId);
-        String genreName = getGenreName(gameId);
 
         int likeCount = postLikeDAO.getLikeCount(postId);
         int dislikeCount = postLikeDAO.getDislikeCount(postId);
@@ -67,9 +63,8 @@ public class PostDetailServlet extends HttpServlet {
                     <link rel="stylesheet" href="css/gamehub.css">
                     <style>
                         body { margin:0; font-family:Arial,sans-serif; background:#f8f9fa; }
-                        .post-detail-wrap { width:100%; max-width:1100px; margin:32px auto; padding:0 16px; box-sizing:border-box; }
+                        .post-detail-wrap { width:100%; max-width:1100px; margin:0 auto 32px; padding:0 16px; box-sizing:border-box; }
                         .post-context-banner { margin-bottom:16px; padding:22px 26px; border-radius:12px; background:linear-gradient(135deg,#352064,#6941c6); color:#fff; box-shadow:0 3px 12px rgba(53,32,100,.12); }
-                        .post-context-banner .genre { display:block; margin-bottom:4px; font-size:.78rem; font-weight:700; letter-spacing:.04em; opacity:.72; }
                         .post-context-banner .game-name { margin:0; font-size:1.55rem; font-weight:800; }
                         .post-context-banner .description { margin:5px 0 0; font-size:.92rem; opacity:.84; }
                         .post-community-layout { display:grid; grid-template-columns:200px minmax(0,1fr); gap:16px; align-items:start; }
@@ -96,7 +91,6 @@ public class PostDetailServlet extends HttpServlet {
 
         response.getWriter().println(
                 "<section class='post-context-banner'>" +
-                        "<span class='genre'>" + escapeHtml(genreName) + " COMMUNITY</span>" +
                         "<h2 class='game-name'>" + escapeHtml(gameName) + "</h2>" +
                         "<p class='description'>" + escapeHtml(gameName) + " 커뮤니티 게시글입니다.</p>" +
                         "</section>"
@@ -133,25 +127,18 @@ public class PostDetailServlet extends HttpServlet {
                 </main>
 
                 <script src="js/common.js"></script>
+                <script src="js/comment.js"></script>
                 <script>
                     function recommendPost(type) {
                         const postId = new URLSearchParams(location.search).get("postId");
-                        if (!postId) {
-                            alert("게시글 번호가 없습니다.");
-                            return;
-                        }
-
+                        if (!postId) { alert("게시글 번호가 없습니다."); return; }
                         fetch("post-like", {
                             method: "POST",
                             headers: { "Content-Type": "application/x-www-form-urlencoded" },
                             body: "postId=" + encodeURIComponent(postId) + "&likeType=" + encodeURIComponent(type)
                         })
                         .then(response => {
-                            if (response.status === 401) {
-                                alert("로그인이 필요합니다.");
-                                location.href = "login.html";
-                                return null;
-                            }
+                            if (response.status === 401) { alert("로그인이 필요합니다."); location.href = "login.html"; return null; }
                             return response.json();
                         })
                         .then(data => {
@@ -160,14 +147,9 @@ public class PostDetailServlet extends HttpServlet {
                                 document.getElementById("likeCount").textContent = data.likeCount;
                                 document.getElementById("dislikeCount").textContent = data.dislikeCount;
                                 alert(type === "LIKE" ? "좋아요를 눌렀습니다." : "나빠요를 눌렀습니다.");
-                            } else {
-                                alert(data.message);
-                            }
+                            } else alert(data.message);
                         })
-                        .catch(error => {
-                            console.error(error);
-                            alert("추천 처리 중 오류가 발생했습니다.");
-                        });
+                        .catch(error => { console.error(error); alert("추천 처리 중 오류가 발생했습니다."); });
                     }
                 </script>
                 </body>
@@ -211,27 +193,9 @@ public class PostDetailServlet extends HttpServlet {
         };
     }
 
-    private String getGenreName(long gameId) {
-        long genreId = (gameId / 100) * 100;
-        return switch ((int) genreId) {
-            case 100 -> "RPG";
-            case 200 -> "FPS/TPS";
-            case 300 -> "MOBA";
-            case 400 -> "스포츠";
-            case 500 -> "전략";
-            case 600 -> "시뮬레이션";
-            case 900 -> "그 외 장르";
-            default -> "GAME";
-        };
-    }
-
     private String escapeHtml(String value) {
         if (value == null) return "";
-        return value
-                .replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
-                .replace("\"", "&quot;")
-                .replace("'", "&#039;");
+        return value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                .replace("\"", "&quot;").replace("'", "&#039;");
     }
 }
