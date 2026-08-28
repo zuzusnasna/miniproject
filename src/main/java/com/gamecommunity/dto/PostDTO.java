@@ -19,7 +19,15 @@ public class PostDTO {
 
     private String createdAt;
     private String updatedAt;
+    private String nickname;
 
+    public String getNickname() {
+        return nickname;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
+    }
 
     public Long getPostId() {
         return postId;

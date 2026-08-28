@@ -60,12 +60,15 @@ public class PostListServlet extends HttpServlet {
             if (i > 0) {
                 json.append(",");
             }
+            // 닉네임이 없으면 아이디를 fallback으로 사용
+            String writerName = post.getNickname() != null ? post.getNickname() : post.getUsername();
 
             json.append("{")
                     .append("\"postId\":").append(post.getPostId()).append(",")
                     .append("\"categoryId\":").append(post.getCategoryId()).append(",")
                     .append("\"memberNo\":").append(post.getMemberNo()).append(",")
                     .append("\"username\":\"").append(escape(post.getUsername())).append("\",")
+                    .append("\"nickname\":\"").append(escape(writerName)).append("\",")
                     .append("\"title\":\"").append(escape(post.getTitle())).append("\",")
                     .append("\"content\":\"").append(escape(post.getContent())).append("\",")
                     .append("\"viewCount\":").append(post.getViewCount()).append(",")

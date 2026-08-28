@@ -139,10 +139,11 @@
                 return res.json();
             })
             .then(categoryList => {
-                // 현재 게임(gameId) 하위의 활성 게시판(DEPTH=3)만 필터링
                 const activeBoards = categoryList.filter(c => Number(c.depth) === 3 && Number(c.parentId) === gameId);
 
-                // fallback 목록
+                // 🔥 [추가] categoryId 오름차순 정렬
+                activeBoards.sort((a, b) => Number(a.categoryId) - Number(b.categoryId));
+
                 const boards = activeBoards.length > 0 ? activeBoards : [
                     { categoryId: gameId * 10 + 1, categoryName: '자유게시판' },
                     { categoryId: gameId * 10 + 2, categoryName: '질문게시판' },
