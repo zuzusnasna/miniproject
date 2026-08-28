@@ -25,8 +25,7 @@ public class CategoryManagerRequestServlet extends HttpServlet {
         response.setContentType("application/json; charset=UTF-8");
         MemberDTO member = getMember(request);
         if (member == null) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("{\"success\":false,\"message\":\"로그인이 필요합니다.\"}");
+            writeJson(response, "{\"success\":false,\"message\":\"로그인이 필요합니다.\"}");
             return;
         }
 
@@ -34,18 +33,23 @@ public class CategoryManagerRequestServlet extends HttpServlet {
         String status = requestDAO.getRequestStatus(member.getMemberNo());
         List<CategoryDTO> games = categoryDAO.findByDepth(2);
 
-        StringBuilder json = new StringBuilder("{\"success\":true,\"eligible\":").append(likes >= 50)
+        StringBuilder json = new StringBuilder("{\"success\":true,\"eligible\":")
+                .append(likes >= 50)
                 .append(",\"likes\":").append(likes)
-                .append(",\"status\":").append(status == null ? "null" : "\"" + escape(status) + "\"")
+                .append(",\"status\":")
+                .append(status == null ? "null" : "\"" + escape(status) + "\"")
                 .append(",\"games\":[");
+
         for (int i = 0; i < games.size(); i++) {
-            if (i > 0) json.append(',');
+            if (i > 0) {
+                json.append(',');
+            }
             CategoryDTO game = games.get(i);
             json.append("{\"categoryId\":").append(game.getCategoryId())
                     .append(",\"categoryName\":\"").append(escape(game.getCategoryName())).append("\"}");
         }
         json.append("]}");
-        response.getWriter().write(json);
+        writeJson(response, json.toString());
     }
 
     @Override
@@ -54,8 +58,7 @@ public class CategoryManagerRequestServlet extends HttpServlet {
         response.setContentType("application/json; charset=UTF-8");
         MemberDTO member = getMember(request);
         if (member == null) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("{\"success\":false,\"message\":\"로그인이 필요합니다.\"}");
+            writeJson(response, "{\"success\":false,\"message\":\"로그인이 필요합니다.\"}");
             return;
         }
 
@@ -63,20 +66,20 @@ public class CategoryManagerRequestServlet extends HttpServlet {
         int likes = memberDAO.getReceivedLikeCount(memberNo);
         if (likes < 50) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            response.getWriter().write("{\"success\":false,\"message\":\"받은 좋아요가 50개 이상이어야 신청할 수 있습니다.\"}");
+            writeJson(response, "{\"success\":false,\"message\":\"받은 좋아요가 50개 이상이어야 신청할 수 있습니다.\"}");
             return;
         }
 
         if (requestDAO.hasPendingRequest(memberNo) || requestDAO.hasApprovedRequest(memberNo)) {
             response.setStatus(HttpServletResponse.SC_CONFLICT);
-            response.getWriter().write("{\"success\":false,\"message\":\"이미 신청했거나 카테고리 관리자 권한을 보유하고 있습니다.\"}");
+            writeJson(response, "{\"success\":false,\"message\":\"이미 신청했거나 카테고리 관리자 권한을 보유하고 있습니다.\"}");
             return;
         }
 
         String categoryIdParam = request.getParameter("categoryId");
         if (categoryIdParam == null || categoryIdParam.isBlank()) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write("{\"success\":false,\"message\":\"관리할 게임을 선택해주세요.\"}");
+            writeJson(response, "{\"success\":false,\"message\":\"관리할 게임을 선택해주세요.\"}");
             return;
         }
 
@@ -85,15 +88,15 @@ public class CategoryManagerRequestServlet extends HttpServlet {
             CategoryDTO game = categoryDAO.findById(categoryId);
             if (game == null || game.getDepth() != 2) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().write("{\"success\":false,\"message\":\"관리할 게임을 올바르게 선택해주세요.\"}");
+                writeJson(response, "{\"success\":false,\"message\":\"관리할 게임을 올바르게 선택해주세요.\"}");
                 return;
             }
 
             boolean result = requestDAO.insertRequest(memberNo, categoryId);
-            response.getWriter().write("{\"success\":" + result + ",\"message\":\"카테고리 관리자 권한 신청이 접수되었습니다.\"}");
+            writeJson(response, "{\"success\":" + result + ",\"message\":\"카테고리 관리자 권한 신청이 접수되었습니다.\"}");
         } catch (NumberFormatException e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write("{\"success\":false,\"message\":\"잘못된 게임입니다.\"}");
+            writeJson(response, "{\"success\":false,\"message\":\"잘못된 게임입니다.\"}");
         }
     }
 
@@ -102,8 +105,14 @@ public class CategoryManagerRequestServlet extends HttpServlet {
         return session == null ? null : (MemberDTO) session.getAttribute("member");
     }
 
+    private void writeJson(HttpServletResponse response, String json) throws IOException {
+        response.getWriter().write(json);
+    }
+
     private String escape(String value) {
-        if (value == null) return "";
+        if (value == null) {
+            return "";
+        }
         return value.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 }
