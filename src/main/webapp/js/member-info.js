@@ -49,6 +49,7 @@ function initMemberInfoBox() {
             button.setAttribute("aria-label", collapsed ? "회원정보 펼치기" : "회원정보 접기");
             localStorage.setItem("gameCommunity_memberBoxCollapsed", String(collapsed));
             memberBox.classList.toggle("collapsed", collapsed);
+            keepMemberBoxInsideViewport(memberBox);
         };
         content.hidden = saved;
         button.textContent = saved ? "+" : "−";
@@ -58,6 +59,7 @@ function initMemberInfoBox() {
 
     restoreMemberBoxPosition(memberBox);
     makeMemberBoxDraggable(memberBox);
+    keepMemberBoxInsideViewport(memberBox);
     loadMemberInfo();
 }
 
@@ -108,6 +110,21 @@ function restoreMemberBoxPosition(memberBox) {
     }
 }
 
+function keepMemberBoxInsideViewport(memberBox) {
+    if (!memberBox) return;
+    const rect = memberBox.getBoundingClientRect();
+    const maxLeft = Math.max(0, window.innerWidth - memberBox.offsetWidth);
+    const maxTop = Math.max(0, window.innerHeight - memberBox.offsetHeight);
+    const left = Math.max(0, Math.min(rect.left, maxLeft));
+    const top = Math.max(0, Math.min(rect.top, maxTop));
+    memberBox.style.left = left + "px";
+    memberBox.style.top = top + "px";
+    memberBox.style.right = "auto";
+    memberBox.style.bottom = "auto";
+    localStorage.setItem("gameCommunity_memberBoxLeft", Math.round(left));
+    localStorage.setItem("gameCommunity_memberBoxTop", Math.round(top));
+}
+
 function makeMemberBoxDraggable(memberBox) {
     if (!memberBox || memberBox.dataset.draggable === "true") return;
     const dragHandle = memberBox.querySelector(".member-title");
@@ -139,11 +156,14 @@ function makeMemberBoxDraggable(memberBox) {
     document.addEventListener("mouseup", function() {
         if (!isDragging) return;
         isDragging = false;
-        const rect = memberBox.getBoundingClientRect();
-        localStorage.setItem("gameCommunity_memberBoxLeft", Math.round(rect.left));
-        localStorage.setItem("gameCommunity_memberBoxTop", Math.round(rect.top));
+        keepMemberBoxInsideViewport(memberBox);
     });
 }
+
+window.addEventListener("resize", function() {
+    const memberBox = document.querySelector(".common-member-info");
+    if (memberBox) keepMemberBoxInsideViewport(memberBox);
+});
 
 function escapeHtml(value) {
     if (value == null) return "";
