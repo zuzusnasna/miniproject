@@ -1,13 +1,17 @@
 package com.gamecommunity.servlet;
 
+import com.gamecommunity.dao.CategoryManagerDAO;
+import com.gamecommunity.dao.MemberDAO;
 import com.gamecommunity.dao.PostDAO;
 import com.gamecommunity.dao.PostLikeDAO;
+import com.gamecommunity.dto.MemberDTO;
 import com.gamecommunity.dto.PostDTO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 
@@ -16,6 +20,8 @@ public class PostDetailServlet extends HttpServlet {
 
     private final PostDAO postDAO = new PostDAO();
     private final PostLikeDAO postLikeDAO = new PostLikeDAO();
+    private final MemberDAO memberDAO = new MemberDAO();
+    private final CategoryManagerDAO categoryManagerDAO = new CategoryManagerDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -52,6 +58,19 @@ public class PostDetailServlet extends HttpServlet {
         int likeCount = postLikeDAO.getLikeCount(postId);
         int dislikeCount = postLikeDAO.getDislikeCount(postId);
 
+        // 로그인 사용자의 삭제 권한 확인
+        HttpSession session = request.getSession(false);
+        MemberDTO loginMember = session == null ? null : (MemberDTO) session.getAttribute("member");
+        boolean canDelete = false;
+
+        if (loginMember != null) {
+            long memberNo = loginMember.getMemberNo();
+            boolean isSystemManager = memberDAO.isSystemManager(memberNo);
+            boolean isCategoryManager = categoryManagerDAO.isManagerOfCategory(memberNo, categoryId);
+            boolean isAuthor = memberNo == post.getMemberNo();
+            canDelete = isSystemManager || isCategoryManager || isAuthor;
+        }
+
         response.getWriter().println("""
                 <!DOCTYPE html>
                 <html lang="ko">
@@ -82,6 +101,7 @@ public class PostDetailServlet extends HttpServlet {
                         .dislike-button { background-color:#ffecec; border:1px solid #f08a8a; }
                         .count { font-weight:bold; margin-left:5px; }
                         .buttons { margin-top:25px; text-align:right; }
+                        .delete-button { margin-left:8px; }
                         @media(max-width:800px) { .post-community-layout { grid-template-columns:1fr; } .post-board-sidebar { display:flex; gap:6px; overflow:auto; } .post-board-sidebar h3 { display:none; } .post-board-link { white-space:nowrap; width:auto; margin:0; } }
                     </style>
                 </head>
@@ -118,10 +138,17 @@ public class PostDetailServlet extends HttpServlet {
                         "</div>"
         );
 
+        response.getWriter().println("<div class='buttons'>");
+        response.getWriter().println("<button type='button' class='btn btn-outline-secondary' onclick='history.back()'>목록으로</button>");
+
+        if (canDelete) {
+            response.getWriter().println(
+                    "<button type='button' class='btn btn-outline-danger delete-button' onclick='deletePost(" + postId + ")'>삭제</button>"
+            );
+        }
+
+        response.getWriter().println("</div>");
         response.getWriter().println("""
-                    <div class="buttons">
-                        <button type="button" class="btn btn-outline-secondary" onclick="history.back()">목록으로</button>
-                    </div>
                     </div>
                     </div>
                 </main>
@@ -150,6 +177,30 @@ public class PostDetailServlet extends HttpServlet {
                             } else alert(data.message);
                         })
                         .catch(error => { console.error(error); alert("추천 처리 중 오류가 발생했습니다."); });
+                    }
+
+                    function deletePost(postId) {
+                        if (!confirm("정말 이 게시글을 삭제하시겠습니까?")) return;
+
+                        fetch("post-delete", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                            credentials: "include",
+                            body: "postId=" + encodeURIComponent(postId)
+                        })
+                        .then(response => response.json().then(data => ({ status: response.status, data })))
+                        .then(result => {
+                            if (result.data.success) {
+                                alert(result.data.message);
+                                history.back();
+                            } else {
+                                alert(result.data.message || "게시글 삭제에 실패했습니다.");
+                            }
+                        })
+                        .catch(error => {
+                            console.error(error);
+                            alert("게시글 삭제 중 오류가 발생했습니다.");
+                        });
                     }
                 </script>
                 </body>
