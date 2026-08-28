@@ -30,7 +30,15 @@ function initLayout() {
 
         const adSidebar = document.createElement("aside");
         adSidebar.className = "content-right ad-sidebar";
-        adSidebar.innerHTML = `<div class="ad-slot" aria-label="광고 영역"><span class="ad-label">ADVERTISEMENT</span><div class="ad-placeholder">광고 영역</div><small>160 × 600</small></div>`;
+        adSidebar.innerHTML = `
+    <div class="ad-slot" aria-label="광고 영역">
+        <span class="ad-label">ADVERTISEMENT</span>
+
+        <video class="ad-video" autoplay muted loop playsinline>
+            <source src="images/gamehub-ad.mp4" type="video/mp4">
+        </video>
+    </div>
+`;
         layoutContainer.appendChild(adSidebar);
     }
 }
@@ -46,10 +54,15 @@ function injectCustomStyles() {
         body .content-left { flex:1 1 0% !important; min-width:0 !important; }
         body .content-right { width:160px !important; flex:0 0 160px !important; }
         body .ad-sidebar { position:relative; }
-        body .ad-slot { min-height:600px; padding:14px; border:1px solid rgba(105,65,198,.28); border-radius:12px; background:#f8f6fd; color:#6941c6; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; box-sizing:border-box; }
+        body .ad-video {
+    width:100%;
+    height:570px;
+    object-fit:cover;
+    border-radius:9px;
+    display:block;
+}
+        body .ad-slot { min-height:600px; padding:6px; border:1px solid rgba(105,65,198,.28); border-radius:12px; background:#f8f6fd; color:#6941c6; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; box-sizing:border-box; }
         body .ad-label { position:absolute; top:14px; font-size:.62rem; font-weight:800; letter-spacing:.08em; color:#8a7aad; }
-        body .ad-placeholder { font-size:1rem; font-weight:800; margin-bottom:8px; }
-        body .ad-slot small { color:#938aa5; line-height:1.45; }
         @media (max-width:980px) { body .layout-grid { flex-direction:column !important; } body .content-right { width:100% !important; flex:0 0 auto !important; } body .ad-slot { min-height:140px; } }
     `;
     document.head.appendChild(style);

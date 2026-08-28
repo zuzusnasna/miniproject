@@ -11,6 +11,12 @@ function injectMemberInfoStyles() {
         .common-member-info #commonMemberContent[hidden] { display:none !important; }
         .common-member-info.collapsed { width:200px; }
         .common-member-info.collapsed .member-title { padding:9px 12px; }
+        #categoryManagerRequest { margin-top:12px; padding-top:12px; border-top:1px solid #eee; }
+        #categoryManagerRequest select, #categoryManagerRequest button { width:100%; box-sizing:border-box; margin-top:7px; padding:7px; border-radius:5px; }
+        #categoryManagerRequest select { border:1px solid #ccc; background:#fff; }
+        #categoryManagerRequest button { border:0; background:#6f42c1; color:#fff; font-weight:bold; cursor:pointer; }
+        #categoryManagerRequest button:disabled { background:#aaa; cursor:not-allowed; }
+        .request-message { margin-top:7px; font-size:12px; }
     `;
     document.head.appendChild(style);
 }
@@ -89,10 +95,83 @@ function loadMemberInfo() {
                 </div>
                 <div class="member-row like">👍 받은 좋아요: <strong>${likeCount}</strong></div>
                 <div class="member-row dislike">👎 받은 나빠요: <strong>${dislikeCount}</strong></div>`;
+            loadCategoryManagerRequest(content, likeCount);
         })
         .catch(error => {
             console.debug("비로그인 상태:", error.message);
             if (content) content.innerHTML = `<div class="member-error">로그인하면 회원정보가 표시됩니다.</div>`;
+        });
+}
+
+function loadCategoryManagerRequest(content, likeCount) {
+    if (likeCount < 50) return;
+
+    fetch("category-manager-request", { credentials:"include" })
+        .then(response => {
+            if (!response.ok) throw new Error("카테고리 관리자 신청 정보를 불러오지 못했습니다.");
+            return response.json();
+        })
+        .then(data => {
+            if (!data || !data.success || !data.eligible || data.status === "APPROVED") return;
+
+            const box = document.createElement("div");
+            box.id = "categoryManagerRequest";
+
+            if (data.status === "PENDING") {
+                box.innerHTML = '<strong>🎮 카테고리 관리자</strong><div class="request-message">권한 신청이 승인 대기 중입니다.</div>';
+            } else {
+                const options = (data.games || [])
+                    .map(game => `<option value="${game.categoryId}">${escapeHtml(game.categoryName)}</option>`)
+                    .join("");
+
+                box.innerHTML = `
+                    <strong>🎮 카테고리 관리자 신청</strong>
+                    <div class="request-message">받은 좋아요 ${data.likes}개로 신청할 수 있습니다.</div>
+                    <select id="managerGameSelect"><option value="">관리할 게임 선택</option>${options}</select>
+                    <button type="button" id="managerRequestButton">신청하기</button>
+                    <div id="managerRequestMessage" class="request-message"></div>`;
+
+                box.querySelector("#managerRequestButton").addEventListener("click", submitCategoryManagerRequest);
+            }
+
+            content.appendChild(box);
+        })
+        .catch(error => console.debug("카테고리 관리자 신청 정보:", error.message));
+}
+
+function submitCategoryManagerRequest() {
+    const select = document.getElementById("managerGameSelect");
+    const button = document.getElementById("managerRequestButton");
+    const message = document.getElementById("managerRequestMessage");
+    if (!select || !button || !message) return;
+    if (!select.value) {
+        message.textContent = "관리할 게임을 선택해주세요.";
+        message.style.color = "#d32f2f";
+        return;
+    }
+
+    button.disabled = true;
+    const body = new URLSearchParams({ categoryId: select.value });
+    fetch("category-manager-request", {
+        method:"POST",
+        credentials:"include",
+        headers:{"Content-Type":"application/x-www-form-urlencoded"},
+        body
+    })
+        .then(response => response.json())
+        .then(data => {
+            message.textContent = data.message || (data.success ? "신청되었습니다." : "신청에 실패했습니다.");
+            message.style.color = data.success ? "#198754" : "#d32f2f";
+            if (data.success) {
+                button.textContent = "승인 대기 중";
+            } else {
+                button.disabled = false;
+            }
+        })
+        .catch(() => {
+            message.textContent = "서버 통신 오류가 발생했습니다.";
+            message.style.color = "#d32f2f";
+            button.disabled = false;
         });
 }
 
