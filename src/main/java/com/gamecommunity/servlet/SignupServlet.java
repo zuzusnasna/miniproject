@@ -60,7 +60,7 @@ public class SignupServlet extends HttpServlet {
         int result = memberDAO.insertMember(member);
 
         if (result > 0) {
-            response.sendRedirect(request.getContextPath() + "/login.html");
+            response.sendRedirect(request.getContextPath() + "/login.html?signup=success");
         } else {
             response.getWriter().println("회원가입 실패");
         }
