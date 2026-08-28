@@ -1,0 +1,4 @@
+# Copy this file as naver-api.properties and enter your own NAVER API HUB credentials.
+# Never commit naver-api.properties with real credentials.
+naver.client.id=YOUR_CLIENT_ID
+naver.client.secret=YOUR_CLIENT_SECRET
