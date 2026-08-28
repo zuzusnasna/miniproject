@@ -364,11 +364,16 @@ public class MemberDAO {
         return false;
     }
     public boolean withdrawMember(long memberNo) {
-        // 회원 탈퇴
+        // 회원 탈퇴 및 아이디/닉네임/개인정보 Unknown 처리
         String sql = """
             UPDATE MEMBER
             SET ACCOUNT_STATUS = 'WITHDRAWN',
-                UPDATED_AT = SYSDATE
+                USERNAME       = 'Unknown_' || MEMBER_NO,
+                NICKNAME       = 'Unknown',
+                NAME           = 'Unknown',
+                PHONE          = '00000000000',
+                PASSWORD       = 'UNKNOWN_ACCOUNT_DISABLED',
+                UPDATED_AT     = SYSDATE
             WHERE MEMBER_NO = ?
             """;
 
@@ -378,7 +383,7 @@ public class MemberDAO {
         ) {
             pstmt.setLong(1, memberNo);
 
-            return pstmt.executeUpdate() > 0; // 업데이트 성공 시 true 반환
+            return pstmt.executeUpdate() > 0;
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -386,6 +391,7 @@ public class MemberDAO {
 
         return false;
     }
+
     // 시스템 관리자의 권한 확인 메소드(게시판 승인, 삭제 기능 구현간 추가)
     public boolean isSystemManager(long memberNo) {
         String sql = """

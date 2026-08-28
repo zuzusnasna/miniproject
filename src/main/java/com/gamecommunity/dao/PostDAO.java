@@ -23,6 +23,7 @@ public class PostDAO {
                 P.CATEGORY_ID,
                 P.MEMBER_NO,
                 M.USERNAME,
+                M.NICKNAME,
                 P.TITLE,
                 P.CONTENT,
                 P.VIEW_COUNT,
@@ -52,6 +53,7 @@ public class PostDAO {
                 post.setCategoryId(rs.getLong("CATEGORY_ID"));
                 post.setMemberNo(rs.getLong("MEMBER_NO"));
                 post.setUsername(rs.getString("USERNAME"));
+                post.setNickname(rs.getString("NICKNAME"));
                 post.setTitle(rs.getString("TITLE"));
                 post.setContent(rs.getString("CONTENT"));
                 post.setViewCount(rs.getInt("VIEW_COUNT"));
@@ -60,6 +62,7 @@ public class PostDAO {
                 post.setIsNotice(rs.getString("IS_NOTICE"));
                 post.setIsDeleted(rs.getString("IS_DELETED"));
                 post.setCreatedAt(rs.getString("CREATED_AT"));
+                post.setNickname(rs.getString("NICKNAME"));
 
                 postList.add(post);
             }
@@ -84,6 +87,7 @@ public class PostDAO {
             P.CATEGORY_ID,
             P.MEMBER_NO,
             M.USERNAME,
+            M.NICKNAME,
             P.TITLE,
             P.CONTENT,
             P.VIEW_COUNT,
@@ -117,6 +121,7 @@ public class PostDAO {
                     post.setCategoryId(rs.getLong("CATEGORY_ID"));
                     post.setMemberNo(rs.getLong("MEMBER_NO"));
                     post.setUsername(rs.getString("USERNAME"));
+                    post.setNickname(rs.getString("NICKNAME"));
                     post.setTitle(rs.getString("TITLE"));
                     post.setContent(rs.getString("CONTENT"));
                     post.setViewCount(rs.getInt("VIEW_COUNT"));
@@ -216,6 +221,7 @@ public class PostDAO {
             P.CATEGORY_ID,
             P.MEMBER_NO,
             M.USERNAME,
+            M.NICKNAME,
             P.TITLE,
             P.CONTENT,
             P.VIEW_COUNT,
@@ -248,6 +254,7 @@ public class PostDAO {
                     post.setCategoryId(rs.getLong("CATEGORY_ID"));
                     post.setMemberNo(rs.getLong("MEMBER_NO"));
                     post.setUsername(rs.getString("USERNAME"));
+                    post.setNickname(rs.getString("NICKNAME"));
                     post.setTitle(rs.getString("TITLE"));
                     post.setContent(rs.getString("CONTENT"));
                     post.setViewCount(rs.getInt("VIEW_COUNT"));
@@ -256,6 +263,7 @@ public class PostDAO {
                     post.setIsNotice(rs.getString("IS_NOTICE"));
                     post.setIsDeleted(rs.getString("IS_DELETED"));
                     post.setCreatedAt(rs.getString("CREATED_AT"));
+
 
                     return post;
                 }
@@ -391,6 +399,7 @@ public class PostDAO {
             P.CATEGORY_ID,
             P.MEMBER_NO,
             M.USERNAME,
+            M.NICKNAME,
             P.TITLE,
             P.CONTENT,
             P.VIEW_COUNT,
@@ -418,6 +427,7 @@ public class PostDAO {
                 post.setCategoryId(rs.getLong("CATEGORY_ID"));
                 post.setMemberNo(rs.getLong("MEMBER_NO"));
                 post.setUsername(rs.getString("USERNAME"));
+                post.setNickname(rs.getString("NICKNAME"));
                 post.setTitle(rs.getString("TITLE"));
                 post.setContent(rs.getString("CONTENT"));
                 post.setViewCount(rs.getInt("VIEW_COUNT"));

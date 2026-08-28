@@ -5,6 +5,7 @@ public class CommentDTO {
     private Long postId;
     private Long parentCommentId;
     private Long memberNo;
+    private String nickname;
     private String username;
     private String content;
     private int likeCount;
@@ -12,6 +13,14 @@ public class CommentDTO {
     private String isDeleted;
     private String createdAt;
     private String updatedAt;
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
     public Long getCommentId() { return commentId; }
     public void setCommentId(Long commentId) { this.commentId = commentId; }
@@ -25,8 +34,13 @@ public class CommentDTO {
     public Long getMemberNo() { return memberNo; }
     public void setMemberNo(Long memberNo) { this.memberNo = memberNo; }
 
-    public String getUsername() { return username; }
-    public void setUsername(String username) { this.username = username; }
+    public String getNickname() {
+        return nickname;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
+    }
 
     public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }
