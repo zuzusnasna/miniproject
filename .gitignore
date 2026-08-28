@@ -27,3 +27,5 @@ target/
 .DS_Store
 Thumbs.db
 
+# Naver-api
+src/main/resources/naver-api.properties
