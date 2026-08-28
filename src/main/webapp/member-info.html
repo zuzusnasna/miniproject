@@ -5,126 +5,122 @@
     <title>회원정보</title>
 
     <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: transparent;
-        }
-
-        #memberBox {
-            width: 240px;
-            box-sizing: border-box;
-            padding: 15px;
-
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        h3 {
-            margin: 0 0 12px 0;
-        }
-
-        p {
-            margin: 6px 0;
-            font-size: 14px;
-        }
-
-        .like {
-            color: #1976d2;
-            font-weight: bold;
-        }
-
-        .dislike {
-            color: #d32f2f;
-            font-weight: bold;
-        }
+        body { margin:0; font-family:Arial,sans-serif; background:transparent; }
+        #memberBox { width:240px; box-sizing:border-box; background:white; border:1px solid #ddd; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1); overflow:hidden; }
+        .member-header { display:flex; align-items:center; justify-content:space-between; padding:12px 15px; background:white; cursor:grab; user-select:none; }
+        .member-header:active { cursor:grabbing; }
+        h3 { margin:0; font-size:16px; }
+        #toggleButton { width:24px; height:24px; padding:0; border:none; background:transparent; font-size:20px; line-height:20px; cursor:pointer; color:#555; }
+        #toggleButton:hover { color:#000; }
+        #memberInfo { padding:0 15px 15px; }
+        p { margin:6px 0; font-size:14px; }
+        .like { color:#1976d2; font-weight:bold; }
+        .dislike { color:#d32f2f; font-weight:bold; }
+        #memberBox.collapsed #memberInfo { display:none; }
     </style>
 </head>
 
 <body>
 
 <div id="memberBox">
-
-    <h3>회원 정보</h3>
-
-    <div id="memberInfo">
-        회원 정보를 불러오는 중...
+    <div class="member-header" id="dragHandle">
+        <h3>👤 회원정보</h3>
+        <button type="button" id="toggleButton" aria-label="회원정보 접기">−</button>
     </div>
-
+    <div id="memberInfo">회원 정보를 불러오는 중...</div>
 </div>
 
 <script>
+    const memberBox = document.getElementById("memberBox");
+    const dragHandle = document.getElementById("dragHandle");
+    const toggleButton = document.getElementById("toggleButton");
+    const memberInfo = document.getElementById("memberInfo");
 
-    fetch("member-info", {
-        method: "GET",
-        credentials: "include"
-    })
+    function applyCollapsed(collapsed) {
+        memberBox.classList.toggle("collapsed", collapsed);
+        toggleButton.textContent = collapsed ? "+" : "−";
+        toggleButton.setAttribute("aria-label", collapsed ? "회원정보 펼치기" : "회원정보 접기");
+    }
+
+    applyCollapsed(localStorage.getItem("gameCommunity_memberBoxCollapsed") === "true");
+
+    toggleButton.addEventListener("click", function(event) {
+        event.stopPropagation();
+        const collapsed = !memberBox.classList.contains("collapsed");
+        applyCollapsed(collapsed);
+        localStorage.setItem("gameCommunity_memberBoxCollapsed", String(collapsed));
+    });
+
+    fetch("member-info", { method:"GET", credentials:"include" })
         .then(response => {
-
-            if (!response.ok) {
-                throw new Error("로그인이 필요합니다.");
-            }
-
+            if (!response.ok) throw new Error("로그인이 필요합니다.");
             return response.json();
         })
         .then(member => {
-
-            document.getElementById("memberInfo").innerHTML = `
-
-            <p>
-                <strong>${escapeHtml(member.name)}</strong>
-                (${escapeHtml(member.username)})
-            </p>
-
-            <p>
-                회원번호: ${member.memberNo}
-            </p>
-
-            <p>
-                레벨: ${member.userLevel}
-            </p>
-
-            <p class="like">
-                👍 받은 좋아요:
-                ${member.receivedLikeCount}
-            </p>
-
-            <p class="dislike">
-                👎 받은 나빠요:
-                ${member.receivedDislikeCount}
-            </p>
-
-        `;
+            memberInfo.innerHTML = `
+                <p><strong>${escapeHtml(member.name)}</strong> (${escapeHtml(member.username)})</p>
+                <p>레벨: ${member.userLevel}</p>
+                <p class="like">👍 받은 좋아요: ${member.receivedLikeCount}</p>
+                <p class="dislike">👎 받은 나빠요: ${member.receivedDislikeCount}</p>
+            `;
         })
         .catch(error => {
-
             console.error(error);
-
-            document.getElementById("memberInfo").innerHTML = `
-            <p style="color:red;">
-                회원정보를 불러올 수 없습니다.
-            </p>
-        `;
+            memberInfo.innerHTML = `<p style="color:red;">회원정보를 불러올 수 없습니다.</p>`;
         });
 
+    let isDragging = false, offsetX = 0, offsetY = 0;
 
-    function escapeHtml(value) {
+    dragHandle.addEventListener("mousedown", function(event) {
+        if (event.target.closest("#toggleButton")) return;
+        event.preventDefault();
+        isDragging = true;
+        const rect = memberBox.getBoundingClientRect();
+        offsetX = event.clientX - rect.left;
+        offsetY = event.clientY - rect.top;
+        memberBox.style.position = "fixed";
+        memberBox.style.left = rect.left + "px";
+        memberBox.style.top = rect.top + "px";
+        memberBox.style.right = "auto";
+        memberBox.style.bottom = "auto";
+        dragHandle.style.cursor = "grabbing";
+    });
 
-        if (value == null) {
-            return "";
-        }
+    document.addEventListener("mousemove", function(event) {
+        if (!isDragging) return;
+        let left = event.clientX - offsetX;
+        let top = event.clientY - offsetY;
+        const maxLeft = Math.max(0, window.innerWidth - memberBox.offsetWidth);
+        const maxTop = Math.max(0, window.innerHeight - memberBox.offsetHeight);
+        left = Math.max(0, Math.min(left, maxLeft));
+        top = Math.max(0, Math.min(top, maxTop));
+        memberBox.style.left = left + "px";
+        memberBox.style.top = top + "px";
+    });
 
-        return String(value)
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
+    document.addEventListener("mouseup", function() {
+        if (!isDragging) return;
+        isDragging = false;
+        dragHandle.style.cursor = "grab";
+        const rect = memberBox.getBoundingClientRect();
+        localStorage.setItem("gameCommunity_memberBoxLeft", Math.round(rect.left));
+        localStorage.setItem("gameCommunity_memberBoxTop", Math.round(rect.top));
+    });
+
+    const savedLeft = localStorage.getItem("gameCommunity_memberBoxLeft");
+    const savedTop = localStorage.getItem("gameCommunity_memberBoxTop");
+    if (savedLeft !== null && savedTop !== null) {
+        memberBox.style.position = "fixed";
+        memberBox.style.left = savedLeft + "px";
+        memberBox.style.top = savedTop + "px";
+        memberBox.style.right = "auto";
+        memberBox.style.bottom = "auto";
     }
 
+    function escapeHtml(value) {
+        if (value == null) return "";
+        return String(value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;").replace(/'/g,"&#039;");
+    }
 </script>
 
 </body>
