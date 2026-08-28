@@ -11,13 +11,24 @@ document.addEventListener("DOMContentLoaded", async function () {
         if (categoryList) loadGameCategories(categoryList);
 
         initMemberInfoBox();
+
+        if (currentPath.endsWith("/mypage.html") || currentPath.endsWith("mypage.html")) {
+            if (typeof initCategoryManagerRequestAdmin === "function") {
+                initCategoryManagerRequestAdmin();
+            }
+        }
     } catch (error) {
         console.error("공통 JS 모듈 로딩 실패:", error);
     }
 });
 
 function loadCommonModules() {
+    const currentPath = window.location.pathname;
     const modules = ["js/layout.js", "js/game-nav.js", "js/member-info.js"];
+
+    if (currentPath.endsWith("/mypage.html") || currentPath.endsWith("mypage.html")) {
+        modules.push("js/category-manager-request.js");
+    }
 
     return Promise.all(modules.map(src => new Promise((resolve, reject) => {
         if ([...document.scripts].some(script => script.src.endsWith(src))) {
