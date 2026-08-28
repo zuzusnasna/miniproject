@@ -43,6 +43,54 @@
             margin-top: 5px;
         }
 
+        .level-section {
+            margin: 0 0 25px;
+            padding: 16px;
+            border: 1px solid var(--border-color, #e0e0e0);
+            border-radius: 10px;
+            background: #fff;
+        }
+
+        .level-progress-info,
+        .level-progress-text {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+        }
+
+        .level-progress-info {
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .level-progress {
+            width: 100%;
+            height: 10px;
+            overflow: hidden;
+            border-radius: 999px;
+            background: #e9ecef;
+        }
+
+        .level-progress-fill {
+            height: 100%;
+            border-radius: 999px;
+            background: var(--primary-color, #5a20b7);
+            transition: width .3s ease;
+        }
+
+        .level-progress-text {
+            margin-top: 7px;
+            color: #666;
+        }
+
+        .level-progress-remaining {
+            margin-top: 8px;
+            text-align: center;
+            font-size: 13px;
+            color: #777;
+        }
+
         .form-group {
             margin-bottom: 20px;
         }
@@ -70,6 +118,24 @@
             <div>레벨<strong id="myLevel">-</strong></div>
             <div>받은 좋아요<strong id="myLikes" style="color:#1976d2;">-</strong></div>
             <div>받은 나빠요<strong id="myDislikes" style="color:#d32f2f;">-</strong></div>
+        </div>
+
+        <!-- 레벨 게이지 -->
+        <div class="level-section">
+            <div class="level-progress-info">
+                <span>Lv.<span id="levelCurrent">1</span></span>
+                <span id="levelNext">Lv.2</span>
+            </div>
+            <div class="level-progress">
+                <div id="levelProgressFill" class="level-progress-fill" style="width:0%;"></div>
+            </div>
+            <div class="level-progress-text">
+                <span id="levelLikeText">0 / 10 좋아요</span>
+                <span id="levelProgressPercent">0%</span>
+            </div>
+            <div id="levelRemaining" class="level-progress-remaining">
+                다음 레벨까지 <strong>10</strong>개
+            </div>
         </div>
 
         <!-- 정보 수정 폼 -->
@@ -122,24 +188,38 @@
     }
 
     // 2. 기존 회원 정보 불러와서 화면에 채우기
-    fetch("member-info")
+    fetch("member-info", { credentials: "include" })
         .then(response => {
             if (response.status === 401) {
                 alert("로그인이 필요합니다.");
                 location.href = "login.html";
                 throw new Error("Unauthorized");
             }
+            if (!response.ok) {
+                throw new Error("회원정보 조회 실패");
+            }
             return response.json();
         })
         .then(member => {
-            // 활동 내역
             const likeCount = Number(member.receivedLikeCount) || 0;
-            const level = Math.floor(likeCount / 10) + 1;
-            const actualLevel = Math.min(level, 10);
+            const dislikeCount = Number(member.receivedDislikeCount) || 0;
+            const actualLevel = Math.min(Math.floor(likeCount / 10) + 1, 10);
+            const currentLikes = actualLevel >= 10 ? 10 : likeCount % 10;
+            const progress = Math.max(0, Math.min(100, currentLikes * 10));
+            const remaining = actualLevel >= 10 ? 0 : 10 - currentLikes;
 
-            document.getElementById("myLevel").textContent = member.userLevel || actualLevel;
+            document.getElementById("myLevel").textContent = actualLevel;
             document.getElementById("myLikes").textContent = likeCount;
-            document.getElementById("myDislikes").textContent = member.receivedDislikeCount || 0;
+            document.getElementById("myDislikes").textContent = dislikeCount;
+
+            document.getElementById("levelCurrent").textContent = actualLevel;
+            document.getElementById("levelNext").textContent = actualLevel >= 10 ? "MAX" : "Lv." + (actualLevel + 1);
+            document.getElementById("levelProgressFill").style.width = progress + "%";
+            document.getElementById("levelLikeText").textContent = currentLikes + " / 10 좋아요";
+            document.getElementById("levelProgressPercent").textContent = Math.round(progress) + "%";
+            document.getElementById("levelRemaining").innerHTML = actualLevel >= 10
+                ? "🎉 최고 레벨입니다!"
+                : "다음 레벨까지 <strong>" + remaining + "</strong>개";
 
             // 폼 데이터
             document.getElementById("username").value = member.username || "";
