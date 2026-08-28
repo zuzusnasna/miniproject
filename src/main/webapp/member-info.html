@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title>회원정보</title>
-
     <style>
         body { margin:0; font-family:Arial,sans-serif; background:transparent; }
-        #memberBox { width:240px; box-sizing:border-box; background:white; border:1px solid #ddd; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1); overflow:hidden; }
+        #memberBox { width:260px; box-sizing:border-box; background:white; border:1px solid #ddd; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1); overflow:hidden; }
         .member-header { display:flex; align-items:center; justify-content:space-between; padding:12px 15px; background:white; cursor:grab; user-select:none; }
         .member-header:active { cursor:grabbing; }
         h3 { margin:0; font-size:16px; }
@@ -17,11 +16,15 @@
         .like { color:#1976d2; font-weight:bold; }
         .dislike { color:#d32f2f; font-weight:bold; }
         #memberBox.collapsed #memberInfo { display:none; }
+        #categoryManagerRequest { margin-top:12px; padding-top:12px; border-top:1px solid #eee; }
+        #categoryManagerRequest select, #categoryManagerRequest button { width:100%; box-sizing:border-box; margin-top:7px; padding:7px; border-radius:5px; }
+        #categoryManagerRequest select { border:1px solid #ccc; background:#fff; }
+        #categoryManagerRequest button { border:0; background:#6f42c1; color:#fff; font-weight:bold; cursor:pointer; }
+        #categoryManagerRequest button:disabled { background:#aaa; cursor:not-allowed; }
+        .request-message { margin-top:7px; font-size:12px; }
     </style>
 </head>
-
 <body>
-
 <div id="memberBox">
     <div class="member-header" id="dragHandle">
         <h3>👤 회원정보</h3>
@@ -29,7 +32,6 @@
     </div>
     <div id="memberInfo">회원 정보를 불러오는 중...</div>
 </div>
-
 <script>
     const memberBox = document.getElementById("memberBox");
     const dragHandle = document.getElementById("dragHandle");
@@ -41,9 +43,7 @@
         toggleButton.textContent = collapsed ? "+" : "−";
         toggleButton.setAttribute("aria-label", collapsed ? "회원정보 펼치기" : "회원정보 접기");
     }
-
     applyCollapsed(localStorage.getItem("gameCommunity_memberBoxCollapsed") === "true");
-
     toggleButton.addEventListener("click", function(event) {
         event.stopPropagation();
         const collapsed = !memberBox.classList.contains("collapsed");
@@ -51,11 +51,53 @@
         localStorage.setItem("gameCommunity_memberBoxCollapsed", String(collapsed));
     });
 
+    function loadCategoryManagerRequest() {
+        fetch("category-manager-request", { credentials:"include" })
+            .then(res => res.ok ? res.json() : null)
+            .then(data => {
+                if (!data || !data.eligible) return;
+                if (data.status === "APPROVED") return;
+
+                const box = document.createElement("div");
+                box.id = "categoryManagerRequest";
+                if (data.status === "PENDING") {
+                    box.innerHTML = '<strong>🎮 카테고리 관리자</strong><div class="request-message">권한 신청이 승인 대기 중입니다.</div>';
+                } else {
+                    const options = data.games.map(g => `<option value="${g.categoryId}">${escapeHtml(g.categoryName)}</option>`).join("");
+                    box.innerHTML = `
+                        <strong>🎮 카테고리 관리자 신청</strong>
+                        <div class="request-message">받은 좋아요 ${data.likes}개로 신청할 수 있습니다.</div>
+                        <select id="managerGameSelect"><option value="">관리할 게임 선택</option>${options}</select>
+                        <button type="button" id="managerRequestButton">신청하기</button>
+                        <div id="managerRequestMessage" class="request-message"></div>
+                    `;
+                    box.querySelector("#managerRequestButton").addEventListener("click", submitCategoryManagerRequest);
+                }
+                memberInfo.appendChild(box);
+            })
+            .catch(() => {});
+    }
+
+    function submitCategoryManagerRequest() {
+        const select = document.getElementById("managerGameSelect");
+        const button = document.getElementById("managerRequestButton");
+        const message = document.getElementById("managerRequestMessage");
+        if (!select.value) { message.textContent = "관리할 게임을 선택해주세요."; message.style.color = "#d32f2f"; return; }
+        button.disabled = true;
+        const body = new URLSearchParams({ categoryId: select.value });
+        fetch("category-manager-request", { method:"POST", credentials:"include", headers:{"Content-Type":"application/x-www-form-urlencoded"}, body })
+            .then(res => res.json())
+            .then(data => {
+                message.textContent = data.message || (data.success ? "신청되었습니다." : "신청에 실패했습니다.");
+                message.style.color = data.success ? "#198754" : "#d32f2f";
+                if (data.success) button.textContent = "승인 대기 중";
+                else button.disabled = false;
+            })
+            .catch(() => { message.textContent = "서버 통신 오류가 발생했습니다."; message.style.color = "#d32f2f"; button.disabled = false; });
+    }
+
     fetch("member-info", { method:"GET", credentials:"include" })
-        .then(response => {
-            if (!response.ok) throw new Error("로그인이 필요합니다.");
-            return response.json();
-        })
+        .then(response => { if (!response.ok) throw new Error("로그인이 필요합니다."); return response.json(); })
         .then(member => {
             memberInfo.innerHTML = `
                 <p><strong>${escapeHtml(member.name)}</strong> (${escapeHtml(member.username)})</p>
@@ -63,65 +105,38 @@
                 <p class="like">👍 받은 좋아요: ${member.receivedLikeCount}</p>
                 <p class="dislike">👎 받은 나빠요: ${member.receivedDislikeCount}</p>
             `;
+            loadCategoryManagerRequest();
         })
-        .catch(error => {
-            console.error(error);
-            memberInfo.innerHTML = `<p style="color:red;">회원정보를 불러올 수 없습니다.</p>`;
-        });
+        .catch(error => { console.error(error); memberInfo.innerHTML = `<p style="color:red;">회원정보를 불러올 수 없습니다.</p>`; });
 
     let isDragging = false, offsetX = 0, offsetY = 0;
-
     dragHandle.addEventListener("mousedown", function(event) {
         if (event.target.closest("#toggleButton")) return;
-        event.preventDefault();
-        isDragging = true;
+        event.preventDefault(); isDragging = true;
         const rect = memberBox.getBoundingClientRect();
-        offsetX = event.clientX - rect.left;
-        offsetY = event.clientY - rect.top;
-        memberBox.style.position = "fixed";
-        memberBox.style.left = rect.left + "px";
-        memberBox.style.top = rect.top + "px";
-        memberBox.style.right = "auto";
-        memberBox.style.bottom = "auto";
+        offsetX = event.clientX - rect.left; offsetY = event.clientY - rect.top;
+        memberBox.style.position = "fixed"; memberBox.style.left = rect.left + "px"; memberBox.style.top = rect.top + "px"; memberBox.style.right = "auto"; memberBox.style.bottom = "auto";
         dragHandle.style.cursor = "grabbing";
     });
-
     document.addEventListener("mousemove", function(event) {
         if (!isDragging) return;
-        let left = event.clientX - offsetX;
-        let top = event.clientY - offsetY;
-        const maxLeft = Math.max(0, window.innerWidth - memberBox.offsetWidth);
-        const maxTop = Math.max(0, window.innerHeight - memberBox.offsetHeight);
-        left = Math.max(0, Math.min(left, maxLeft));
-        top = Math.max(0, Math.min(top, maxTop));
-        memberBox.style.left = left + "px";
-        memberBox.style.top = top + "px";
+        let left = event.clientX - offsetX, top = event.clientY - offsetY;
+        const maxLeft = Math.max(0, window.innerWidth - memberBox.offsetWidth), maxTop = Math.max(0, window.innerHeight - memberBox.offsetHeight);
+        memberBox.style.left = Math.max(0, Math.min(left, maxLeft)) + "px";
+        memberBox.style.top = Math.max(0, Math.min(top, maxTop)) + "px";
     });
-
     document.addEventListener("mouseup", function() {
         if (!isDragging) return;
-        isDragging = false;
-        dragHandle.style.cursor = "grab";
+        isDragging = false; dragHandle.style.cursor = "grab";
         const rect = memberBox.getBoundingClientRect();
         localStorage.setItem("gameCommunity_memberBoxLeft", Math.round(rect.left));
         localStorage.setItem("gameCommunity_memberBoxTop", Math.round(rect.top));
     });
-
-    const savedLeft = localStorage.getItem("gameCommunity_memberBoxLeft");
-    const savedTop = localStorage.getItem("gameCommunity_memberBoxTop");
+    const savedLeft = localStorage.getItem("gameCommunity_memberBoxLeft"), savedTop = localStorage.getItem("gameCommunity_memberBoxTop");
     if (savedLeft !== null && savedTop !== null) {
-        memberBox.style.position = "fixed";
-        memberBox.style.left = savedLeft + "px";
-        memberBox.style.top = savedTop + "px";
-        memberBox.style.right = "auto";
-        memberBox.style.bottom = "auto";
+        memberBox.style.position = "fixed"; memberBox.style.left = savedLeft + "px"; memberBox.style.top = savedTop + "px"; memberBox.style.right = "auto"; memberBox.style.bottom = "auto";
     }
-
-    function escapeHtml(value) {
-        if (value == null) return "";
-        return String(value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;").replace(/'/g,"&#039;");
-    }
+    function escapeHtml(value) { if (value == null) return ""; return String(value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;").replace(/'/g,"&#039;"); }
 </script>
-
 </body>
 </html>
