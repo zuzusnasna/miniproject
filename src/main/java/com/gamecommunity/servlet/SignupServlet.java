@@ -19,7 +19,6 @@ public class SignupServlet extends HttpServlet {
             throws ServletException, IOException {
 
         request.setCharacterEncoding("UTF-8");
-        response.setContentType("text/html; charset=UTF-8");
 
         String name = request.getParameter("name");
         String username = request.getParameter("username");
@@ -32,9 +31,7 @@ public class SignupServlet extends HttpServlet {
                 || password == null || password.isBlank()
                 || nickname == null || nickname.isBlank()
                 || phone == null || phone.isBlank()) {
-
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().println("필수 입력값을 모두 입력해주세요.");
+            response.sendRedirect(request.getContextPath() + "/signup.html?error=required");
             return;
         }
 
@@ -48,12 +45,12 @@ public class SignupServlet extends HttpServlet {
         MemberDAO memberDAO = new MemberDAO();
 
         if (memberDAO.existsByUsername(username)) {
-            response.getWriter().println("이미 사용 중인 아이디입니다.");
+            response.sendRedirect(request.getContextPath() + "/signup.html?error=username");
             return;
         }
 
         if (memberDAO.existsByNickname(nickname)) {
-            response.getWriter().println("이미 사용 중인 닉네임입니다.");
+            response.sendRedirect(request.getContextPath() + "/signup.html?error=nickname");
             return;
         }
 
@@ -62,7 +59,7 @@ public class SignupServlet extends HttpServlet {
         if (result > 0) {
             response.sendRedirect(request.getContextPath() + "/login.html?signup=success");
         } else {
-            response.getWriter().println("회원가입 실패");
+            response.sendRedirect(request.getContextPath() + "/signup.html?error=fail");
         }
     }
 }
