@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const head=document.createElement('div');
         head.className='comment-head';
-        const author=document.createElement('span'); author.className='comment-author'; author.textContent=c.username;
+        const author=document.createElement('span'); author.className='comment-author'; author.textContent=c.nickname;
         const date=document.createElement('span'); date.textContent=formatDate(c.createdAt)+(c.updatedAt?' · 수정됨':'');
         head.append(author,date);
 
