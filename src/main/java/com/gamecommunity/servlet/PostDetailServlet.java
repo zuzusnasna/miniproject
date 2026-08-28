@@ -1,5 +1,6 @@
 package com.gamecommunity.servlet;
 
+import com.gamecommunity.dao.MemberDAO;
 import com.gamecommunity.dao.PostDAO;
 import com.gamecommunity.dao.PostLikeDAO;
 import com.gamecommunity.dto.PostDTO;
@@ -16,6 +17,7 @@ public class PostDetailServlet extends HttpServlet {
 
     private final PostDAO postDAO = new PostDAO();
     private final PostLikeDAO postLikeDAO = new PostLikeDAO();
+
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
