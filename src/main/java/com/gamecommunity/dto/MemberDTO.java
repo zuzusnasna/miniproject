@@ -13,7 +13,6 @@ public class MemberDTO {
     private String accountStatus;
     private int receivedLikeCount;
     private int receivedDislikeCount;
-    private String roleName;
 
     public String getAccountStatus() {
         return accountStatus;
@@ -90,7 +89,6 @@ public class MemberDTO {
     public int getReceivedLikeCount() {
         return receivedLikeCount;
     }
-
     public void setReceivedLikeCount(int receivedLikeCount) {
         this.receivedLikeCount = receivedLikeCount;
     }
@@ -98,16 +96,9 @@ public class MemberDTO {
     public int getReceivedDislikeCount() {
         return receivedDislikeCount;
     }
-
     public void setReceivedDislikeCount(int receivedDislikeCount) {
         this.receivedDislikeCount = receivedDislikeCount;
     }
 
-    public String getRoleName() {
-        return roleName;
-    }
 
-    public void setRoleName(String roleName) {
-        this.roleName = roleName;
-    }
 }
