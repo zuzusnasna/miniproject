@@ -1,4 +1,23 @@
+function injectMemberInfoStyles() {
+    if (document.getElementById("member-info-style")) return;
+    const style = document.createElement("style");
+    style.id = "member-info-style";
+    style.textContent = `
+        .common-member-info { position:fixed; width:240px; box-sizing:border-box; background:#fff; border:1px solid #ddd; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,.1); overflow:hidden; z-index:9999; }
+        .common-member-info .member-title { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 15px; background:#fff; cursor:grab; user-select:none; font-weight:700; }
+        .common-member-info .member-toggle { display:flex; align-items:center; justify-content:center; width:26px; height:26px; padding:0; border:0; border-radius:4px; background:transparent; color:#555; font-size:22px; line-height:1; cursor:pointer; flex:0 0 26px; }
+        .common-member-info .member-toggle:hover { background:#f1f1f1; color:#111; }
+        .common-member-info #commonMemberContent { padding:0 15px 15px; }
+        .common-member-info #commonMemberContent[hidden] { display:none !important; }
+        .common-member-info.collapsed { width:200px; }
+        .common-member-info.collapsed .member-title { padding:9px 12px; }
+    `;
+    document.head.appendChild(style);
+}
+
 function initMemberInfoBox() {
+    injectMemberInfoStyles();
+
     let wrapper = document.getElementById("commonMemberInfo");
     if (!wrapper) {
         wrapper = document.createElement("div");
