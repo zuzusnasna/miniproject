@@ -23,7 +23,12 @@ document.addEventListener("DOMContentLoaded", async function () {
 });
 
 function loadCommonModules() {
-    const modules = ["js/layout.js", "js/game-nav.js", "js/member-info.js", "js/category-manager-request.js"];
+    const currentPath = window.location.pathname;
+    const modules = ["js/layout.js", "js/game-nav.js", "js/member-info.js"];
+
+    if (currentPath.endsWith("/mypage.html") || currentPath.endsWith("mypage.html")) {
+        modules.push("js/category-manager-request.js");
+    }
 
     return Promise.all(modules.map(src => new Promise((resolve, reject) => {
         if ([...document.scripts].some(script => script.src.endsWith(src))) {
