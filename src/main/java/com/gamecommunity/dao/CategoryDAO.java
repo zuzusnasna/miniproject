@@ -702,37 +702,6 @@ public class CategoryDAO {
         return 0;
     }
 
-    // 2. 승인 대기 목록 조회 (IS_ACTIVE = 'N'인 게시판만)
-    public List<CategoryDTO> findPendingCategories() {
-        List<CategoryDTO> list = new ArrayList<>();
-        String sql = """
-            SELECT CATEGORY_ID, PARENT_ID, CATEGORY_NAME, DEPTH, IS_ACTIVE,
-                   TO_CHAR(CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT
-            FROM CATEGORY
-            WHERE DEPTH = 3 AND IS_ACTIVE = 'N'
-            ORDER BY CREATED_AT DESC
-            """;
-
-        try (
-                Connection conn = DBUtil.getConnection();
-                PreparedStatement pstmt = conn.prepareStatement(sql);
-                ResultSet rs = pstmt.executeQuery()
-        ) {
-            while (rs.next()) {
-                CategoryDTO dto = new CategoryDTO();
-                dto.setCategoryId(rs.getLong("CATEGORY_ID"));
-                dto.setParentId(rs.getLong("PARENT_ID"));
-                dto.setCategoryName(rs.getString("CATEGORY_NAME"));
-                dto.setIsActive(rs.getString("IS_ACTIVE"));
-                dto.setCreatedAt(rs.getString("CREATED_AT"));
-                list.add(dto);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return list;
-    }
-
     // 3. 게시판 승인 (IS_ACTIVE = 'Y'로 변경)
     public boolean approveCategory(long categoryId) {
         String sql = "UPDATE CATEGORY SET IS_ACTIVE = 'Y' WHERE CATEGORY_ID = ?";
@@ -762,6 +731,44 @@ public class CategoryDAO {
             return false;
         }
     }
+    // 2. 승인 대기 목록 조회 (부모 게임명 JOIN)
+    public List<CategoryDTO> findPendingCategories() {
+        List<CategoryDTO> list = new ArrayList<>();
+        String sql = """
+            SELECT C.CATEGORY_ID, 
+                   C.PARENT_ID, 
+                   P.CATEGORY_NAME AS PARENT_CATEGORY_NAME,
+                   C.CATEGORY_NAME, 
+                   C.DEPTH, 
+                   C.IS_ACTIVE,
+                   TO_CHAR(C.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT
+            FROM CATEGORY C
+            LEFT JOIN CATEGORY P ON C.PARENT_ID = P.CATEGORY_ID
+            WHERE C.DEPTH = 3 AND C.IS_ACTIVE = 'N'
+            ORDER BY C.CREATED_AT DESC
+            """;
+
+        try (
+                Connection conn = DBUtil.getConnection();
+                PreparedStatement pstmt = conn.prepareStatement(sql);
+                ResultSet rs = pstmt.executeQuery()
+        ) {
+            while (rs.next()) {
+                CategoryDTO dto = new CategoryDTO();
+                dto.setCategoryId(rs.getLong("CATEGORY_ID"));
+                dto.setParentId(rs.getLong("PARENT_ID"));
+                dto.setParentCategoryName(rs.getString("PARENT_CATEGORY_NAME")); // 🔥 부모 게임명 세팅
+                dto.setCategoryName(rs.getString("CATEGORY_NAME"));
+                dto.setIsActive(rs.getString("IS_ACTIVE"));
+                dto.setCreatedAt(rs.getString("CREATED_AT"));
+                list.add(dto);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
     // --------카테고리 관리자 권한(게시탭 생성) 코드 끝----
+
 
 }

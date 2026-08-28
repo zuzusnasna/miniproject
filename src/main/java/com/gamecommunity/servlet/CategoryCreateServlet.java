@@ -2,6 +2,7 @@ package com.gamecommunity.servlet;
 
 import com.gamecommunity.dao.CategoryDAO;
 import com.gamecommunity.dao.CategoryManagerDAO;
+import com.gamecommunity.dto.CategoryDTO;
 import com.gamecommunity.dto.MemberDTO;
 
 import jakarta.servlet.ServletException;
@@ -94,8 +95,17 @@ public class CategoryCreateServlet extends HttpServlet {
             // 카테고리 관리자가 아님
             response.getWriter().write("{\"isManager\": false}");
         } else {
-            // 담당 카테고리 번호 반환
-            response.getWriter().write(String.format("{\"isManager\": true, \"categoryId\": %d}", parentId));
+            // 🔥 DB에서 게임 ID(예: 310)의 실제 CATEGORY_NAME 조회
+            CategoryDTO game = categoryDAO.findById(parentId);
+            String gameName = (game != null && game.getCategoryName() != null)
+                    ? game.getCategoryName()
+                    : "게임 ID: " + parentId;
+
+            // 🔥 JSON으로 gameName도 함께 응답
+            response.getWriter().write(String.format(
+                    "{\"isManager\": true, \"categoryId\": %d, \"gameName\": \"%s\"}",
+                    parentId,
+                    gameName.replace("\"", "\\\"")));
         }
     }
 }

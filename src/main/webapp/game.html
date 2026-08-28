@@ -168,14 +168,17 @@
             return response.json();
         })
         .then(categoryList => {
-            // 2. DEPTH가 3(게시판)이고 부모가 현재 게임 ID(gameId)인 것만 필터링합니다.
+            // 2. DEPTH가 3(게시판)이고 부모가 현재 게임 ID(gameId)인 것만 필터링
             const activeBoards = categoryList.filter(c => Number(c.depth) === 3 && Number(c.parentId) === gameId);
 
             if (activeBoards.length > 0) {
-                // DB에서 승인된 게시판 목록(기본 3개 + 관리자 승인 탭) 바인딩
+                // 🔥 [수정] categoryId 기준으로 오름차순 정렬 (XX1: 자유, XX2: 질문, XX3: 공략이 최상단 고정됨)[cite: 2]
+                activeBoards.sort((a, b) => Number(a.categoryId) - Number(b.categoryId));
+
+                // 정렬된 순서대로 boards 배열에 담기[cite: 2]
                 boards = activeBoards.map(c => ({ id: c.categoryId, name: c.categoryName }));
             } else {
-                // DB 데이터가 비어있을 때를 대비한 기본 3개 폴백
+                // DB 데이터가 비어있을 때를 대비한 기본 3개 폴백[cite: 2]
                 boards = [
                     { id: gameId * 10 + 1, name: '자유게시판' },
                     { id: gameId * 10 + 2, name: '질문게시판' },
@@ -183,16 +186,16 @@
                 ];
             }
 
-            // 현재 선택된 게시판 ID가 목록에 없으면 첫 번째 게시판으로 초기화
+            // 현재 선택된 게시판 ID가 목록에 없으면 첫 번째 게시판(자유게시판)으로 초기화[cite: 2]
             if (!boards.some(b => b.id === currentBoard)) {
                 currentBoard = boards[0].id;
             }
 
-            // 사이드바 메뉴 렌더링 및 글쓰기 링크 세팅
+            // 사이드바 메뉴 렌더링 및 글쓰기 링크 세팅[cite: 2]
             renderMenu();
             updateWriteLink();
 
-            // 3. 게시판 탭 구성이 끝난 후 게시글 목록을 불러옵니다.
+            // 3. 게시판 탭 구성이 끝난 후 게시글 목록을 불러옵니다.[cite: 2]
             return fetch('posts');
         })
         .then(response => {
