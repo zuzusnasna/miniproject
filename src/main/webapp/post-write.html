@@ -103,35 +103,80 @@
 </main>
 <script src="js/common.js"></script>
 <script>
-const GAME_NAMES={110:'리니지',120:'블레이드앤소울',130:'메이플스토리',140:'로스트아크',210:'서든어택',220:'오버워치',230:'발로란트',240:'배틀그라운드',310:'리그 오브 레전드',320:'도타 2',410:'FC 온라인',420:'eFootball',430:'NBA 2K',510:'스타크래프트',520:'문명 VI',530:'에이지 오브 엠파이어 IV',610:'심즈 4',620:'시티즈: 스카이라인 II',630:'유로 트럭 시뮬레이터 2',910:'마인크래프트',920:'GTA V',930:'철권 8',940:'포르자 호라이즌 5',950:'데드 바이 데이라이트',960:'몬스터헌터 와일즈'};
-const BOARD_NAMES={1:'자유게시판',2:'질문게시판',3:'공략게시판'};
-const params=new URLSearchParams(location.search);
-const gameId=Number(params.get('gameId'));
-const categoryId=Number(params.get('categoryId'));
-const validGame=Object.prototype.hasOwnProperty.call(GAME_NAMES,gameId);
-const boardSuffix=categoryId-(gameId*10);
-const validBoard=validGame&&[1,2,3].includes(boardSuffix);
+    const GAME_NAMES = {
+        110:'리니지',120:'블레이드앤소울',130:'메이플스토리',140:'로스트아크',
+        210:'서든어택',220:'오버워치',230:'발로란트',240:'배틀그라운드',
+        310:'리그 오브 레전드',320:'도타 2',
+        410:'FC 온라인',420:'eFootball',430:'NBA 2K',
+        510:'스타크래프트',520:'문명 VI',530:'에이지 오브 엠파이어 IV',
+        610:'심즈 4',620:'시티즈: 스카이라인 II',630:'유로 트럭 시뮬레이터 2',
+        910:'마인크래프트',920:'GTA V',930:'철권 8',
+        940:'포르자 호라이즌 5',950:'데드 바이 데이라이트',960:'몬스터헌터 와일즈'
+    };
 
-function renderWriteBoardMenu(){
-    const menu=document.getElementById('writeBoardMenu');
-    if(!menu||!validGame)return;
-    menu.innerHTML='<h3>게시판</h3>'+[1,2,3].map(type=>{
-        const boardId=gameId*10+type;
-        const active=boardId===categoryId?' active':'';
-        return `<a class="write-board-link${active}" href="game.html?gameId=${gameId}&categoryId=${boardId}">${BOARD_NAMES[type]}</a>`;
-    }).join('');
-}
+    const params = new URLSearchParams(location.search);
+    const gameId = Number(params.get('gameId'));
+    const categoryId = Number(params.get('categoryId'));
+    const validGame = Object.prototype.hasOwnProperty.call(GAME_NAMES, gameId);
+    const boardSuffix = categoryId - (gameId * 10);
+    const validBoard = validGame && (boardSuffix >= 1 && boardSuffix <= 9);
 
-if(!validBoard){
-    alert('게시판 정보가 올바르지 않습니다. 게임 게시판에서 다시 글쓰기를 눌러주세요.');
-    location.href='home.html';
-}else{
-    document.getElementById('categoryId').value=categoryId;
-    document.getElementById('gameId').value=gameId;
-    document.getElementById('writeLocation').textContent=`${GAME_NAMES[gameId]} > ${BOARD_NAMES[boardSuffix]}`;
-    document.getElementById('cancelButton').addEventListener('click',()=>location.href=`game.html?gameId=${gameId}&categoryId=${categoryId}`);
-    renderWriteBoardMenu();
-}
+    if (!validBoard) {
+        alert('게시판 정보가 올바르지 않습니다. 게임 게시판에서 다시 글쓰기를 눌러주세요.');
+        location.href = 'home.html';
+    } else {
+        // 1. 기본 form hidden 값 및 취소 버튼 이벤트 세팅
+        document.getElementById('categoryId').value = categoryId;
+        document.getElementById('gameId').value = gameId;
+        document.getElementById('cancelButton').addEventListener('click', () => {
+            location.href = `game.html?gameId=${gameId}&categoryId=${categoryId}`;
+        });
+
+        // 2. 🔥 DB에서 승인된 게시판 목록을 실시간으로 가져와 사이드바와 위치명을 렌더링합니다.
+        fetch('categories')
+            .then(res => {
+                if (!res.ok) throw new Error('카테고리 로드 실패');
+                return res.json();
+            })
+            .then(categoryList => {
+                // 현재 게임(gameId) 하위의 활성 게시판(DEPTH=3)만 필터링
+                const activeBoards = categoryList.filter(c => Number(c.depth) === 3 && Number(c.parentId) === gameId);
+
+                // fallback 목록
+                const boards = activeBoards.length > 0 ? activeBoards : [
+                    { categoryId: gameId * 10 + 1, categoryName: '자유게시판' },
+                    { categoryId: gameId * 10 + 2, categoryName: '질문게시판' },
+                    { categoryId: gameId * 10 + 3, categoryName: '공략게시판' }
+                ];
+
+                // 좌측 사이드바 렌더링
+                const menu = document.getElementById('writeBoardMenu');
+                if (menu) {
+                    menu.innerHTML = '<h3>게시판</h3>' + boards.map(b => {
+                        const active = Number(b.categoryId) === categoryId ? ' active' : '';
+                        return `<a class="write-board-link${active}" href="game.html?gameId=${gameId}&categoryId=${b.categoryId}">${escapeHtml(b.categoryName)}</a>`;
+                    }).join('');
+                }
+
+                // 상단 위치 경로 텍스트 설정 (예: 리니지 > 리니지테스트게시판이에요)
+                const currentBoardObj = boards.find(b => Number(b.categoryId) === categoryId);
+                const boardName = currentBoardObj ? currentBoardObj.categoryName : '게시판';
+                document.getElementById('writeLocation').textContent = `${GAME_NAMES[gameId]} > ${boardName}`;
+            })
+            .catch(err => {
+                console.error(err);
+                document.getElementById('writeLocation').textContent = `${GAME_NAMES[gameId]} > 게시판`;
+            });
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
 </script>
 </body>
 </html>
