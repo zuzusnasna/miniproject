@@ -38,7 +38,7 @@ public class AdminCategoryManagerRequestServlet extends HttpServlet {
                     .append("\",\"requestedAt\":\"").append(escape(r.getRequestedAt())).append("\"}");
         }
         json.append(']');
-        response.getWriter().write(json);
+        writeJson(response, json.toString());
     }
 
     @Override
@@ -51,7 +51,7 @@ public class AdminCategoryManagerRequestServlet extends HttpServlet {
         String requestIdParam = request.getParameter("requestId");
         if (requestIdParam == null || action == null) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write("{\"success\":false,\"message\":\"요청 정보가 누락되었습니다.\"}");
+            writeJson(response, "{\"success\":false,\"message\":\"요청 정보가 누락되었습니다.\"}");
             return;
         }
 
@@ -64,13 +64,13 @@ public class AdminCategoryManagerRequestServlet extends HttpServlet {
                 result = requestDAO.rejectRequest(requestId);
             } else {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().write("{\"success\":false,\"message\":\"잘못된 처리 요청입니다.\"}");
+                writeJson(response, "{\"success\":false,\"message\":\"잘못된 처리 요청입니다.\"}");
                 return;
             }
-            response.getWriter().write("{\"success\":" + result + "}");
+            writeJson(response, "{\"success\":" + result + "}");
         } catch (NumberFormatException e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write("{\"success\":false,\"message\":\"잘못된 요청 번호입니다.\"}");
+            writeJson(response, "{\"success\":false,\"message\":\"잘못된 요청 번호입니다.\"}");
         }
     }
 
@@ -79,15 +79,19 @@ public class AdminCategoryManagerRequestServlet extends HttpServlet {
         MemberDTO member = session == null ? null : (MemberDTO) session.getAttribute("member");
         if (member == null) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("{\"success\":false,\"message\":\"로그인이 필요합니다.\"}");
+            writeJson(response, "{\"success\":false,\"message\":\"로그인이 필요합니다.\"}");
             return false;
         }
         if (!memberDAO.isSystemManager(member.getMemberNo())) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            response.getWriter().write("{\"success\":false,\"message\":\"시스템 관리자 권한이 없습니다.\"}");
+            writeJson(response, "{\"success\":false,\"message\":\"시스템 관리자 권한이 없습니다.\"}");
             return false;
         }
         return true;
+    }
+
+    private void writeJson(HttpServletResponse response, String json) throws IOException {
+        response.getWriter().write(json);
     }
 
     private String escape(String value) {
