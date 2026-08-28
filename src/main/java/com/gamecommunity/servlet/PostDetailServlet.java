@@ -58,19 +58,9 @@ public class PostDetailServlet extends HttpServlet {
         int likeCount = postLikeDAO.getLikeCount(postId);
         int dislikeCount = postLikeDAO.getDislikeCount(postId);
 
-        // 삭제 버튼 표시 여부는 서버에서 실제 권한을 확인해서 결정한다.
-        boolean canDelete = false;
         HttpSession session = request.getSession(false);
         MemberDTO loginMember = session == null ? null : (MemberDTO) session.getAttribute("member");
-        if (loginMember != null && loginMember.getMemberNo() != null) {
-            long memberNo = loginMember.getMemberNo();
-            boolean isSystemManager = memberDAO.isSystemManager(memberNo);
-            boolean isCategoryManager = categoryId != -1L
-                    && categoryManagerDAO.isManagerOfCategory(memberNo, categoryId);
-            boolean isAuthor = post.getMemberNo() != null
-                    && post.getMemberNo().equals(memberNo);
-            canDelete = isSystemManager || isCategoryManager || isAuthor;
-        }
+        boolean loggedIn = loginMember != null && loginMember.getMemberNo() != null;
 
         response.getWriter().println("""
                 <!DOCTYPE html>
@@ -141,7 +131,7 @@ public class PostDetailServlet extends HttpServlet {
 
         response.getWriter().println("<div class='buttons'>");
         response.getWriter().println("<button type='button' class='btn btn-outline-secondary' onclick='history.back()'>목록으로</button>");
-        if (canDelete) {
+        if (loggedIn) {
             response.getWriter().println("<button type='button' class='btn btn-outline-danger delete-button' onclick='deletePost(" + postId + ")'>삭제</button>");
         }
         response.getWriter().println("</div>");
@@ -160,6 +150,7 @@ public class PostDetailServlet extends HttpServlet {
                         fetch("post-like", {
                             method: "POST",
                             headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                            credentials: "include",
                             body: "postId=" + encodeURIComponent(postId) + "&likeType=" + encodeURIComponent(type)
                         })
                         .then(response => {
@@ -179,17 +170,26 @@ public class PostDetailServlet extends HttpServlet {
 
                     function deletePost(postId) {
                         if (!confirm("정말 이 게시글을 삭제하시겠습니까?")) return;
+
                         fetch("post-delete", {
                             method: "POST",
                             headers: { "Content-Type": "application/x-www-form-urlencoded" },
                             credentials: "include",
                             body: "postId=" + encodeURIComponent(postId)
                         })
-                        .then(response => response.json().then(data => ({ status: response.status, data })))
+                        .then(async response => {
+                            const data = await response.json();
+                            return { status: response.status, data };
+                        })
                         .then(result => {
                             if (result.data.success) {
-                                alert(result.data.message);
-                                history.back();
+                                alert(result.data.message || "게시글이 삭제되었습니다.");
+                                location.href = "game.html";
+                            } else if (result.status === 401) {
+                                alert("로그인이 필요합니다.");
+                                location.href = "login.html";
+                            } else if (result.status === 403) {
+                                alert("이 게시글을 삭제할 권한이 없습니다.");
                             } else {
                                 alert(result.data.message || "게시글 삭제에 실패했습니다.");
                             }
