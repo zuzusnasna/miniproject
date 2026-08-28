@@ -39,7 +39,7 @@ public class CommentServlet extends HttpServlet {
             json.append('{')
                     .append("\"commentId\":").append(c.getCommentId()).append(',')
                     .append("\"parentCommentId\":").append(c.getParentCommentId() == null ? "null" : c.getParentCommentId()).append(',')
-                    .append("\"username\":\"").append(jsonEscape(c.getUsername())).append("\",")
+                    .append("\"nickname\":\"").append(jsonEscape(c.getNickname())).append("\",")
                     .append("\"content\":\"").append(jsonEscape(deleted ? "삭제된 댓글입니다." : c.getContent())).append("\",")
                     .append("\"likeCount\":").append(c.getLikeCount()).append(',')
                     .append("\"dislikeCount\":").append(c.getDislikeCount()).append(',')
