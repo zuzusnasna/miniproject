@@ -171,10 +171,47 @@
             </button>
 
         </form>
+        <!-- 회원 탈퇴 버튼 -->
         <div class="mt-4 pt-3 border-top text-end">
             <a href="mypage-withdraw.html" class="btn btn-outline-danger btn-sm">회원 탈퇴</a>
         </div>
-    </div>
+
+        <!-- 카테고리 관리자 전용: 내 게임 게시판 생성 영역 (기본 숨김) -->
+        <div id="categoryManagerSection" class="mt-4 pt-4 border-top" style="display: none;">
+            <h4 class="fw-bold text-dark mb-2">🎮 내 게임 게시판 생성</h4>
+            <p class="text-muted small mb-3">
+                현재 관리 중인 게임(<span id="managedGameLabel" class="fw-bold text-primary">-</span>) 하위에 새 게시판 생성을 요청합니다.<br>
+                생성된 게시판은 시스템 관리자의 승인 후 공개됩니다.
+            </p>
+
+            <div class="input-group mb-2">
+                <input type="text" id="newCategoryName" class="form-control" placeholder="생성할 게시판/탭 이름 (예: 공략 팁, 질문게시판)" maxlength="50">
+                <button type="button" class="btn btn-success fw-bold px-4" onclick="requestCreateCategory()">생성 요청</button>
+            </div>
+            <div id="createCategoryMsg" class="small mt-1"></div>
+        </div>
+
+        <!-- 시스템 관리자 전용 게시판 생성 승인 대기 목록 (기본 숨김) -->
+        <div id="adminApprovalSection" class="mt-5 pt-4 border-top" style="display: none;">
+            <h4 class="fw-bold text-dark mb-3">📋 게시판 생성 승인 대기 목록 (시스템 관리자 전용)</h4>
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle text-center">
+                    <thead class="table-light">
+                    <tr>
+                        <th>게임 ID</th>
+                        <th>게시판 이름</th>
+                        <th>신청 일시</th>
+                        <th>관리</th>
+                    </tr>
+                    </thead>
+                    <tbody id="pendingTableBody">
+                    <tr><td colspan="4" class="text-muted">불러오는 중...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div> <!-- .mypage-container 끝 -->
 </main>
 
 <script src="js/common.js"></script>
@@ -228,6 +265,147 @@
             document.getElementById("phone").value = member.phone || "";
         })
         .catch(error => console.error("회원정보 로드 실패:", error));
+    // 대기 목록 불러오기
+    function loadPendingCategories() {
+        fetch("admin/categories")
+            .then(res => {
+                // 403(권한 없음)이나 401(비로그인)이면 조용히 종료 (화면 띄우지 않음)
+                if (!res.ok) {
+                    return null;
+                }
+                return res.json();
+            })
+            .then(list => {
+                if (!list) return; // 관리자가 아니면 함수 종료
+
+                // 시스템 관리자임이 확인되었을 때만 섹션을 화면에 표시
+                document.getElementById("adminApprovalSection").style.display = "block";
+
+                const tbody = document.getElementById("pendingTableBody");
+                tbody.innerHTML = "";
+
+                if (!list.length) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-muted">승인 대기 중인 게시판이 없습니다.</td></tr>';
+                    return;
+                }
+
+                list.forEach(c => {
+                    tbody.innerHTML += `
+                    <tr>
+                        <td>${c.parentId}</td>
+                        <td class="fw-bold text-primary">${escapeHtml(c.categoryName)}</td>
+                        <td>${c.createdAt}</td>
+                        <td>
+                            <button class="btn btn-sm btn-success me-1" onclick="handleCategory(${c.categoryId}, 'approve')">승인</button>
+                            <button class="btn btn-sm btn-danger" onclick="handleCategory(${c.categoryId}, 'reject')">거절</button>
+                        </td>
+                    </tr>
+                `;
+                });
+            })
+            .catch(err => {
+                console.debug("관리자 권한 없음 또는 통신 오류");
+            });
+    }
+
+    // 시스템 관리자의 승인 또는 거절 요청
+    function handleCategory(categoryId, action) {
+        const confirmMsg = action === 'approve' ? '게시판을 승인하여 공개할까요?' : '게시판 생성을 거절(삭제)할까요?';
+        if (!confirm(confirmMsg)) return;
+
+        fetch("admin/categories", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: `categoryId=${categoryId}&action=${action}`
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert("처리가 완료되었습니다.");
+                    loadPendingCategories();
+                } else {
+                    alert("처리에 실패했습니다.");
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert("서버 통신 오류가 발생했습니다.");
+            });
+    }
+
+    // 페이지 진입 시 실행
+    loadPendingCategories();
+
+    // 1. 카테고리 관리자 권한 확인 및 폼 활성화
+    function checkCategoryManager() {
+        const section = document.getElementById("categoryManagerSection");
+
+        fetch("category-create")
+            .then(res => {
+                if (!res.ok) return null;
+                return res.json();
+            })
+            .then(data => {
+                if (data && data.isManager) {
+                    section.style.display = "block";
+                    document.getElementById("managedGameLabel").textContent = "게임 ID: " + data.categoryId;
+                } else {
+                    section.style.display = "none";
+                }
+            })
+            .catch(() => {
+                section.style.display = "none";
+            });
+    }
+
+    // 2. 게시판 생성 요청 전송
+    function requestCreateCategory() {
+        const input = document.getElementById("newCategoryName");
+        const msgBox = document.getElementById("createCategoryMsg");
+        const categoryName = input.value.trim();
+
+        if (!categoryName) {
+            alert("생성할 게시판 이름을 입력해주세요.");
+            input.focus();
+            return;
+        }
+
+        const formData = new URLSearchParams();
+        formData.append("categoryName", categoryName);
+
+        fetch("category-create", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: formData.toString()
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message + "\n(시스템 관리자 승인 대기 목록에 등록되었습니다.)");
+                    input.value = "";
+                    msgBox.innerHTML = `<span class="text-success fw-bold">✓ ${escapeHtml(data.message)}</span>`;
+                    // 혹시 시스템 관리자 권한도 동시에 가지고 있다면 승인 대기 목록 즉시 갱신
+                    if (typeof loadPendingCategories === "function") {
+                        loadPendingCategories();
+                    }
+                } else {
+                    alert(data.message);
+                    msgBox.innerHTML = `<span class="text-danger fw-bold">✕ ${escapeHtml(data.message)}</span>`;
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert("게시판 생성 요청 중 오류가 발생했습니다.");
+            });
+    }
+
+    // 페이지 로드 시 실행
+    checkCategoryManager();
+
+    function escapeHtml(value) {
+        if (!value) return "";
+        return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
 </script>
 
 </body>

@@ -63,7 +63,7 @@ public class CategoryCreateServlet extends HttpServlet {
         // 7. 결과 응답 분기 처리
         if (result == 1) {
             // 성공
-            response.getWriter().write("{\"success\": true, \"message\": \"게시판이 성공적으로 생성되었습니다.\"}");
+            response.getWriter().write("{\"success\": true, \"message\": \"게시판 생성 요청을 완료했습니다.\"}");
         } else if (result == -1) {
             // 9개 초과 제한
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -72,6 +72,30 @@ public class CategoryCreateServlet extends HttpServlet {
             // 기타 서버 에러
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.getWriter().write("{\"success\": false, \"message\": \"게시판 생성에 실패했습니다.\"}");
+        }
+    }
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("application/json; charset=UTF-8");
+
+        HttpSession session = request.getSession(false);
+        MemberDTO loginMember = session == null ? null : (MemberDTO) session.getAttribute("member");
+
+        if (loginMember == null) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("{\"isManager\": false}");
+            return;
+        }
+
+        long parentId = managerDAO.getManagedCategoryId(loginMember.getMemberNo());
+
+        if (parentId == -1) {
+            // 카테고리 관리자가 아님
+            response.getWriter().write("{\"isManager\": false}");
+        } else {
+            // 담당 카테고리 번호 반환
+            response.getWriter().write(String.format("{\"isManager\": true, \"categoryId\": %d}", parentId));
         }
     }
 }
