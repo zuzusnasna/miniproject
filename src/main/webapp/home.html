@@ -101,68 +101,95 @@
             transition: background .15s ease;
         }
 
-        .popular-post-row:hover {
-            background: #faf9fd;
+        .popular-post-row:hover { background: #faf9fd; }
+        .popular-rank { font-size: .82rem; font-weight: 800; color: #8a78b3; }
+        .popular-post-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .9rem; font-weight: 700; color: #26222d; }
+        .popular-stat { font-size: .76rem; color: #88818f; text-align: right; white-space: nowrap; }
+        .popular-empty { color: #999; text-align: center; padding: 34px 20px; font-size: .88rem; }
+
+        .news-heading {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 18px;
         }
 
-        .popular-rank {
-            font-size: .82rem;
-            font-weight: 800;
-            color: #8a78b3;
-        }
+        .news-heading .section-title { margin-bottom: 0; }
+        .news-subtitle { margin: 0 0 9px; color: #8b8494; font-size: .78rem; }
 
-        .popular-post-title {
+        .news-wrap {
+            background: #fff;
+            border: 1px solid #ebe8f3;
+            border-radius: 14px;
             overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            font-size: .9rem;
-            font-weight: 700;
-            color: #26222d;
-        }
-
-        .popular-stat {
-            font-size: .76rem;
-            color: #88818f;
-            text-align: right;
-            white-space: nowrap;
-        }
-
-        .popular-empty {
-            color: #999;
-            text-align: center;
-            padding: 34px 20px;
-            font-size: .88rem;
-        }
-
-        .fav-community-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-            gap: 15px;
+            box-shadow: 0 6px 20px rgba(55, 34, 95, 0.05);
             margin-bottom: 40px;
         }
 
-        .fav-card {
-            background: #fff;
-            border: 1px solid #e9ecef;
-            border-radius: 10px;
-            padding: 25px 10px;
+        .news-featured {
+            display: grid;
+            grid-template-columns: 160px minmax(0, 1fr);
+            gap: 20px;
+            padding: 22px;
+            text-decoration: none;
+            color: inherit;
+            border-bottom: 1px solid #eeeaf5;
+            transition: background .16s ease;
+        }
+
+        .news-featured:hover { background: #fcfbfe; }
+
+        .news-visual {
+            min-height: 118px;
+            border-radius: 12px;
+            background: linear-gradient(145deg, #6941c6, #8b6ddd);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
+            letter-spacing: .04em;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,.14);
         }
 
-        .fav-card:hover {
-            background: #f8f9fa;
-            border-color: var(--primary-color);
+        .news-visual strong { font-size: 1.05rem; font-weight: 900; }
+        .news-visual span { margin-top: 5px; font-size: .7rem; opacity: .82; letter-spacing: .14em; }
+        .news-featured-content { min-width: 0; align-self: center; }
+        .news-badge { display: inline-block; margin-bottom: 8px; padding: 4px 8px; border-radius: 999px; background: #f0ebfb; color: #6941c6; font-size: .68rem; font-weight: 800; }
+        .news-featured-title { margin: 0 0 8px; color: #27222e; font-size: 1.05rem; line-height: 1.45; font-weight: 850; }
+        .news-featured-desc { margin: 0 0 10px; color: #6f6878; font-size: .82rem; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .news-date { color: #9a92a3; font-size: .72rem; white-space: nowrap; }
+        .news-list { padding: 0 18px; }
+
+        .news-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 18px;
+            align-items: center;
+            min-height: 54px;
+            padding: 0 6px;
+            border-bottom: 1px solid #f1eef5;
+            text-decoration: none;
+            color: inherit;
+            transition: background .15s ease;
         }
 
-        .fav-icon { font-size: 2.5rem; margin-bottom: 12px; }
-        .fav-name { font-weight: 600; font-size: 0.95rem; color: #333; }
+        .news-row:last-child { border-bottom: 0; }
+        .news-row:hover { background: #faf9fd; }
+        .news-row-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #37313e; font-size: .86rem; font-weight: 700; }
+        .news-empty { padding: 38px 20px; text-align: center; color: #91899a; font-size: .86rem; }
 
         @media (max-width: 760px) {
             .popular-game-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
             .popular-post-row { grid-template-columns: 28px minmax(0, 1fr) 70px; }
             .popular-post-row .popular-views { display: none; }
+            .news-heading { display: block; }
+            .news-subtitle { margin: -8px 0 16px; }
+            .news-featured { grid-template-columns: 1fr; padding: 16px; }
+            .news-visual { min-height: 90px; }
+            .news-row { grid-template-columns: minmax(0, 1fr); gap: 2px; padding: 10px 6px; }
         }
     </style>
 </head>
@@ -182,25 +209,13 @@
         </div>
     </section>
 
-    <h2 class="section-title">⭐ 내 즐겨찾기</h2>
-    <div class="fav-community-grid">
-        <div class="fav-card" onclick="location.href='post.html'">
-            <div class="fav-icon">⚔️</div>
-            <div class="fav-name">롤플레잉(RPG)</div>
-        </div>
-        <div class="fav-card" onclick="location.href='post.html'">
-            <div class="fav-icon">🔫</div>
-            <div class="fav-name">슈팅(FPS)</div>
-        </div>
-        <div class="fav-card" onclick="location.href='post.html'">
-            <div class="fav-icon">⚽</div>
-            <div class="fav-name">스포츠</div>
-        </div>
-        <div class="fav-card" style="border: 1px dashed #ccc;" onclick="alert('커뮤니티 즐겨찾기 기능은 준비 중입니다!')">
-            <div class="fav-icon" style="filter: grayscale(100%); opacity: 0.5;">➕</div>
-            <div class="fav-name" style="color: #888;">추가하기</div>
-        </div>
+    <div class="news-heading">
+        <h2 class="section-title">📰 Game News</h2>
+        <p class="news-subtitle">게임 업계의 최신 소식을 확인하세요</p>
     </div>
+    <section id="gameNews" class="news-wrap" aria-label="최신 게임 뉴스">
+        <div class="news-empty">최신 게임 뉴스를 불러오는 중입니다...</div>
+    </section>
 
 </main>
 
@@ -221,13 +236,8 @@ let allPosts=[];
 let popularGameIds=[];
 let selectedGameId=null;
 
-function getGameIdFromCategory(categoryId){
-    return Math.floor(Number(categoryId)/10);
-}
-
-function getPopularScore(post){
-    return (Number(post.viewCount)||0)*VIEW_WEIGHT + (Number(post.likeCount)||0)*LIKE_WEIGHT;
-}
+function getGameIdFromCategory(categoryId){ return Math.floor(Number(categoryId)/10); }
+function getPopularScore(post){ return (Number(post.viewCount)||0)*VIEW_WEIGHT + (Number(post.likeCount)||0)*LIKE_WEIGHT; }
 
 function selectPopularGames(posts){
     const scoreByGame=new Map();
@@ -236,11 +246,7 @@ function selectPopularGames(posts){
         if(!GAME_DATA[gameId]) return;
         scoreByGame.set(gameId,(scoreByGame.get(gameId)||0)+getPopularScore(post));
     });
-
-    const ranked=[...scoreByGame.entries()]
-        .sort((a,b)=>b[1]-a[1])
-        .map(([gameId])=>gameId);
-
+    const ranked=[...scoreByGame.entries()].sort((a,b)=>b[1]-a[1]).map(([gameId])=>gameId);
     const merged=[...ranked,...FALLBACK_GAMES].filter((gameId,index,array)=>array.indexOf(gameId)===index);
     return merged.slice(0,8);
 }
@@ -252,7 +258,6 @@ function renderGameTabs(){
             ${escapeHtml(GAME_DATA[gameId])}
         </button>
     `).join('');
-
     tabs.querySelectorAll('.popular-game-tab').forEach(button=>{
         button.addEventListener('click',()=>{
             selectedGameId=Number(button.dataset.gameId);
@@ -267,7 +272,6 @@ function renderPopularPosts(){
     const title=document.getElementById('popularPanelTitle');
     const gameLink=document.getElementById('popularGameLink');
     const gameName=GAME_DATA[selectedGameId]||'게임';
-
     title.textContent=`${gameName} 인기 게시글 TOP 10`;
     gameLink.href=`game.html?gameId=${selectedGameId}`;
 
@@ -307,6 +311,74 @@ fetch('posts')
         console.error(error);
         document.getElementById('popularPosts').innerHTML='<div class="popular-empty text-danger">인기글을 불러오지 못했습니다.</div>';
     });
+
+fetch('game-news')
+    .then(response=>{
+        if(!response.ok) throw new Error('뉴스 로드 실패');
+        return response.json();
+    })
+    .then(data=>renderGameNews(Array.isArray(data.items)?data.items:[]))
+    .catch(error=>{
+        console.error(error);
+        document.getElementById('gameNews').innerHTML='<div class="news-empty">현재 게임 뉴스를 불러올 수 없습니다.</div>';
+    });
+
+function renderGameNews(items){
+    const container=document.getElementById('gameNews');
+    if(!items.length){
+        container.innerHTML='<div class="news-empty">표시할 게임 뉴스가 없습니다.</div>';
+        return;
+    }
+
+    const first=items[0];
+    const firstLink=safeNewsUrl(first.originallink||first.link);
+    const rows=items.slice(1,5).map(item=>{
+        const link=safeNewsUrl(item.originallink||item.link);
+        return `
+            <a class="news-row" href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer">
+                <span class="news-row-title">${cleanNewsText(item.title)}</span>
+                <span class="news-date">${formatNewsDate(item.pubDate)}</span>
+            </a>`;
+    }).join('');
+
+    container.innerHTML=`
+        <a class="news-featured" href="${escapeHtml(firstLink)}" target="_blank" rel="noopener noreferrer">
+            <div class="news-visual" aria-hidden="true">
+                <strong>GAME HUB</strong>
+                <span>NEWS</span>
+            </div>
+            <div class="news-featured-content">
+                <span class="news-badge">LATEST</span>
+                <h3 class="news-featured-title">${cleanNewsText(first.title)}</h3>
+                <p class="news-featured-desc">${cleanNewsText(first.description)}</p>
+                <span class="news-date">${formatNewsDate(first.pubDate)}</span>
+            </div>
+        </a>
+        <div class="news-list">${rows}</div>`;
+}
+
+function cleanNewsText(value){
+    if(value===null||value===undefined) return '';
+    const textarea=document.createElement('textarea');
+    textarea.innerHTML=String(value).replace(/<[^>]*>/g,'');
+    return escapeHtml(textarea.value);
+}
+
+function formatNewsDate(value){
+    if(!value) return '';
+    const date=new Date(value);
+    if(Number.isNaN(date.getTime())) return '';
+    return new Intl.DateTimeFormat('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).format(date);
+}
+
+function safeNewsUrl(value){
+    try{
+        const url=new URL(String(value||''));
+        return (url.protocol==='http:'||url.protocol==='https:')?url.href:'#';
+    }catch(e){
+        return '#';
+    }
+}
 
 function escapeHtml(value){
     if(value===null||value===undefined) return '';
