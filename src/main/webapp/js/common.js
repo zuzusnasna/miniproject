@@ -1,13 +1,9 @@
 document.addEventListener("DOMContentLoaded", function () {
     const currentPath = window.location.pathname;
-
     if (currentPath.includes("login.html") || currentPath.includes("signup.html")) return;
-
     initLayout();
-
     const categoryList = document.querySelector(".category-list");
     if (categoryList) loadGameCategories(categoryList);
-
     initMemberInfoBox();
 });
 
@@ -51,6 +47,13 @@ function injectCustomStyles() {
         body .content-left { flex:1 1 0% !important; min-width:0 !important; } body .content-right { width:160px !important; flex:0 0 160px !important; } body .ad-sidebar { position:relative; }
         body .ad-slot { min-height:600px; padding:14px; border:1px solid rgba(105,65,198,.28); border-radius:12px; background:#f8f6fd; color:#6941c6; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; box-sizing:border-box; }
         body .ad-label { position:absolute; top:14px; font-size:.62rem; font-weight:800; letter-spacing:.08em; color:#8a7aad; } body .ad-placeholder { font-size:1rem; font-weight:800; margin-bottom:8px; } body .ad-slot small { color:#938aa5; line-height:1.45; }
+        .common-member-info { position:fixed; width:240px; box-sizing:border-box; background:#fff; border:1px solid #ddd; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,.1); overflow:hidden; z-index:9999; }
+        .common-member-info .member-title { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 15px; background:#fff; cursor:grab; user-select:none; font-weight:700; }
+        .common-member-info .member-title:active { cursor:grabbing; }
+        .common-member-info .member-toggle { display:flex; align-items:center; justify-content:center; width:24px; height:24px; padding:0; border:0; border-radius:4px; background:transparent; color:#555; font-size:20px; line-height:1; cursor:pointer; flex:0 0 24px; }
+        .common-member-info .member-toggle:hover { background:#f1f1f1; color:#111; }
+        .common-member-info #commonMemberContent { padding:0 15px 15px; }
+        .common-member-info.collapsed #commonMemberContent { display:none !important; }
         @media (max-width:980px) { body .layout-grid { flex-direction:column !important; } body .content-right { width:100% !important; flex:0 0 auto !important; } body .ad-slot { min-height:140px; } }
     `;
     document.head.appendChild(style);
@@ -71,12 +74,14 @@ function renderGameNav(categoryList, menuData) {
 function injectGameNavStyles(){if(document.getElementById("game-nav-style"))return;const style=document.createElement("style");style.id="game-nav-style";style.textContent=`.category-nav,.category-list{overflow:visible!important}.category-list{align-items:center;justify-content:space-between;gap:20px!important;overflow-x:visible!important;overflow-y:visible!important}.game-nav-item{position:relative;display:flex;align-items:center;align-self:stretch}.game-nav-trigger{display:flex;align-items:center;height:100%;padding:12px 4px;color:#111!important;font-weight:700!important;font-size:.95rem!important;text-decoration:none;cursor:default}.game-nav-trigger:hover{color:var(--primary-color)!important}.game-nav-dropdown{position:absolute;z-index:10000;top:calc(100% + 2px);left:50%;width:340px;max-height:420px;overflow-y:auto;padding:9px;border:1px solid rgba(105,65,198,.18);border-radius:12px;background:rgba(255,255,255,.95);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 14px 34px rgba(35,22,68,.18);opacity:0;visibility:hidden;pointer-events:none;transform:translate(-50%,-7px);transition:opacity .16s ease,transform .16s ease,visibility .16s ease}.game-nav-dropdown::before{content:"";position:absolute;left:0;right:0;top:-10px;height:10px}.game-nav-item:hover .game-nav-dropdown,.game-nav-item:focus-within .game-nav-dropdown{opacity:1;visibility:visible;pointer-events:auto;transform:translate(-50%,0)}.game-nav-link{display:flex!important;justify-content:space-between;align-items:center;gap:16px;padding:9px 14px;border-radius:8px;color:#29252f!important;text-decoration:none;font-weight:700!important;transition:background .15s ease,color .15s ease}.game-nav-link:hover{background:#f1ecfb;color:var(--primary-color)!important}.game-nav-link small{color:#999;font-size:.72rem;font-weight:600}.game-nav-game{display:flex;align-items:center;gap:10px}.game-nav-icon{width:32px;height:32px;object-fit:cover;border-radius:6px;flex-shrink:0}`;document.head.appendChild(style);}
 function escapeGameNav(value){return String(value??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;").replace(/'/g,"&#039;");}
 
-// =========================================================
-// 회원정보 플로팅창
-// =========================================================
 function initMemberInfoBox(){
     let wrapper=document.getElementById("commonMemberInfo");
-    if(!wrapper){wrapper=document.createElement("div");wrapper.id="commonMemberInfo";wrapper.innerHTML=`<div class="common-member-info"><div class="member-title"><span>👤 회원정보</span><button type="button" class="member-toggle" aria-label="회원정보 접기">−</button></div><div id="commonMemberContent">회원 정보를 불러오는 중...</div></div>`;document.body.appendChild(wrapper);}
+    if(!wrapper){
+        wrapper=document.createElement("div");
+        wrapper.id="commonMemberInfo";
+        wrapper.innerHTML=`<div class="common-member-info"><div class="member-title"><span>👤 회원정보</span><button type="button" class="member-toggle" aria-label="회원정보 접기">−</button></div><div id="commonMemberContent">회원 정보를 불러오는 중...</div></div>`;
+        document.body.appendChild(wrapper);
+    }
     const memberBox=wrapper.querySelector(".common-member-info");
     initMemberBoxToggle(memberBox);
     restoreMemberBoxPosition(memberBox);
@@ -85,20 +90,26 @@ function initMemberInfoBox(){
 }
 function initMemberBoxToggle(memberBox){
     if(!memberBox||memberBox.dataset.toggleInitialized==="true")return;
-    const title=memberBox.querySelector(".member-title"),button=memberBox.querySelector(".member-toggle"),content=memberBox.querySelector("#commonMemberContent");
-    if(!title||!button||!content)return;
+    const button=memberBox.querySelector(".member-toggle"),content=memberBox.querySelector("#commonMemberContent");
+    if(!button||!content)return;
     memberBox.dataset.toggleInitialized="true";
-    let collapsed=localStorage.getItem("gameCommunity_memberBoxCollapsed")==="true";
+    const collapsed=localStorage.getItem("gameCommunity_memberBoxCollapsed")==="true";
     applyMemberBoxCollapsed(memberBox,collapsed);
-    button.addEventListener("click",event=>{event.stopPropagation();collapsed=!collapsed;applyMemberBoxCollapsed(memberBox,collapsed);localStorage.setItem("gameCommunity_memberBoxCollapsed",String(collapsed));});
+    button.addEventListener("click",event=>{
+        event.preventDefault();
+        event.stopPropagation();
+        const nextCollapsed=!memberBox.classList.contains("collapsed");
+        applyMemberBoxCollapsed(memberBox,nextCollapsed);
+        localStorage.setItem("gameCommunity_memberBoxCollapsed",String(nextCollapsed));
+    });
 }
 function applyMemberBoxCollapsed(memberBox,collapsed){
     const button=memberBox.querySelector(".member-toggle"),content=memberBox.querySelector("#commonMemberContent");
     if(!button||!content)return;
+    memberBox.classList.toggle("collapsed",collapsed);
     content.style.display=collapsed?"none":"block";
     button.textContent=collapsed?"+":"−";
     button.setAttribute("aria-label",collapsed?"회원정보 펼치기":"회원정보 접기");
-    memberBox.classList.toggle("collapsed",collapsed);
 }
 function loadMemberInfo(){
     const content=document.getElementById("commonMemberContent");
