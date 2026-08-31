@@ -45,6 +45,8 @@ function initLayout() {
             </div>`;
         layoutContainer.appendChild(adSidebar);
     }
+
+    applyGameBanner();
 }
 
 function loadGameHubTheme() {
@@ -52,8 +54,49 @@ function loadGameHubTheme() {
     const link = document.createElement("link");
     link.id = "gamehub-theme-css";
     link.rel = "stylesheet";
-    link.href = "css/gamehub-theme.css?v=2";
+    link.href = "css/gamehub-theme.css?v=3";
     document.head.appendChild(link);
+}
+
+function applyGameBanner() {
+    const banner = document.querySelector(".game-banner");
+    if (!banner) return;
+
+    const gameId = Number(new URLSearchParams(location.search).get("gameId"));
+
+    const banners = {
+        110: "https://cdn.cloudflare.steamstatic.com/steam/apps/550/header.jpg",
+        120: "https://cdn.cloudflare.steamstatic.com/steam/apps/1085660/header.jpg",
+        130: "https://cdn.cloudflare.steamstatic.com/steam/apps/1817070/header.jpg",
+        140: "https://cdn.cloudflare.steamstatic.com/steam/apps/1599340/header.jpg",
+        210: "https://cdn.cloudflare.steamstatic.com/steam/apps/240/header.jpg",
+        220: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1600&q=80",
+        230: "https://images.unsplash.com/photo-1547394765-185e1e68f34e?auto=format&fit=crop&w=1600&q=80",
+        240: "https://cdn.cloudflare.steamstatic.com/steam/apps/578080/header.jpg",
+        310: "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=1600&q=80",
+        320: "https://images.unsplash.com/photo-1511882150382-421056c89033?auto=format&fit=crop&w=1600&q=80",
+        410: "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1600&q=80",
+        420: "https://images.unsplash.com/photo-1556056504-5c7696c4c28d?auto=format&fit=crop&w=1600&q=80",
+        430: "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=1600&q=80",
+        510: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1600&q=80",
+        520: "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=1600&q=80",
+        530: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1600&q=80",
+        610: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1600&q=80",
+        620: "https://images.unsplash.com/photo-1448630360428-65456885c650?auto=format&fit=crop&w=1600&q=80",
+        630: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1600&q=80",
+        910: "https://images.unsplash.com/photo-1603481546238-487240415921?auto=format&fit=crop&w=1600&q=80",
+        920: "https://cdn.cloudflare.steamstatic.com/steam/apps/271590/header.jpg",
+        930: "https://cdn.cloudflare.steamstatic.com/steam/apps/1778820/header.jpg",
+        940: "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=1600&q=80",
+        950: "https://images.unsplash.com/photo-1509248961158-e54f6934749c?auto=format&fit=crop&w=1600&q=80",
+        960: "https://images.unsplash.com/photo-1542751110-97427bbecf20?auto=format&fit=crop&w=1600&q=80"
+    };
+
+    const image = banners[gameId];
+    if (image) {
+        banner.style.setProperty("--game-banner-image", `url("${image}")`);
+        banner.classList.add("has-game-image");
+    }
 }
 
 function injectCustomStyles() {
