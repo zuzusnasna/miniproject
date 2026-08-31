@@ -151,7 +151,7 @@ public class PostDAO {
 
         String sql = """
         INSERT INTO POST (
-            POST_ID, 
+            POST_ID,
             CATEGORY_ID,
             MEMBER_NO,
             TITLE,
@@ -164,6 +164,7 @@ public class PostDAO {
             CREATED_AT
         )
         VALUES (
+            ?,
             ?,
             ?,
             ?,
@@ -187,10 +188,11 @@ public class PostDAO {
 
                 System.out.println("SAVE 3 - PreparedStatement 생성");
 
-                pstmt.setLong(1, post.getCategoryId());
-                pstmt.setLong(2, post.getMemberNo());
-                pstmt.setString(3, post.getTitle());
-                pstmt.setString(4, post.getContent());
+                pstmt.setLong(1, post.getPostId());
+                pstmt.setLong(2, post.getCategoryId());
+                pstmt.setLong(3, post.getMemberNo());
+                pstmt.setString(4, post.getTitle());
+                pstmt.setString(5, post.getContent());
 
                 System.out.println("SAVE 4 - 파라미터 설정 완료");
 
