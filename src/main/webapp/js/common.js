@@ -17,7 +17,6 @@ document.addEventListener("DOMContentLoaded", async function () {
             }
         }
 
-        // 게시글 상세 화면: 작성자 본인에게만 수정 버튼 표시
         if (currentPath.endsWith("/post-detail") || currentPath.includes("/post-detail")) {
             initPostEditButton();
         }
@@ -56,7 +55,6 @@ async function initPostEditButton() {
     if (!postId || !buttons) return;
 
     try {
-        // 서버에서 로그인 여부와 작성자 본인 여부를 함께 확인한다.
         const response = await fetch("post-edit?postId=" + encodeURIComponent(postId));
         if (!response.ok) return;
 
