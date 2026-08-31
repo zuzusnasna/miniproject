@@ -1,344 +1,49 @@
 <!DOCTYPE html>
 <html lang="ko">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>게임 커뮤니티 게시판</title>
-
-    <!-- 1. Bootstrap CSS CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- 2. 공통 CSS -->
     <link rel="stylesheet" href="css/gamehub.css">
-
     <style>
-        body {
-            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: #f8f9fa;
-        }
-
-        /* home.html과 완전히 동일한 전체 폭 및 레이아웃 유지 */
-        .board-container {
-            max-width: 1280px;
-            width: 100%;
-            margin: 20px auto;
-            padding: 0 16px;
-            box-sizing: border-box;
-        }
-
-        .board-card {
-            background: #ffffff;
-            border-radius: 8px;
-            padding: 24px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-            border: 1px solid #e9ecef;
-        }
-
-        .board-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 12px;
-            border-bottom: 2px solid #333;
-        }
-
-        .board-header h1 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin: 0;
-            color: #222;
-        }
-
-        /* 테이블 스타일 */
-        table.board-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        table.board-table th {
-            background-color: #f1f3f5;
-            color: #495057;
-            font-weight: 600;
-            padding: 12px;
-            border-top: 1px solid #dee2e6;
-            border-bottom: 2px solid #dee2e6;
-            text-align: center;
-        }
-
-        table.board-table td {
-            padding: 12px;
-            border-bottom: 1px solid #e9ecef;
-            text-align: center;
-            color: #333;
-            vertical-align: middle;
-        }
-
-        .title-btn {
-            border: none;
-            background: none;
-            padding: 0;
-            font-size: 15px;
-            font-weight: 500;
-            cursor: pointer;
-            color: #212529;
-            text-align: left;
-        }
-
-        .title-btn:hover {
-            color: #0d6efd;
-            text-decoration: underline;
-        }
-
-        .empty {
-            padding: 50px 0;
-            color: #868e96;
-        }
-
-        /* 게시글 상세 영역 */
-        .detail {
-            display: none;
-            margin-top: 30px;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 20px;
-            background-color: #f8f9fa;
-        }
-
-        .detail h2 {
-            font-size: 1.3rem;
-            font-weight: bold;
-            margin-top: 0;
-            margin-bottom: 10px;
-        }
-
-        .detail-info {
-            color: #6c757d;
-            font-size: 13px;
-            margin-bottom: 15px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #e9ecef;
-        }
-
-        .detail-content {
-            min-height: 160px;
-            padding: 16px;
-            background-color: #ffffff;
-            border: 1px solid #dee2e6;
-            border-radius: 4px;
-            white-space: pre-wrap;
-            line-height: 1.6;
-        }
-
-        .reaction {
-            margin-top: 15px;
-            text-align: center;
-        }
-
-        #likeCount { font-weight: bold; color: #0d6efd; }
-        #dislikeCount { font-weight: bold; color: #dc3545; }
-
-        .close-button {
-            margin-top: 15px;
-            text-align: right;
-        }
+        body{font-family:'Pretendard',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:#f8f9fa}
+        .board-container{max-width:1280px;width:100%;margin:20px auto;padding:0 16px;box-sizing:border-box}.board-card{background:#fff;border-radius:8px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.06);border:1px solid #e9ecef}.board-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-bottom:12px;border-bottom:2px solid #333}.board-header h1{font-size:1.5rem;font-weight:700;margin:0;color:#222}table.board-table{width:100%;border-collapse:collapse}table.board-table th{background:#f1f3f5;color:#495057;font-weight:600;padding:12px;border-top:1px solid #dee2e6;border-bottom:2px solid #dee2e6;text-align:center}table.board-table td{padding:12px;border-bottom:1px solid #e9ecef;text-align:center;color:#333;vertical-align:middle}.title-btn{border:none;background:none;padding:0;font-size:15px;font-weight:500;cursor:pointer;color:#212529;text-align:left}.title-btn:hover{color:#0d6efd;text-decoration:underline}.empty{padding:50px 0;color:#868e96}.detail{display:none;margin-top:30px;border:1px solid #dee2e6;border-radius:8px;padding:20px;background:#f8f9fa}.detail h2{font-size:1.3rem;font-weight:bold;margin:0 0 10px}.detail-info{color:#6c757d;font-size:13px;margin-bottom:15px;padding-bottom:8px;border-bottom:1px solid #e9ecef}.detail-content{min-height:160px;padding:16px;background:#fff;border:1px solid #dee2e6;border-radius:4px;white-space:pre-wrap;line-height:1.6}.reaction{margin-top:15px;text-align:center}.close-button{margin-top:15px;text-align:right}.edit-button{margin-left:8px}
     </style>
 </head>
-
 <body>
-
-<!-- [메인 레이아웃 감싸기] -->
-<div class="board-container">
-    <div class="board-card">
-
-        <div class="board-header">
-            <h1 id="boardCategoryTitle">게시판</h1>
-            <div class="btn-group">
-                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="location.href='home.html'">메인으로</button>
-                <button type="button" class="btn btn-primary btn-sm" onclick="location.href='post-write.html'">글쓰기</button>
-            </div>
-        </div>
-
-        <!-- 게시글 목록 테이블 -->
-        <table class="board-table">
-            <thead>
-            <tr>
-                <th style="width: 8%;">번호</th>
-                <th style="width: 44%;">제목</th>
-                <th style="width: 12%;">작성자</th>
-                <th style="width: 8%;">조회수</th>
-                <th style="width: 7%;">좋아요</th>
-                <th style="width: 7%;">나빠요</th>
-                <th style="width: 14%;">작성일</th>
-            </tr>
-            </thead>
-            <tbody id="postList">
-            <tr>
-                <td colspan="7" class="empty">게시글을 불러오는 중...</td>
-            </tr>
-            </tbody>
-        </table>
-
-        <!-- 게시글 상세 영역 -->
-        <div id="postDetail" class="detail">
-            <h2 id="detailTitle"></h2>
-            <div id="detailInfo" class="detail-info"></div>
-            <div id="detailContent" class="detail-content"></div>
-
-            <div class="reaction">
-                <button type="button" class="btn btn-outline-primary btn-sm" onclick="likePost()">
-                    👍 좋아요 <span id="likeCount">0</span>
-                </button>
-                <button type="button" class="btn btn-outline-danger btn-sm" onclick="dislikePost()">
-                    👎 나빠요 <span id="dislikeCount">0</span>
-                </button>
-            </div>
-
-            <div class="close-button">
-                <button type="button" class="btn btn-sm btn-secondary" onclick="closeDetail()">닫기</button>
-            </div>
-        </div>
-
-    </div>
-</div>
-
-<!-- 1. Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<!-- 2. 공통 JS (헤더 및 회원정보 로드) -->
-<script src="js/common.js"></script>
-
-<!-- 3. 게시판 비즈니스 로직 -->
+<div class="board-container"><div class="board-card">
+    <div class="board-header"><h1 id="boardCategoryTitle">게시판</h1><div class="btn-group"><button type="button" class="btn btn-outline-secondary btn-sm" onclick="location.href='home.html'">메인으로</button><button type="button" class="btn btn-primary btn-sm" onclick="location.href='post-write.html'">글쓰기</button></div></div>
+    <table class="board-table"><thead><tr><th style="width:8%">번호</th><th style="width:44%">제목</th><th style="width:12%">작성자</th><th style="width:8%">조회수</th><th style="width:7%">좋아요</th><th style="width:7%">나빠요</th><th style="width:14%">작성일</th></tr></thead><tbody id="postList"><tr><td colspan="7" class="empty">게시글을 불러오는 중...</td></tr></tbody></table>
+    <div id="postDetail" class="detail"><h2 id="detailTitle"></h2><div id="detailInfo" class="detail-info"></div><div id="detailContent" class="detail-content"></div><div class="reaction"><button type="button" class="btn btn-outline-primary btn-sm" onclick="likePost()">👍 좋아요 <span id="likeCount">0</span></button> <button type="button" class="btn btn-outline-danger btn-sm" onclick="dislikePost()">👎 나빠요 <span id="dislikeCount">0</span></button></div><div class="close-button"><button type="button" class="btn btn-sm btn-secondary" onclick="closeDetail()">목록으로</button><button type="button" id="editButton" class="btn btn-sm btn-outline-primary edit-button" onclick="editPost()">수정</button></div></div>
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script><script src="js/common.js"></script>
 <script>
-    let selectedPost = null;
+let selectedPost=null;
+function escapeHtml(text){if(!text)return "";return String(text).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;").replace(/'/g,"&#039;");}
+const urlParams=new URLSearchParams(location.search);const categoryId=urlParams.get('categoryId');const requestUrl=categoryId?`posts?categoryId=${categoryId}`:"posts";
+fetch(requestUrl).then(r=>{if(!r.ok)throw new Error("게시글 로드 실패");return r.json()}).then(posts=>{const list=document.getElementById("postList");list.innerHTML="";if(!posts||!posts.length){list.innerHTML='<tr><td colspan="7" class="empty">등록된 게시글이 없습니다.</td></tr>';return}posts.forEach(post=>{list.innerHTML+=`<tr><td>${post.postId}</td><td style="text-align:left"><button type="button" class="title-btn" onclick="showPost(${post.postId})">${escapeHtml(post.title)}</button></td><td>${escapeHtml(post.username)}</td><td>${post.viewCount}</td><td>${post.likeCount}</td><td>${post.dislikeCount}</td><td>${post.createdAt}</td></tr>`})}).catch(e=>{console.error(e);document.getElementById("postList").innerHTML='<tr><td colspan="7" class="empty">게시글을 불러오지 못했습니다.</td></tr>'});
 
-    function escapeHtml(text) {
-        if (!text) return "";
-        return String(text)
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-    }
-
-    /* URL에서 categoryId 추출하여 요청 */
-    const urlParams = new URLSearchParams(window.location.search);
-    const categoryId = urlParams.get('categoryId');
-    const requestUrl = categoryId ? `posts?categoryId=${categoryId}` : "posts";
-
-    /* 목록 불러오기 */
-    fetch(requestUrl)
-        .then(response => {
-            if (!response.ok) throw new Error("게시글 로드 실패");
-            return response.json();
+function showPost(postId){
+    // 제목 클릭은 수정 페이지가 아니라 게시글 상세 조회로만 이동한다.
+    fetch("post-detail?postId="+encodeURIComponent(postId))
+        .then(r=>{if(!r.ok)throw new Error("게시글 상세 조회 실패");return r.json()})
+        .then(post=>{
+            if(!post||post.success===false){alert(post&&post.message?post.message:"게시글을 찾을 수 없습니다.");return;}
+            selectedPost=post;
+            document.getElementById("detailTitle").textContent=post.title;
+            document.getElementById("detailInfo").textContent="작성자: "+(post.nickname||post.username||"")+" | 조회수: "+post.viewCount+" | 작성일: "+post.createdAt;
+            document.getElementById("detailContent").textContent=post.content;
+            document.getElementById("likeCount").textContent=post.likeCount;
+            document.getElementById("dislikeCount").textContent=post.dislikeCount;
+            document.getElementById("postDetail").style.display="block";
+            document.getElementById("postDetail").scrollIntoView({behavior:"smooth"});
         })
-        .then(posts => {
-            const postList = document.getElementById("postList");
-            postList.innerHTML = "";
+        .catch(e=>{console.error(e);alert("게시글 상세 조회에 실패했습니다.");});
+}
 
-            if (!posts || posts.length === 0) {
-                postList.innerHTML = `
-                    <tr>
-                        <td colspan="7" class="empty">등록된 게시글이 없습니다.</td>
-                    </tr>
-                `;
-                return;
-            }
-
-            posts.forEach(post => {
-                postList.innerHTML += `
-                    <tr>
-                        <td>${post.postId}</td>
-                        <td style="text-align: left;">
-                            <button type="button" class="title-btn" onclick="showPost(${post.postId})">
-                                ${escapeHtml(post.title)}
-                            </button>
-                        </td>
-                        <td>${escapeHtml(post.username)}</td>
-                        <td>${post.viewCount}</td>
-                        <td>${post.likeCount}</td>
-                        <td>${post.dislikeCount}</td>
-                        <td>${post.createdAt}</td>
-                    </tr>
-                `;
-            });
-        })
-        .catch(error => {
-            console.error(error);
-            document.getElementById("postList").innerHTML = `
-                <tr>
-                    <td colspan="7" class="empty">게시글을 불러오지 못했습니다.</td>
-                </tr>
-            `;
-        });
-
-    /* 상세 보기 */
-    function showPost(postId) {
-        fetch(requestUrl)
-            .then(response => response.json())
-            .then(posts => {
-                const post = posts.find(p => Number(p.postId) === Number(postId));
-                if (!post) {
-                    alert("게시글을 찾을 수 없습니다.");
-                    return;
-                }
-
-                selectedPost = post;
-                document.getElementById("detailTitle").textContent = post.title;
-                document.getElementById("detailInfo").textContent =
-                    "작성자: " + post.nickname + " | 조회수: " + post.viewCount + " | 작성일: " + post.createdAt;
-                document.getElementById("detailContent").textContent = post.content;
-                document.getElementById("likeCount").textContent = post.likeCount;
-                document.getElementById("dislikeCount").textContent = post.dislikeCount;
-
-                const detail = document.getElementById("postDetail");
-                detail.style.display = "block";
-                detail.scrollIntoView({ behavior: "smooth" });
-            });
-    }
-
-    function likePost() {
-        if (!selectedPost) return;
-        fetch("post-like", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            credentials: "include",
-            body: "postId=" + encodeURIComponent(selectedPost.postId) + "&likeType=LIKE"
-        })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    document.getElementById("likeCount").textContent = data.likeCount;
-                    document.getElementById("dislikeCount").textContent = data.dislikeCount;
-                    alert("좋아요를 누르고 회원정보가 갱신되었습니다.");
-                }
-            });
-    }
-
-    function dislikePost() {
-        if (!selectedPost) return;
-        fetch("post-like", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            credentials: "include",
-            body: "postId=" + encodeURIComponent(selectedPost.postId) + "&likeType=DISLIKE"
-        })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    document.getElementById("likeCount").textContent = data.likeCount;
-                    document.getElementById("dislikeCount").textContent = data.dislikeCount;
-                    alert("나빠요를 눌렀습니다.");
-                }
-            });
-    }
-
-    function closeDetail() {
-        document.getElementById("postDetail").style.display = "none";
-        selectedPost = null;
-    }
-</script>
-</body>
-
-</html>
+function editPost(){if(!selectedPost||!selectedPost.postId)return;location.href="post-edit.html?postId="+encodeURIComponent(selectedPost.postId)}
+function likePost(){if(!selectedPost)return;fetch("post-like",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},credentials:"include",body:"postId="+encodeURIComponent(selectedPost.postId)+"&likeType=LIKE"}).then(r=>r.json()).then(d=>{if(d.success){document.getElementById("likeCount").textContent=d.likeCount;document.getElementById("dislikeCount").textContent=d.dislikeCount}else alert(d.message)})}
+function dislikePost(){if(!selectedPost)return;fetch("post-like",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},credentials:"include",body:"postId="+encodeURIComponent(selectedPost.postId)+"&likeType=DISLIKE"}).then(r=>r.json()).then(d=>{if(d.success){document.getElementById("likeCount").textContent=d.likeCount;document.getElementById("dislikeCount").textContent=d.dislikeCount}else alert(d.message)})}
+function closeDetail(){document.getElementById("postDetail").style.display="none";selectedPost=null}
+</script></body></html>

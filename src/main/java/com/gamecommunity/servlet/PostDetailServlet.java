@@ -1,9 +1,7 @@
 package com.gamecommunity.servlet;
 
-import com.gamecommunity.dao.CategoryManagerDAO;
-import com.gamecommunity.dao.MemberDAO;
-import com.gamecommunity.dao.PostDAO;
-import com.gamecommunity.dao.PostLikeDAO;
+import com.gamecommunity.dao.*;
+import com.gamecommunity.dto.CategoryDTO;
 import com.gamecommunity.dto.MemberDTO;
 import com.gamecommunity.dto.PostDTO;
 import jakarta.servlet.ServletException;
@@ -14,10 +12,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 @WebServlet("/post-detail")
 public class PostDetailServlet extends HttpServlet {
 
+    private final CategoryDAO categoryDAO = new CategoryDAO();
     private final PostDAO postDAO = new PostDAO();
     private final PostLikeDAO postLikeDAO = new PostLikeDAO();
     private final MemberDAO memberDAO = new MemberDAO();
@@ -53,11 +55,21 @@ public class PostDetailServlet extends HttpServlet {
         long categoryId = post.getCategoryId() == null ? 0L : post.getCategoryId();
         long gameId = categoryId >= 1000 ? categoryId / 10 : categoryId;
         String gameName = getGameName(gameId);
+        List<CategoryDTO> customBoards = new ArrayList<>();
+        List<CategoryDTO> dbBoards = categoryDAO.findByParentId(gameId);
+        if (dbBoards != null) {
+            for (CategoryDTO c : dbBoards) {
+                long suffix = c.getCategoryId() - (gameId * 10);
+                if (suffix >= 4 && suffix <= 9) {
+                    customBoards.add(c);
+                }
+            }
+            customBoards.sort(Comparator.comparingLong(CategoryDTO::getCategoryId));
+        }
 
         int likeCount = postLikeDAO.getLikeCount(postId);
         int dislikeCount = postLikeDAO.getDislikeCount(postId);
 
-        // 삭제 권한: 시스템 관리자 / 담당 카테고리 관리자 / 작성자 본인
         HttpSession session = request.getSession(false);
         MemberDTO loginMember = session == null ? null : (MemberDTO) session.getAttribute("member");
         boolean canDelete = false;
@@ -102,6 +114,11 @@ public class PostDetailServlet extends HttpServlet {
                         .buttons { margin-top:25px; text-align:right; }
                         .delete-button { margin-left:8px; }
                         @media(max-width:800px) { .post-community-layout { grid-template-columns:1fr; } .post-board-sidebar { display:flex; gap:6px; overflow:auto; } .post-board-sidebar h3 { display:none; } .post-board-link { white-space:nowrap; width:auto; margin:0; } }
+                        .like-area { margin-top:32px; padding:24px; background:#faf8fd; border:1px solid #ede8f5; border-radius:12px; text-align:center; display:flex; justify-content:center; gap:16px; }
+                        .like-button, .dislike-button { padding:10px 24px; font-size:15px; font-weight:700; cursor:pointer; border-radius:50px; border:1px solid transparent; transition:transform 0.15s ease, box-shadow 0.15s ease; }
+                        .like-button { background-color:#eef4ff; color:#1976d2; border-color:#c7dcff; }
+                        .dislike-button { background-color:#fff1f1; color:#d32f2f; border-color:#ffcdd2; }
+                        .like-button:hover, .dislike-button:hover { transform:scale(1.05); box-shadow:0 4px 10px rgba(0,0,0,.08); }
                     </style>
                 </head>
                 <body>
@@ -119,9 +136,12 @@ public class PostDetailServlet extends HttpServlet {
         response.getWriter().println("<aside class='post-board-sidebar'><h3>게시판</h3>" +
                 boardLink(gameId, gameId * 10 + 1, categoryId, "자유게시판") +
                 boardLink(gameId, gameId * 10 + 2, categoryId, "질문게시판") +
-                boardLink(gameId, gameId * 10 + 3, categoryId, "공략게시판") +
-                "</aside>");
+                boardLink(gameId, gameId * 10 + 3, categoryId, "공략게시판"));
+        for (CategoryDTO c : customBoards) {
+            response.getWriter().println(boardLink(gameId, c.getCategoryId(), categoryId, c.getCategoryName()));
+        }
 
+        response.getWriter().println("</aside>");
         response.getWriter().println("<div class='post-detail-card'>");
         response.getWriter().println("<h1>" + escapeHtml(post.getTitle()) + "</h1>");
         response.getWriter().println("<div class='info'>작성자: " + escapeHtml(post.getNickname()) +
@@ -133,7 +153,7 @@ public class PostDetailServlet extends HttpServlet {
                 "</div>");
 
         response.getWriter().println("<div class='buttons'>");
-        response.getWriter().println("<button type='button' class='btn btn-outline-secondary' onclick='history.back()'>목록으로</button>");
+        response.getWriter().println("<button type='button' class='btn btn-outline-secondary' onclick=\"location.href='game.html?gameId=" + gameId + "&categoryId=" + categoryId + "'\">목록으로</button>");
         if (canDelete) {
             response.getWriter().println("<button type='button' class='btn btn-outline-danger delete-button' onclick='deletePost(" + postId + ")'>삭제</button>");
         }

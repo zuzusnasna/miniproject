@@ -438,3 +438,89 @@ body {
         width: 210px;
     }
 }
+/* 1. 커스텀 스크롤바 (웹킷 브라우저) */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+    background: #c2b5e2;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-color);
+}
+
+/* 2. 카드 및 인터랙션 컴포넌트 호버 효과 */
+.post-row, .popular-post-row, .news-row {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.post-row:hover, .popular-post-row:hover {
+    background-color: #f7f4fc !important;
+    transform: translateX(4px); /* 오른쪽으로 살짝 밀리는 효과 */
+}
+
+/* 3. 버튼 리플/호버 모션 */
+.btn-login, .btn-primary, .btn-primary-custom {
+    transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+.btn-login:hover, .btn-primary:hover, .btn-primary-custom:hover {
+    box-shadow: 0 4px 12px rgba(105, 65, 198, 0.35);
+    transform: translateY(-1px);
+}
+
+/* 4. 유저 닉네임/등급 강조 스타일 */
+.author-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 700;
+}
+.game-nav-trigger {
+    position: relative;
+    transition: color 0.2s ease;
+}
+
+/* 마우스 올렸을 때 아래쪽에 보라색 네온 언더라인 생성 */
+.game-nav-trigger::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 3px;
+    background: #7c3aed;
+    border-radius: 3px 3px 0 0;
+    transition: width 0.2s ease, left 0.2s ease;
+}
+
+.game-nav-item:hover .game-nav-trigger::after {
+    width: 100%;
+    left: 0;
+}
+
+/* 상단 헤더 알림 버튼 스타일 */
+.btn-noti-icon {
+    background: transparent;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    padding: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.btn-noti-icon:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    transform: scale(1.08);
+}
+
+.btn-noti-icon svg {
+    display: block;
+}
