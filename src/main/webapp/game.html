@@ -118,7 +118,7 @@
             `<div class="post-row" onclick="location.href='post-detail?postId=${post.postId}'">
             <div class="post-meta">#${post.postId}</div>
             <div class="post-title">${esc(post.title)}</div>
-            <div class="post-meta">👤 ${esc(post.username)}</div>
+            <div class="post-meta">👤 ${esc(post.nickname || post.username)}</div>
             <div class="post-meta views">조회 ${post.viewCount}</div>
         </div>`
         ).join('');

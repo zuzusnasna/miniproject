@@ -151,6 +151,7 @@ public class PostDAO {
 
         String sql = """
         INSERT INTO POST (
+            POST_ID, 
             CATEGORY_ID,
             MEMBER_NO,
             TITLE,
