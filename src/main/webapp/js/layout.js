@@ -54,7 +54,7 @@ function loadGameHubTheme() {
     const link = document.createElement("link");
     link.id = "gamehub-theme-css";
     link.rel = "stylesheet";
-    link.href = "css/gamehub-theme.css?v=3";
+    link.href = "css/gamehub-theme.css?v=4";
     document.head.appendChild(link);
 }
 
@@ -64,32 +64,50 @@ function applyGameBanner() {
 
     const gameId = Number(new URLSearchParams(location.search).get("gameId"));
 
+    /*
+     * 게임별 대표 키아트/배너.
+     * 이전처럼 게임과 무관한 이미지(예: 다른 게임의 Steam ID)를 섞지 않고,
+     * 실제 해당 게임을 식별할 수 있는 대표 이미지를 우선 사용한다.
+     */
     const banners = {
-        110: "https://cdn.cloudflare.steamstatic.com/steam/apps/550/header.jpg",
-        120: "https://cdn.cloudflare.steamstatic.com/steam/apps/1085660/header.jpg",
-        130: "https://cdn.cloudflare.steamstatic.com/steam/apps/1817070/header.jpg",
-        140: "https://cdn.cloudflare.steamstatic.com/steam/apps/1599340/header.jpg",
-        210: "https://cdn.cloudflare.steamstatic.com/steam/apps/240/header.jpg",
-        220: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1600&q=80",
-        230: "https://images.unsplash.com/photo-1547394765-185e1e68f34e?auto=format&fit=crop&w=1600&q=80",
+        // RPG
+        110: "https://shared.steamstatic.com/store_item_assets/steam/apps/216150/44dd4c4c8a5cc5bb860c4fafb317424f1f0db7aa/hero_capsule_2x.jpg",
+        120: "https://shared.steamstatic.com/store_item_assets/steam/apps/1956040/header.jpg",
+        130: "https://nxl.nxfs.nexon.com/media/10086/newage-main_card.jpg",
+        140: "https://images.indianexpress.com/2022/02/lost-ark-featured.jpg",
+
+        // FPS / TPS
+        210: "https://www.gamerevolution.com/wp-content/uploads/sites/2/2022/10/co2hvp.jpg",
+        220: "https://vg24.gr/wp-content/uploads/2022/06/overwatch-2-key-art.jpg",
+        230: "https://image.gameapps.hk/images/202105/05/riot-games-valorant-release-00.jpg",
         240: "https://cdn.cloudflare.steamstatic.com/steam/apps/578080/header.jpg",
-        310: "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=1600&q=80",
-        320: "https://images.unsplash.com/photo-1511882150382-421056c89033?auto=format&fit=crop&w=1600&q=80",
-        410: "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1600&q=80",
-        420: "https://images.unsplash.com/photo-1556056504-5c7696c4c28d?auto=format&fit=crop&w=1600&q=80",
-        430: "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=1600&q=80",
-        510: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1600&q=80",
-        520: "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=1600&q=80",
-        530: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1600&q=80",
-        610: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1600&q=80",
-        620: "https://images.unsplash.com/photo-1448630360428-65456885c650?auto=format&fit=crop&w=1600&q=80",
-        630: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1600&q=80",
-        910: "https://images.unsplash.com/photo-1603481546238-487240415921?auto=format&fit=crop&w=1600&q=80",
+
+        // MOBA
+        310: "https://i.gzn.jp/img/2017/09/29/league-of-legends/00.jpg",
+        320: "https://images.gamewatcherstatic.com/image/file/4/5e/126384/Dota-2-Key-Art-1.jpg",
+
+        // 스포츠
+        410: "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1600&q=85",
+        420: "https://images.unsplash.com/photo-1556056504-5c7696c4c28d?auto=format&fit=crop&w=1600&q=85",
+        430: "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=1600&q=85",
+
+        // 전략
+        510: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1600&q=85",
+        520: "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=1600&q=85",
+        530: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1600&q=85",
+
+        // 시뮬레이션
+        610: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1600&q=85",
+        620: "https://images.unsplash.com/photo-1448630360428-65456885c650?auto=format&fit=crop&w=1600&q=85",
+        630: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1600&q=85",
+
+        // 그 외
+        910: "https://congngheviet.com/wp-content/uploads/2025/05/minecraft-key-art.webp",
         920: "https://cdn.cloudflare.steamstatic.com/steam/apps/271590/header.jpg",
         930: "https://cdn.cloudflare.steamstatic.com/steam/apps/1778820/header.jpg",
-        940: "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=1600&q=80",
-        950: "https://images.unsplash.com/photo-1509248961158-e54f6934749c?auto=format&fit=crop&w=1600&q=80",
-        960: "https://images.unsplash.com/photo-1542751110-97427bbecf20?auto=format&fit=crop&w=1600&q=80"
+        940: "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=1600&q=85",
+        950: "https://images.unsplash.com/photo-1509248961158-e54f6934749c?auto=format&fit=crop&w=1600&q=85",
+        960: "https://images.unsplash.com/photo-1542751110-97427bbecf20?auto=format&fit=crop&w=1600&q=85"
     };
 
     const image = banners[gameId];
