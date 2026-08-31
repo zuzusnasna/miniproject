@@ -151,7 +151,7 @@ public class PostDAO {
 
         String sql = """
         INSERT INTO POST (
-            POST_ID, 
+            POST_ID,
             CATEGORY_ID,
             MEMBER_NO,
             TITLE,
@@ -164,6 +164,7 @@ public class PostDAO {
             CREATED_AT
         )
         VALUES (
+            (SELECT NVL(MAX(POST_ID), 0) + 1 FROM POST),
             ?,
             ?,
             ?,
@@ -187,6 +188,8 @@ public class PostDAO {
 
                 System.out.println("SAVE 3 - PreparedStatement 생성");
 
+                // POST_ID는 DB에서 MAX(POST_ID) + 1로 생성
+                // 따라서 Java에서 post.getPostId()를 받지 않는다.
                 pstmt.setLong(1, post.getCategoryId());
                 pstmt.setLong(2, post.getMemberNo());
                 pstmt.setString(3, post.getTitle());
