@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>게시글 수정 - Game Hub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/gamehub.css">
+    <style>
+        .edit-wrap { max-width:900px; margin:50px auto; padding:0 16px; }
+        .edit-card { background:#fff; border-radius:12px; padding:32px; box-shadow:0 3px 12px rgba(0,0,0,.06); }
+        .edit-location { color:#6941c6; font-weight:700; margin-bottom:6px; }
+    </style>
+</head>
+<body>
+<main class="edit-wrap">
+    <section class="edit-card">
+        <div class="border-bottom pb-3 mb-4">
+            <div id="editLocation" class="edit-location">게시글 불러오는 중...</div>
+            <h2 class="mb-0 fw-bold">게시글 수정</h2>
+        </div>
+
+        <form id="postEditForm">
+            <input type="hidden" id="postId" name="postId">
+
+            <div class="mb-3">
+                <label for="title" class="form-label fw-bold">제목</label>
+                <input type="text" class="form-control form-control-lg" id="title" name="title" maxlength="300" required>
+            </div>
+
+            <div class="mb-4">
+                <label for="content" class="form-label fw-bold">내용</label>
+                <textarea class="form-control" id="content" name="content" rows="14" required style="resize:vertical;"></textarea>
+            </div>
+
+            <div class="d-flex gap-2 justify-content-end pt-3 border-top">
+                <button type="button" id="cancelButton" class="btn btn-outline-secondary px-4 fw-bold">취소</button>
+                <button type="submit" class="btn btn-primary px-4 fw-bold">수정</button>
+            </div>
+        </form>
+    </section>
+</main>
+
+<script>
+const params = new URLSearchParams(location.search);
+const postId = params.get('postId');
+const contextPath = location.pathname.substring(0, location.pathname.indexOf('/', 1));
+
+if (!postId) {
+    alert('게시글 번호가 없습니다.');
+    history.back();
+} else {
+    document.getElementById('postId').value = postId;
+
+    fetch('post-update?postId=' + encodeURIComponent(postId))
+        .then(async response => {
+            const data = await response.json();
+            if (response.status === 401) {
+                alert('로그인이 필요합니다.');
+                location.href = 'login.html';
+                return null;
+            }
+            if (!response.ok || !data.success) {
+                alert(data.message || '게시글을 불러올 수 없습니다.');
+                history.back();
+                return null;
+            }
+            return data;
+        })
+        .then(data => {
+            if (!data) return;
+            document.getElementById('title').value = data.title || '';
+            document.getElementById('content').value = data.content || '';
+            document.getElementById('editLocation').textContent = '게시글 #' + data.postId + ' 수정';
+        })
+        .catch(error => {
+            console.error(error);
+            alert('게시글을 불러오는 중 오류가 발생했습니다.');
+        });
+}
+
+document.getElementById('cancelButton').addEventListener('click', () => {
+    location.href = 'post-detail?postId=' + encodeURIComponent(postId);
+});
+
+document.getElementById('postEditForm').addEventListener('submit', event => {
+    event.preventDefault();
+
+    const title = document.getElementById('title').value.trim();
+    const content = document.getElementById('content').value.trim();
+
+    if (!title || !content) {
+        alert('제목과 내용을 입력해주세요.');
+        return;
+    }
+
+    const body = new URLSearchParams();
+    body.set('postId', postId);
+    body.set('title', title);
+    body.set('content', content);
+
+    fetch('post-update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+        body: body.toString()
+    })
+    .then(async response => {
+        const data = await response.json();
+
+        if (response.status === 401) {
+            alert('로그인이 필요합니다.');
+            location.href = 'login.html';
+            return null;
+        }
+        if (response.status === 403) {
+            alert('이 게시글을 수정할 권한이 없습니다.');
+            location.href = 'post-detail?postId=' + encodeURIComponent(postId);
+            return null;
+        }
+        if (!response.ok || !data.success) {
+            throw new Error(data.message || '게시글 수정에 실패했습니다.');
+        }
+        return data;
+    })
+    .then(data => {
+        if (!data) return;
+        alert(data.message || '게시글이 수정되었습니다.');
+        location.href = 'post-detail?postId=' + encodeURIComponent(postId);
+    })
+    .catch(error => {
+        console.error(error);
+        alert(error.message || '게시글 수정 중 오류가 발생했습니다.');
+    });
+});
+</script>
+</body>
+</html>
