@@ -164,6 +164,7 @@ public class PostDAO {
             CREATED_AT
         )
         VALUES (
+            (SELECT NVL(MAX(POST_ID), 0) + 1 FROM POST),
             ?,
             ?,
             ?,
