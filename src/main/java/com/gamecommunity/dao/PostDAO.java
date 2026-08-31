@@ -169,7 +169,6 @@ public class PostDAO {
             ?,
             ?,
             ?,
-            ?,
             0,
             0,
             0,
@@ -189,11 +188,12 @@ public class PostDAO {
 
                 System.out.println("SAVE 3 - PreparedStatement 생성");
 
-                pstmt.setLong(1, post.getPostId());
-                pstmt.setLong(2, post.getCategoryId());
-                pstmt.setLong(3, post.getMemberNo());
-                pstmt.setString(4, post.getTitle());
-                pstmt.setString(5, post.getContent());
+                // POST_ID는 DB에서 MAX(POST_ID) + 1로 생성
+                // 따라서 Java에서 post.getPostId()를 받지 않는다.
+                pstmt.setLong(1, post.getCategoryId());
+                pstmt.setLong(2, post.getMemberNo());
+                pstmt.setString(3, post.getTitle());
+                pstmt.setString(4, post.getContent());
 
                 System.out.println("SAVE 4 - 파라미터 설정 완료");
 
