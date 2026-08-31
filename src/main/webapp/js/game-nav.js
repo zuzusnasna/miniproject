@@ -27,7 +27,7 @@ function renderGameNav(categoryList, menuData) {
             <div class="game-nav-dropdown">
                 ${group.games.map(game => `
                     <a class="game-nav-link" href="game.html?gameId=${game.categoryId}">
-                        <span class="game-nav-game"><img class="game-nav-icon" src="${escapeGameNav(game.iconUrl)}" alt="${escapeGameNav(game.categoryName)}" onerror="this.style.display='none'"><span>${escapeGameNav(game.categoryName)}</span></span>
+                        <span class="game-nav-game"><img class="game-nav-icon" src="${escapeGameNav(resolveGameIconPath(game.iconUrl))}" alt="${escapeGameNav(game.categoryName)}" onerror="this.style.display='none'"><span>${escapeGameNav(game.categoryName)}</span></span>
                         <small>커뮤니티 →</small>
                     </a>`).join("")}
             </div>
@@ -61,6 +61,14 @@ function injectGameNavStyles() {
         .game-nav-icon{width:32px;height:32px;object-fit:cover;border-radius:6px;flex-shrink:0}
     `;
     document.head.appendChild(style);
+}
+
+function resolveGameIconPath(iconUrl) {
+    if (!iconUrl) return "";
+
+    // DB에 저장된 기존 /gamecommunity_ 경로를
+    // 현재 애플리케이션 Context Path로 변환
+    return iconUrl.replace(/^\/gamecommunity_/, "/gamecommunity1");
 }
 
 function escapeGameNav(value) { return String(value ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;").replace(/'/g,"&#039;"); }
