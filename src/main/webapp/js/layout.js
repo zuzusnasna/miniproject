@@ -1,4 +1,5 @@
 function initLayout() {
+    loadGameHubTheme();
     injectCustomStyles();
 
     if (!document.querySelector(".site-header-wrapper")) {
@@ -7,16 +8,15 @@ function initLayout() {
         headerWrapper.innerHTML = `
             <div class="main-header">
                 <div class="custom-container header-inner">
-                    <a href="home.html" class="logo">Game Hub</a>
+                    <a href="home.html" class="logo">GAMEHUB</a>
                     <div class="user-menu">
                         <a href="login.html" id="navAuthLink">로그인</a>
                         <a href="mypage.html">마이페이지</a>
-                        <!-- 🔥 종 모양 알림 아이콘 (장식용) 추가 -->
                         <button type="button" class="btn-noti-icon" aria-label="알림" onclick="alert('새로운 알림이 없습니다.')">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                             <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/>
-                        </svg>
-                </button>
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+                                <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/>
+                            </svg>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -37,16 +37,23 @@ function initLayout() {
         const adSidebar = document.createElement("aside");
         adSidebar.className = "content-right ad-sidebar";
         adSidebar.innerHTML = `
-    <div class="ad-slot" aria-label="광고 영역">
-        <span class="ad-label">ADVERTISEMENT</span>
-
-        <video class="ad-video" autoplay muted loop playsinline>
-            <source src="images/gamehub-ad.mp4" type="video/mp4">
-        </video>
-    </div>
-`;
+            <div class="ad-slot" aria-label="광고 영역">
+                <span class="ad-label">ADVERTISEMENT</span>
+                <video class="ad-video" autoplay muted loop playsinline>
+                    <source src="images/gamehub-ad.mp4" type="video/mp4">
+                </video>
+            </div>`;
         layoutContainer.appendChild(adSidebar);
     }
+}
+
+function loadGameHubTheme() {
+    if (document.getElementById("gamehub-theme-css")) return;
+    const link = document.createElement("link");
+    link.id = "gamehub-theme-css";
+    link.rel = "stylesheet";
+    link.href = "css/gamehub-theme.css?v=2";
+    document.head.appendChild(link);
 }
 
 function injectCustomStyles() {
@@ -60,13 +67,7 @@ function injectCustomStyles() {
         body .content-left { flex:1 1 0% !important; min-width:0 !important; }
         body .content-right { width:160px !important; flex:0 0 160px !important; }
         body .ad-sidebar { position:relative; }
-        body .ad-video {
-    width:100%;
-    height:570px;
-    object-fit:cover;
-    border-radius:9px;
-    display:block;
-}
+        body .ad-video { width:100%; height:570px; object-fit:cover; border-radius:9px; display:block; }
         body .ad-slot { min-height:600px; padding:6px; border:1px solid rgba(105,65,198,.28); border-radius:12px; background:#f8f6fd; color:#6941c6; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; box-sizing:border-box; }
         body .ad-label { position:absolute; top:14px; font-size:.62rem; font-weight:800; letter-spacing:.08em; color:#8a7aad; }
         @media (max-width:980px) { body .layout-grid { flex-direction:column !important; } body .content-right { width:100% !important; flex:0 0 auto !important; } body .ad-slot { min-height:140px; } }
