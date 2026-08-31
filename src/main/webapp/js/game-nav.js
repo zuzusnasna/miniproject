@@ -68,7 +68,7 @@ function resolveGameIconPath(iconUrl) {
 
     // DB에 저장된 기존 /gamecommunity_ 경로를
     // 현재 애플리케이션 Context Path로 변환
-    return iconUrl.replace(/^\/gamecommunity_/, "/gamecommunity1");
+    return iconUrl;
 }
 
 function escapeGameNav(value) { return String(value ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;").replace(/'/g,"&#039;"); }
