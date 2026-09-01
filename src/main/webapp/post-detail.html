@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>게시글 상세 - Game Hub</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+    <link rel="stylesheet" href="css/gamehub.css">
+    <link rel="stylesheet" href="css/post-detail.css">
+</head>
+<body>
+
+<main class="post-detail-wrap">
+
+    <!-- 게임 이름과 설명을 표시하는 영역 -->
+    <section class="post-context-banner">
+        <h2 id="gameName" class="game-name">게임 커뮤니티</h2>
+        <p id="gameDescription" class="description">
+            게임 커뮤니티 게시글입니다.
+        </p>
+    </section>
+
+    <div class="post-community-layout">
+
+        <!-- 현재 게임의 게시판 목록 -->
+        <aside class="post-board-sidebar">
+            <h3>게시판</h3>
+            <div id="boardMenu"></div>
+        </aside>
+
+        <!-- 게시글 본문 -->
+        <section class="post-detail-card">
+            <h1 id="postTitle">게시글을 불러오는 중입니다...</h1>
+
+            <div id="postInfo" class="info"></div>
+
+            <div id="postContent" class="content"></div>
+
+            <!-- 좋아요 / 나빠요 -->
+            <div class="like-area">
+                <button
+                    type="button"
+                    id="likeButton"
+                    class="like-button"
+                >
+                    👍 좋아요
+                    <span id="likeCount" class="count">0</span>
+                </button>
+
+                <button
+                    type="button"
+                    id="dislikeButton"
+                    class="dislike-button"
+                >
+                    👎 나빠요
+                    <span id="dislikeCount" class="count">0</span>
+                </button>
+            </div>
+
+            <!-- 목록 / 삭제 버튼 -->
+            <div class="buttons">
+                <button
+                    type="button"
+                    id="listButton"
+                    class="btn btn-outline-secondary"
+                >
+                    목록으로
+                </button>
+
+                <button
+                    type="button"
+                    id="deleteButton"
+                    class="btn btn-outline-danger delete-button"
+                    hidden
+                >
+                    삭제
+                </button>
+            </div>
+
+            <!-- 댓글 영역 -->
+            <section id="commentSection" class="comment-section"></section>
+        </section>
+    </div>
+</main>
+
+<script src="js/common.js"></script>
+<script src="js/comment.js"></script>
+<script src="js/post-detail.js"></script>
+
+</body>
+</html>
