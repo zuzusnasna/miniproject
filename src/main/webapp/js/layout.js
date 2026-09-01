@@ -1,6 +1,5 @@
 function initLayout() {
     loadGameHubTheme();
-    injectCustomStyles();
 
     if (!document.querySelector(".site-header-wrapper")) {
         const headerWrapper = document.createElement("header");
@@ -75,32 +74,26 @@ function applyGameBanner() {
         120: "https://shared.steamstatic.com/store_item_assets/steam/apps/1956040/header.jpg",
         130: "https://nxl.nxfs.nexon.com/media/10086/newage-main_card.jpg",
         140: "https://images.indianexpress.com/2022/02/lost-ark-featured.jpg",
-
         // FPS / TPS
         210: "https://www.gamerevolution.com/wp-content/uploads/sites/2/2022/10/co2hvp.jpg",
         220: "https://vg24.gr/wp-content/uploads/2022/06/overwatch-2-key-art.jpg",
         230: "https://image.gameapps.hk/images/202105/05/riot-games-valorant-release-00.jpg",
         240: "https://cdn.cloudflare.steamstatic.com/steam/apps/578080/header.jpg",
-
         // MOBA
         310: "https://i.gzn.jp/img/2017/09/29/league-of-legends/00.jpg",
         320: "https://images.gamewatcherstatic.com/image/file/4/5e/126384/Dota-2-Key-Art-1.jpg",
-
         // 스포츠
         410: "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1600&q=85",
         420: "https://images.unsplash.com/photo-1556056504-5c7696c4c28d?auto=format&fit=crop&w=1600&q=85",
         430: "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=1600&q=85",
-
         // 전략
         510: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1600&q=85",
         520: "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=1600&q=85",
         530: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1600&q=85",
-
         // 시뮬레이션
         610: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1600&q=85",
         620: "https://images.unsplash.com/photo-1448630360428-65456885c650?auto=format&fit=crop&w=1600&q=85",
         630: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1600&q=85",
-
         // 그 외
         910: "https://congngheviet.com/wp-content/uploads/2025/05/minecraft-key-art.webp",
         920: "https://cdn.cloudflare.steamstatic.com/steam/apps/271590/header.jpg",
@@ -115,23 +108,4 @@ function applyGameBanner() {
         banner.style.setProperty("--game-banner-image", `url("${image}")`);
         banner.classList.add("has-game-image");
     }
-}
-
-function injectCustomStyles() {
-    if (document.getElementById("custom-layout-style")) return;
-    const style = document.createElement("style");
-    style.id = "custom-layout-style";
-    style.textContent = `
-        body .custom-container, body .site-header-wrapper .custom-container, body .header-inner, body .category-list { width:100% !important; max-width:1280px !important; margin:0 auto !important; padding:0 16px !important; box-sizing:border-box !important; }
-        body #main-content, body .content-left, body .container, body .container-sm, body .container-md, body .container-lg, body .container-xl { width:100% !important; margin-left:auto !important; margin-right:auto !important; }
-        body .layout-grid { display:flex !important; flex-direction:row !important; gap:24px !important; width:100% !important; max-width:1480px !important; margin:24px auto !important; padding:0 16px !important; box-sizing:border-box !important; align-items:flex-start !important; }
-        body .content-left { flex:1 1 0% !important; min-width:0 !important; }
-        body .content-right { width:160px !important; flex:0 0 160px !important; }
-        body .ad-sidebar { position:relative; }
-        body .ad-video { width:100%; height:570px; object-fit:cover; border-radius:9px; display:block; }
-        body .ad-slot { min-height:600px; padding:6px; border:1px solid rgba(105,65,198,.28); border-radius:12px; background:#f8f6fd; color:#6941c6; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; box-sizing:border-box; }
-        body .ad-label { position:absolute; top:14px; font-size:.62rem; font-weight:800; letter-spacing:.08em; color:#8a7aad; }
-        @media (max-width:980px) { body .layout-grid { flex-direction:column !important; } body .content-right { width:100% !important; flex:0 0 auto !important; } body .ad-slot { min-height:140px; } }
-    `;
-    document.head.appendChild(style);
 }
