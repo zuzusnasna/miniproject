@@ -15,7 +15,7 @@ function initMemberInfoBox() {
                     <span>👤 회원정보</span>
                     <button type="button" class="member-toggle" aria-label="회원정보 접기">−</button>
                 </div>
-                <div id="commonMemberContent">회원 정보를 불러오는 중...</div>
+                <div id="commonMemberContent">Not login status</div>
             </div>`;
         document.body.appendChild(wrapper);
     }
@@ -25,11 +25,23 @@ function initMemberInfoBox() {
     const content = memberBox.querySelector("#commonMemberContent");
     const trigger = document.getElementById("memberMenuTrigger");
 
+    // 로그인 여부를 확인하기 전에는 회원정보 버튼을 비활성 상태로 표시한다.
+    if (trigger) {
+        trigger.disabled = true;
+        trigger.textContent = "Not login status";
+        trigger.setAttribute("aria-expanded", "false");
+        trigger.classList.remove("active");
+    }
+
     // 상단바의 회원정보 버튼과 패널을 연결한다.
     if (trigger && trigger.dataset.bound !== "true") {
         trigger.dataset.bound = "true";
         trigger.addEventListener("click", function (event) {
             event.preventDefault();
+
+            // 비로그인 상태에서는 회원정보 패널을 열 수 없다.
+            if (trigger.disabled) return;
+
             const isOpen = !memberBox.hidden;
             memberBox.hidden = isOpen;
             trigger.setAttribute("aria-expanded", String(!isOpen));
@@ -56,6 +68,8 @@ function initMemberInfoBox() {
 
 function loadMemberInfo() {
     const content = document.getElementById("commonMemberContent");
+    const trigger = document.getElementById("memberMenuTrigger");
+
     fetch("member-info", { method: "GET", credentials: "include" })
         .then(response => {
             if (!response.ok) throw new Error("로그인이 필요합니다.");
@@ -66,6 +80,13 @@ function loadMemberInfo() {
             if (authLink) {
                 authLink.textContent = "로그아웃";
                 authLink.href = "logout";
+            }
+
+            // 로그인 확인이 끝난 뒤에만 회원정보 버튼을 활성화한다.
+            if (trigger) {
+                trigger.disabled = false;
+                trigger.innerHTML = '회원정보 <span class="member-menu-arrow">▼</span>';
+                trigger.setAttribute("aria-expanded", "false");
             }
 
             if (!content) return;
@@ -94,7 +115,19 @@ function loadMemberInfo() {
         })
         .catch(error => {
             console.debug("비로그인 상태:", error.message);
-            if (content) content.innerHTML = `<div class="member-error">로그인하면 회원정보가 표시됩니다.</div>`;
+
+            // 비로그인 상태에서는 패널을 열 수 없도록 유지한다.
+            const memberBox = document.querySelector("#commonMemberInfo .common-member-info");
+            if (memberBox) memberBox.hidden = true;
+
+            if (trigger) {
+                trigger.disabled = true;
+                trigger.textContent = "Not login status";
+                trigger.setAttribute("aria-expanded", "false");
+                trigger.classList.remove("active");
+            }
+
+            if (content) content.textContent = "Not login status";
         });
 }
 
