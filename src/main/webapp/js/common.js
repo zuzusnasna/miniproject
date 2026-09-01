@@ -16,11 +16,9 @@ document.addEventListener("DOMContentLoaded", async function () {
             initCategoryManagerRequestAdmin();
         }
 
-        // 게임 페이지에서는 해당 게임의 카테고리 관리자에게만
-        // "게시판 추가 신청" 버튼을 보여줍니다.
-        if (isPage("game.html")) {
-            initCategoryBoardCreateButton();
-        }
+        // 게시판 메뉴는 game.html의 DB 조회 후 다시 렌더링됩니다.
+        // 따라서 여기서 버튼을 바로 추가하면 game.html의 renderMenu()가 지워버립니다.
+        // game.html에서 게시판 목록 렌더링이 끝난 뒤 initCategoryBoardCreateButton()을 호출합니다.
 
         if (isEndpoint("post-detail")) {
             initPostEditButton();
@@ -81,11 +79,9 @@ function loadScript(src) {
  * 현재 로그인한 사용자가 해당 게임의 카테고리 관리자인지 확인한 뒤
  * 게시판 추가 신청 버튼을 게임 게시판 목록 아래에 표시합니다.
  *
- * /category-create GET
- * -> 로그인 여부 + 현재 관리 중인 게임 ID를 확인합니다.
- *
- * /category-create POST
- * -> 입력한 게시판 이름을 해당 게임의 하위 게시판으로 생성합니다.
+ * 주의: game.html이 DB에서 게시판 목록을 렌더링한 뒤 호출해야 합니다.
+ * renderMenu()가 boardMenu의 HTML을 다시 만들기 때문에 그 전에 버튼을
+ * 추가하면 버튼이 사라집니다.
  */
 async function initCategoryBoardCreateButton() {
     const boardMenu = document.getElementById("boardMenu");
@@ -116,8 +112,8 @@ async function initCategoryBoardCreateButton() {
                 `${data.gameName || "현재 게임"}에 추가할 게시판 이름을 입력해주세요.`
             );
 
-            // 취소했거나 빈 문자열을 입력한 경우 아무 작업도 하지 않습니다.
             if (categoryName === null) return;
+
             const trimmedName = categoryName.trim();
             if (!trimmedName) {
                 alert("게시판 이름을 입력해주세요.");
@@ -145,8 +141,6 @@ async function initCategoryBoardCreateButton() {
                 }
 
                 alert(result.message || "게시판 생성 요청을 완료했습니다.");
-
-                // 새 게시판이 DB에 반영되었으므로 목록을 다시 불러옵니다.
                 window.location.reload();
             } catch (error) {
                 console.error("게시판 추가 신청 실패:", error);
