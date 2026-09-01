@@ -1,9 +1,14 @@
 package com.gamecommunity.servlet;
 
-import com.gamecommunity.dao.*;
+import com.gamecommunity.dao.CategoryDAO;
+import com.gamecommunity.dao.CategoryManagerDAO;
+import com.gamecommunity.dao.MemberDAO;
+import com.gamecommunity.dao.PostDAO;
+import com.gamecommunity.dao.PostLikeDAO;
 import com.gamecommunity.dto.CategoryDTO;
 import com.gamecommunity.dto.MemberDTO;
 import com.gamecommunity.dto.PostDTO;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -16,256 +21,314 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+/**
+ * 게시글 상세 정보를 조회하는 Servlet입니다.
+ *
+ * 화면(HTML)을 Servlet에서 직접 만들지 않고,
+ * 게시글 데이터를 JSON으로 반환하는 역할만 담당합니다.
+ *
+ * 요청 흐름
+ * 1. postId 확인
+ * 2. 게시글 조회
+ * 3. 게임 / 게시판 정보 조회
+ * 4. 좋아요 / 나빠요 수 조회
+ * 5. 로그인 회원의 삭제 권한 확인
+ * 6. JSON 응답 반환
+ *
+ * 실제 화면은 post-detail.html과 post-detail.js에서 담당합니다.
+ */
 @WebServlet("/post-detail")
 public class PostDetailServlet extends HttpServlet {
 
-    private final CategoryDAO categoryDAO = new CategoryDAO();
-    private final PostDAO postDAO = new PostDAO();
-    private final PostLikeDAO postLikeDAO = new PostLikeDAO();
-    private final MemberDAO memberDAO = new MemberDAO();
-    private final CategoryManagerDAO categoryManagerDAO = new CategoryManagerDAO();
+    // =========================================================
+    // DAO
+    // =========================================================
 
+    // 게임 및 게시판 정보를 조회합니다.
+    private final CategoryDAO categoryDAO = new CategoryDAO();
+
+    // 게시글 정보를 조회합니다.
+    private final PostDAO postDAO = new PostDAO();
+
+    // 좋아요 / 나빠요 개수를 조회합니다.
+    private final PostLikeDAO postLikeDAO = new PostLikeDAO();
+
+    // 시스템 관리자 여부를 확인합니다.
+    private final MemberDAO memberDAO = new MemberDAO();
+
+    // 카테고리 관리자 여부를 확인합니다.
+    private final CategoryManagerDAO categoryManagerDAO =
+            new CategoryManagerDAO();
+
+    /**
+     * 게시글 상세 페이지 요청을 처리합니다.
+     */
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void doGet(
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) throws ServletException, IOException {
+
         request.setCharacterEncoding("UTF-8");
-        response.setContentType("text/html; charset=UTF-8");
+
+        // =====================================================
+        // 1. 게시글 번호 확인
+        // =====================================================
 
         String postIdParam = request.getParameter("postId");
+
         if (postIdParam == null || postIdParam.isBlank()) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "게시글 번호가 없습니다.");
+            response.sendError(
+                    HttpServletResponse.SC_BAD_REQUEST,
+                    "게시글 번호가 없습니다."
+            );
             return;
         }
 
         long postId;
+
         try {
             postId = Long.parseLong(postIdParam);
         } catch (NumberFormatException e) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "잘못된 게시글 번호입니다.");
+            response.sendError(
+                    HttpServletResponse.SC_BAD_REQUEST,
+                    "잘못된 게시글 번호입니다."
+            );
             return;
         }
 
+        // =====================================================
+        // 2. 게시글 조회
+        // =====================================================
+
+        // 상세 페이지에 들어왔으므로 조회수를 1 증가시킵니다.
         postDAO.increaseViewCount(postId);
+
         PostDTO post = postDAO.findById(postId);
+
         if (post == null) {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND, "게시글을 찾을 수 없습니다.");
+            response.sendError(
+                    HttpServletResponse.SC_NOT_FOUND,
+                    "게시글을 찾을 수 없습니다."
+            );
             return;
         }
 
-        long categoryId = post.getCategoryId() == null ? 0L : post.getCategoryId();
-        long gameId = categoryId >= 1000 ? categoryId / 10 : categoryId;
-        String gameName = getGameName(gameId);
+        // =====================================================
+        // 3. 게임 / 게시판 정보 조회
+        // =====================================================
+
+        // 게시글이 속한 게시판 번호입니다.
+        long categoryId =
+                post.getCategoryId() == null
+                        ? 0L
+                        : post.getCategoryId();
+
+        // 현재 프로젝트의 CATEGORY_ID 규칙에 따라
+        // 하위 게시판 ID에서 게임 ID를 계산합니다.
+        long gameId = categoryId >= 1000
+                ? categoryId / 10
+                : categoryId;
+
+        // 게임 카테고리를 DB에서 직접 조회합니다.
+        // 기존 switch 하드코딩 방식은 제거했습니다.
+        CategoryDTO gameCategory = categoryDAO.findById(gameId);
+
+        String gameName = gameCategory == null
+                ? "게임 커뮤니티"
+                : gameCategory.getCategoryName();
+
+        // =====================================================
+        // 4. 추가 게시판 조회
+        // =====================================================
+
         List<CategoryDTO> customBoards = new ArrayList<>();
-        List<CategoryDTO> dbBoards = categoryDAO.findByParentId(gameId);
+
+        // 해당 게임에 속한 하위 게시판을 조회합니다.
+        List<CategoryDTO> dbBoards =
+                categoryDAO.findByParentId(gameId);
+
         if (dbBoards != null) {
-            for (CategoryDTO c : dbBoards) {
-                long suffix = c.getCategoryId() - (gameId * 10);
+            for (CategoryDTO category : dbBoards) {
+
+                long suffix =
+                        category.getCategoryId() - (gameId * 10);
+
+                // 4~9번은 관리자가 추가 신청할 수 있는 게시판 영역입니다.
                 if (suffix >= 4 && suffix <= 9) {
-                    customBoards.add(c);
+                    customBoards.add(category);
                 }
             }
-            customBoards.sort(Comparator.comparingLong(CategoryDTO::getCategoryId));
+
+            // 게시판 번호 순서대로 정렬합니다.
+            customBoards.sort(
+                    Comparator.comparingLong(CategoryDTO::getCategoryId)
+            );
         }
+
+        // =====================================================
+        // 5. 좋아요 / 나빠요 조회
+        // =====================================================
 
         int likeCount = postLikeDAO.getLikeCount(postId);
         int dislikeCount = postLikeDAO.getDislikeCount(postId);
 
+        // =====================================================
+        // 6. 로그인 회원 확인
+        // =====================================================
+
         HttpSession session = request.getSession(false);
-        MemberDTO loginMember = session == null ? null : (MemberDTO) session.getAttribute("member");
+
+        MemberDTO loginMember = session == null
+                ? null
+                : (MemberDTO) session.getAttribute("member");
+
+        // 기본값은 삭제할 수 없음입니다.
         boolean canDelete = false;
 
-        if (loginMember != null && loginMember.getMemberNo() != null) {
+        if (loginMember != null
+                && loginMember.getMemberNo() != null) {
+
             long memberNo = loginMember.getMemberNo();
-            boolean isAuthor = post.getMemberNo() != null && post.getMemberNo().equals(memberNo);
-            boolean isSystemManager = memberDAO.isSystemManager(memberNo);
-            boolean isCategoryManager = categoryManagerDAO.isManagerOfCategory(memberNo, categoryId);
-            canDelete = isAuthor || isSystemManager || isCategoryManager;
+
+            // 게시글 작성자인지 확인합니다.
+            boolean isAuthor =
+                    post.getMemberNo() != null
+                            && post.getMemberNo().equals(memberNo);
+
+            // 시스템 관리자인지 확인합니다.
+            boolean isSystemManager =
+                    memberDAO.isSystemManager(memberNo);
+
+            // 해당 게임의 카테고리 관리자인지 확인합니다.
+            boolean isCategoryManager =
+                    categoryManagerDAO.isManagerOfCategory(
+                            memberNo,
+                            categoryId
+                    );
+
+            // 작성자, 시스템 관리자, 카테고리 관리자 중
+            // 하나라도 해당하면 삭제할 수 있습니다.
+            canDelete =
+                    isAuthor
+                            || isSystemManager
+                            || isCategoryManager;
         }
 
-        response.getWriter().println("""
-                <!DOCTYPE html>
-                <html lang="ko">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>게시글 상세 - Game Hub</title>
-                    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-                    <link rel="stylesheet" href="css/gamehub.css">
-                    <style>
-                        body { margin:0; font-family:Arial,sans-serif; background:#f8f9fa; }
-                        .post-detail-wrap { width:100%; max-width:1100px; margin:0 auto 32px; padding:0 16px; box-sizing:border-box; }
-                        .post-context-banner { margin-bottom:16px; padding:22px 26px; border-radius:12px; background:linear-gradient(135deg,#352064,#6941c6); color:#fff; box-shadow:0 3px 12px rgba(53,32,100,.12); }
-                        .post-context-banner .game-name { margin:0; font-size:1.55rem; font-weight:800; }
-                        .post-context-banner .description { margin:5px 0 0; font-size:.92rem; opacity:.84; }
-                        .post-community-layout { display:grid; grid-template-columns:200px minmax(0,1fr); gap:16px; align-items:start; }
-                        .post-board-sidebar { background:#f8f7fb; border:1px solid #ece9f3; border-radius:12px; padding:18px 12px; }
-                        .post-board-sidebar h3 { font-size:.9rem; font-weight:800; color:#777; padding:0 10px 10px; margin:0; }
-                        .post-board-link { display:block; width:100%; padding:12px 14px; margin-bottom:5px; border-radius:8px; color:#333; font-weight:700; text-decoration:none; }
-                        .post-board-link:hover, .post-board-link.active { background:#6941c6; color:#fff; }
-                        .post-detail-card { background:#fff; border:1px solid #e9ecef; border-radius:12px; padding:28px; box-shadow:0 3px 12px rgba(0,0,0,.05); }
-                        .post-detail-card h1 { margin-bottom:16px; font-size:1.8rem; font-weight:800; }
-                        .info { color:#666; padding-bottom:15px; border-bottom:1px solid #ddd; }
-                        .content { min-height:300px; padding:30px 10px; white-space:pre-wrap; border-bottom:1px solid #ddd; }
-                        .like-area { margin-top:25px; padding:20px; border:1px solid #ddd; border-radius:8px; text-align:center; }
-                        .like-area button { padding:10px 20px; margin:0 5px; font-size:16px; cursor:pointer; border-radius:6px; }
-                        .like-button { background-color:#e8f1ff; border:1px solid #8ab4f8; }
-                        .dislike-button { background-color:#ffecec; border:1px solid #f08a8a; }
-                        .count { font-weight:bold; margin-left:5px; }
-                        .buttons { margin-top:25px; text-align:right; }
-                        .delete-button { margin-left:8px; }
-                        @media(max-width:800px) { .post-community-layout { grid-template-columns:1fr; } .post-board-sidebar { display:flex; gap:6px; overflow:auto; } .post-board-sidebar h3 { display:none; } .post-board-link { white-space:nowrap; width:auto; margin:0; } }
-                        .like-area { margin-top:32px; padding:24px; background:#faf8fd; border:1px solid #ede8f5; border-radius:12px; text-align:center; display:flex; justify-content:center; gap:16px; }
-                        .like-button, .dislike-button { padding:10px 24px; font-size:15px; font-weight:700; cursor:pointer; border-radius:50px; border:1px solid transparent; transition:transform 0.15s ease, box-shadow 0.15s ease; }
-                        .like-button { background-color:#eef4ff; color:#1976d2; border-color:#c7dcff; }
-                        .dislike-button { background-color:#fff1f1; color:#d32f2f; border-color:#ffcdd2; }
-                        .like-button:hover, .dislike-button:hover { transform:scale(1.05); box-shadow:0 4px 10px rgba(0,0,0,.08); }
-                    </style>
-                </head>
-                <body>
-                <main class="post-detail-wrap">
-                """);
+        // =====================================================
+        // 7. HTML 페이지 요청 처리
+        // =====================================================
 
-        response.getWriter().println(
-                "<section class='post-context-banner'>" +
-                        "<h2 class='game-name'>" + escapeHtml(gameName) + "</h2>" +
-                        "<p class='description'>" + escapeHtml(gameName) + " 커뮤니티 게시글입니다.</p>" +
-                        "</section>"
-        );
+        // 기존처럼 /post-detail?postId=1로 접근한 경우에는
+        // 실제 화면 파일로 이동시킵니다.
+        // 화면 자체는 post-detail.html이 담당합니다.
+        String format = request.getParameter("format");
 
-        response.getWriter().println("<div class='post-community-layout'>");
-        response.getWriter().println("<aside class='post-board-sidebar'><h3>게시판</h3>" +
-                boardLink(gameId, gameId * 10 + 1, categoryId, "자유게시판") +
-                boardLink(gameId, gameId * 10 + 2, categoryId, "질문게시판") +
-                boardLink(gameId, gameId * 10 + 3, categoryId, "공략게시판"));
-        for (CategoryDTO c : customBoards) {
-            response.getWriter().println(boardLink(gameId, c.getCategoryId(), categoryId, c.getCategoryName()));
+        if (!"json".equalsIgnoreCase(format)) {
+            response.sendRedirect(
+                    request.getContextPath()
+                            + "/post-detail.html?postId="
+                            + postId
+            );
+            return;
         }
 
-        response.getWriter().println("</aside>");
-        response.getWriter().println("<div class='post-detail-card'>");
-        response.getWriter().println("<h1>" + escapeHtml(post.getTitle()) + "</h1>");
-        response.getWriter().println("<div class='info'>작성자: " + escapeHtml(post.getNickname()) +
-                " | 조회수: " + post.getViewCount() + " | 작성일: " + post.getCreatedAt() + "</div>");
-        response.getWriter().println("<div class='content'>" + escapeHtml(post.getContent()) + "</div>");
-        response.getWriter().println("<div class='like-area'>" +
-                "<button type='button' class='like-button' onclick=\"recommendPost('LIKE')\">👍 좋아요 <span id='likeCount' class='count'>" + likeCount + "</span></button>" +
-                "<button type='button' class='dislike-button' onclick=\"recommendPost('DISLIKE')\">👎 나빠요 <span id='dislikeCount' class='count'>" + dislikeCount + "</span></button>" +
-                "</div>");
+        // =====================================================
+        // 8. JSON 응답
+        // =====================================================
 
-        response.getWriter().println("<div class='buttons'>");
-        response.getWriter().println("<button type='button' class='btn btn-outline-secondary' onclick=\"location.href='game.html?gameId=" + gameId + "&categoryId=" + categoryId + "'\">목록으로</button>");
-        if (canDelete) {
-            response.getWriter().println("<button type='button' class='btn btn-outline-danger delete-button' onclick='deletePost(" + postId + ")'>삭제</button>");
+        response.setContentType("application/json; charset=UTF-8");
+
+        StringBuilder json = new StringBuilder();
+
+        json.append('{')
+                .append("\"postId\":")
+                .append(postId)
+                .append(',')
+                .append("\"categoryId\":")
+                .append(categoryId)
+                .append(',')
+                .append("\"gameId\":")
+                .append(gameId)
+                .append(',')
+                .append("\"gameName\":\"")
+                .append(escapeJson(gameName))
+                .append("\",")
+                .append("\"memberNo\":")
+                .append(post.getMemberNo() == null
+                        ? "null"
+                        : post.getMemberNo())
+                .append(',')
+                .append("\"username\":\"")
+                .append(escapeJson(post.getUsername()))
+                .append("\",")
+                .append("\"nickname\":\"")
+                .append(escapeJson(post.getNickname()))
+                .append("\",")
+                .append("\"title\":\"")
+                .append(escapeJson(post.getTitle()))
+                .append("\",")
+                .append("\"content\":\"")
+                .append(escapeJson(post.getContent()))
+                .append("\",")
+                .append("\"viewCount\":")
+                .append(post.getViewCount())
+                .append(',')
+                .append("\"likeCount\":")
+                .append(likeCount)
+                .append(',')
+                .append("\"dislikeCount\":")
+                .append(dislikeCount)
+                .append(',')
+                .append("\"createdAt\":\"")
+                .append(escapeJson(post.getCreatedAt()))
+                .append("\",")
+                .append("\"canDelete\":")
+                .append(canDelete)
+                .append(',')
+                .append("\"customBoards\":[");
+
+        // =====================================================
+        // 9. 추가 게시판 JSON 생성
+        // =====================================================
+
+        for (int i = 0; i < customBoards.size(); i++) {
+
+            CategoryDTO board = customBoards.get(i);
+
+            if (i > 0) {
+                json.append(',');
+            }
+
+            json.append('{')
+                    .append("\"categoryId\":")
+                    .append(board.getCategoryId())
+                    .append(',')
+                    .append("\"categoryName\":\"")
+                    .append(escapeJson(board.getCategoryName()))
+                    .append("\"}");
         }
-        response.getWriter().println("</div>");
 
-        response.getWriter().println("""
-                    </div>
-                    </div>
-                </main>
+        json.append(']')
+                .append('}');
 
-                <script src="js/common.js"></script>
-                <script src="js/comment.js"></script>
-                <script>
-                    function recommendPost(type) {
-                        const postId = new URLSearchParams(location.search).get("postId");
-                        if (!postId) { alert("게시글 번호가 없습니다."); return; }
-                        fetch("post-like", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                            body: "postId=" + encodeURIComponent(postId) + "&likeType=" + encodeURIComponent(type)
-                        })
-                        .then(response => {
-                            if (response.status === 401) { alert("로그인이 필요합니다."); location.href = "login.html"; return null; }
-                            return response.json();
-                        })
-                        .then(data => {
-                            if (!data) return;
-                            if (data.success) {
-                                document.getElementById("likeCount").textContent = data.likeCount;
-                                document.getElementById("dislikeCount").textContent = data.dislikeCount;
-                                alert(type === "LIKE" ? "좋아요를 눌렀습니다." : "나빠요를 눌렀습니다.");
-                            } else alert(data.message);
-                        })
-                        .catch(error => { console.error(error); alert("추천 처리 중 오류가 발생했습니다."); });
-                    }
-
-                    function deletePost(postId) {
-                        if (!confirm("정말 이 게시글을 삭제하시겠습니까?")) return;
-
-                        fetch("post-delete", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                            body: "postId=" + encodeURIComponent(postId)
-                        })
-                        .then(async response => {
-                            const data = await response.json();
-                            if (response.status === 401) {
-                                alert("로그인이 필요합니다.");
-                                location.href = "login.html";
-                                return;
-                            }
-                            if (response.status === 403) {
-                                alert("이 게시글을 삭제할 권한이 없습니다.");
-                                return;
-                            }
-                            if (data.success) {
-                                alert(data.message || "게시글이 삭제되었습니다.");
-                                location.href = "game.html";
-                            } else {
-                                alert(data.message || "게시글 삭제에 실패했습니다.");
-                            }
-                        })
-                        .catch(error => {
-                            console.error(error);
-                            alert("게시글 삭제 중 오류가 발생했습니다.");
-                        });
-                    }
-                </script>
-                </body>
-                </html>
-                """);
+        response.getWriter().write(json.toString());
     }
 
-    private String boardLink(long gameId, long boardId, long currentCategoryId, String name) {
-        String activeClass = boardId == currentCategoryId ? " active" : "";
-        return "<a class='post-board-link" + activeClass + "' href='game.html?gameId=" + gameId + "&categoryId=" + boardId + "'>" + escapeHtml(name) + "</a>";
-    }
+    /**
+     * JSON 문자열에서 사용할 수 있도록 특수문자를 변환합니다.
+     */
+    private String escapeJson(String value) {
 
-    private String getGameName(long gameId) {
-        return switch ((int) gameId) {
-            case 110 -> "리니지";
-            case 120 -> "블레이드앤소울";
-            case 130 -> "메이플스토리";
-            case 140 -> "로스트아크";
-            case 210 -> "서든어택";
-            case 220 -> "오버워치";
-            case 230 -> "발로란트";
-            case 240 -> "배틀그라운드";
-            case 310 -> "리그 오브 레전드";
-            case 320 -> "도타 2";
-            case 410 -> "FC 온라인";
-            case 420 -> "eFootball";
-            case 430 -> "NBA 2K";
-            case 510 -> "스타크래프트";
-            case 520 -> "문명 VI";
-            case 530 -> "에이지 오브 엠파이어 IV";
-            case 610 -> "심즈 4";
-            case 620 -> "시티즈: 스카이라인 II";
-            case 630 -> "유로 트럭 시뮬레이터 2";
-            case 910 -> "마인크래프트";
-            case 920 -> "GTA V";
-            case 930 -> "철권 8";
-            case 940 -> "포르자 호라이즌 5";
-            case 950 -> "데드 바이 데이라이트";
-            case 960 -> "몬스터헌터 와일즈";
-            default -> "게임 커뮤니티";
-        };
-    }
+        if (value == null) {
+            return "";
+        }
 
-    private String escapeHtml(String value) {
-        if (value == null) return "";
-        return value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-                .replace("\"", "&quot;").replace("'", "&#039;");
+        return value
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\r", "\\r")
+                .replace("\n", "\\n")
+                .replace("\t", "\\t");
     }
 }
