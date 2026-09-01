@@ -15,13 +15,17 @@ import java.io.IOException;
 /**
  * 로그인한 회원의 정보를 조회하는 Servlet입니다.
  *
- * 회원 정보 창에서 필요한 회원 기본 정보와
- * 받은 좋아요 / 싫어요 개수를 JSON으로 반환합니다.
+ * 요청 흐름
+ * 1. 로그인 세션 확인
+ * 2. 로그인한 회원 정보 확인
+ * 3. 회원의 추천 수 조회
+ * 4. 회원 정보를 JSON으로 변환
+ * 5. 클라이언트에 JSON 응답
  */
 @WebServlet("/member-info")
 public class MemberInfoServlet extends HttpServlet {
 
-    // 회원 정보와 추천 수를 조회하기 위해 MemberDAO를 사용합니다.
+    // 회원 정보와 추천 수를 조회하는 DAO입니다.
     private final MemberDAO memberDAO = new MemberDAO();
 
     /**
@@ -33,19 +37,24 @@ public class MemberInfoServlet extends HttpServlet {
             HttpServletResponse response
     ) throws ServletException, IOException {
 
-        // 응답을 JSON 형식으로 설정합니다.
+        // =====================================================
+        // 1. 응답 형식 설정
+        // =====================================================
+
+        // 이 Servlet은 화면 자체가 아니라 회원 정보를 JSON으로 반환합니다.
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 
-        // 기존 로그인 세션이 있는지 확인합니다.
+        // =====================================================
+        // 2. 로그인 세션 확인
+        // =====================================================
+
+        // 기존 세션만 가져옵니다.
+        // 세션이 없으면 새로운 세션을 만들지 않습니다.
         HttpSession session = request.getSession(false);
 
-        // 세션 자체가 없다면 로그인하지 않은 상태입니다.
         if (session == null) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write(
-                    "{\"message\":\"로그인이 필요합니다.\"}"
-            );
+            sendUnauthorized(response);
             return;
         }
 
@@ -53,36 +62,42 @@ public class MemberInfoServlet extends HttpServlet {
         MemberDTO member =
                 (MemberDTO) session.getAttribute("member");
 
-        // 세션은 있지만 회원 정보가 없다면 역시 로그인하지 않은 상태입니다.
+        // 세션은 있지만 로그인 회원 정보가 없다면 로그인 상태가 아닙니다.
         if (member == null) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write(
-                    "{\"message\":\"로그인이 필요합니다.\"}"
-            );
+            sendUnauthorized(response);
             return;
         }
 
-        // -------------------------------------------------
-        // 회원 정보 조회
-        // -------------------------------------------------
+        // =====================================================
+        // 3. 회원 정보 조회
+        // =====================================================
+
+        // 로그인한 회원의 번호를 가져옵니다.
         long memberNo = member.getMemberNo();
 
-        // 해당 회원이 작성한 게시글에 받은 추천 수를 조회합니다.
+        // 해당 회원이 작성한 게시글에 받은 좋아요 수를 조회합니다.
         int receivedLikeCount =
                 memberDAO.getReceivedLikeCount(memberNo);
 
+        // 해당 회원이 작성한 게시글에 받은 나빠요 수를 조회합니다.
         int receivedDislikeCount =
                 memberDAO.getReceivedDislikeCount(memberNo);
 
+        // =====================================================
+        // 4. JSON 문자열에 사용할 값 준비
+        // =====================================================
+
+        // 회원 정보 안에 따옴표나 역슬래시가 들어 있을 수 있으므로
         // JSON 문자열에 넣기 전에 특수문자를 처리합니다.
         String name = escapeJson(member.getName());
         String username = escapeJson(member.getUsername());
         String phone = escapeJson(member.getPhone());
         String nickname = escapeJson(member.getNickname());
 
-        // -------------------------------------------------
-        // JSON 응답 생성
-        // -------------------------------------------------
+        // =====================================================
+        // 5. JSON 응답 생성
+        // =====================================================
+
         String json =
                 "{"
                         + "\"memberNo\":" + memberNo + ","
@@ -95,12 +110,29 @@ public class MemberInfoServlet extends HttpServlet {
                         + "\"receivedDislikeCount\":" + receivedDislikeCount
                         + "}";
 
-        // 완성된 회원 정보를 클라이언트에 전달합니다.
+        // =====================================================
+        // 6. 클라이언트에 응답
+        // =====================================================
+
+        // JavaScript의 fetch()가 이 JSON을 받아 회원 정보 화면에 표시합니다.
         response.getWriter().write(json);
     }
 
     /**
-     * JSON 문자열에서 문제가 될 수 있는 문자를 이스케이프합니다.
+     * 로그인하지 않은 경우 공통으로 사용하는 응답입니다.
+     */
+    private void sendUnauthorized(HttpServletResponse response)
+            throws IOException {
+
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+
+        response.getWriter().write(
+                "{\"message\":\"로그인이 필요합니다.\"}"
+        );
+    }
+
+    /**
+     * JSON 문자열에서 문제가 될 수 있는 특수문자를 처리합니다.
      */
     private String escapeJson(String value) {
 
