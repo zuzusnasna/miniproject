@@ -1,6 +1,8 @@
 package com.gamecommunity.servlet;
 
+import com.gamecommunity.dao.CategoryDAO;
 import com.gamecommunity.dao.PostDAO;
+import com.gamecommunity.dto.CategoryDTO;
 import com.gamecommunity.dto.MemberDTO;
 import com.gamecommunity.dto.PostDTO;
 
@@ -17,17 +19,20 @@ import java.io.IOException;
  *
  * 요청 흐름
  * 1. 로그인 여부 확인
- * 2. 제목 / 내용 확인
- * 3. 게시판과 게임 정보 확인
+ * 2. 제목 / 내용 / 게시판 번호 확인
+ * 3. 게시판이 실제로 존재하고 활성화되어 있는지 확인
  * 4. 게시글 DTO 생성
  * 5. DB에 게시글 저장
- * 6. 게임 게시판으로 이동
+ * 6. 작성한 게시판으로 이동
  */
 @WebServlet("/post-write")
 public class PostWriteServlet extends HttpServlet {
 
-    // 게시글 DB 작업을 담당하는 DAO입니다.
+    // 게시글 DB 작업을 담당합니다.
     private final PostDAO postDAO = new PostDAO();
+
+    // 게시판 존재 여부와 게임 정보를 확인합니다.
+    private final CategoryDAO categoryDAO = new CategoryDAO();
 
     /**
      * 게시글 작성 요청을 처리합니다.
@@ -44,13 +49,10 @@ public class PostWriteServlet extends HttpServlet {
         // 1. 로그인 여부 확인
         // =====================================================
 
-        // 기존 세션만 확인하고 새로운 세션은 만들지 않습니다.
         HttpSession session = request.getSession(false);
 
         if (session == null) {
-            response.sendRedirect(
-                    request.getContextPath() + "/login.html"
-            );
+            redirectToLogin(request, response);
             return;
         }
 
@@ -59,9 +61,7 @@ public class PostWriteServlet extends HttpServlet {
                 (MemberDTO) session.getAttribute("member");
 
         if (member == null) {
-            response.sendRedirect(
-                    request.getContextPath() + "/login.html"
-            );
+            redirectToLogin(request, response);
             return;
         }
 
@@ -72,7 +72,6 @@ public class PostWriteServlet extends HttpServlet {
         String title = request.getParameter("title");
         String content = request.getParameter("content");
         String categoryIdParam = request.getParameter("categoryId");
-        String gameIdParam = request.getParameter("gameId");
 
         // 제목과 내용은 반드시 입력해야 합니다.
         if (title == null || title.isBlank()
@@ -85,17 +84,24 @@ public class PostWriteServlet extends HttpServlet {
             return;
         }
 
+        // 게시판 번호도 반드시 필요합니다.
+        if (categoryIdParam == null || categoryIdParam.isBlank()) {
+            response.sendError(
+                    HttpServletResponse.SC_BAD_REQUEST,
+                    "게시판 정보가 없습니다."
+            );
+            return;
+        }
+
         // =====================================================
-        // 3. 게임 / 게시판 번호 변환
+        // 3. 게시판 번호 변환
         // =====================================================
 
         long categoryId;
-        long gameId;
 
         try {
             categoryId = Long.parseLong(categoryIdParam);
-            gameId = Long.parseLong(gameIdParam);
-        } catch (NumberFormatException | NullPointerException e) {
+        } catch (NumberFormatException e) {
             response.sendError(
                     HttpServletResponse.SC_BAD_REQUEST,
                     "게시판 정보가 올바르지 않습니다."
@@ -104,25 +110,37 @@ public class PostWriteServlet extends HttpServlet {
         }
 
         // =====================================================
-        // 4. 게임과 게시판 관계 확인
+        // 4. 게시판 존재 및 활성화 여부 확인
         // =====================================================
 
-        // CATEGORY 번호는 게임 ID를 기준으로 만들어집니다.
-        // 예: 게임 110 → 게시판 1101, 1102, 1103 ...
-        // 따라서 categoryId에서 gameId * 10을 빼면 게시판 번호가 나옵니다.
-        long boardType = categoryId - (gameId * 10);
+        // 기존처럼 gameId와 categoryId의 숫자 규칙을 Servlet에서 계산하지 않습니다.
+        // 실제 CATEGORY 테이블에서 게시판 정보를 조회합니다.
+        CategoryDTO category = categoryDAO.findById(categoryId);
 
-        // 현재는 1~9번 게시판까지 허용합니다.
-        if (boardType < 1 || boardType > 9) {
+        if (category == null) {
             response.sendError(
                     HttpServletResponse.SC_BAD_REQUEST,
-                    "게임과 게시판 정보가 일치하지 않습니다."
+                    "존재하지 않거나 사용할 수 없는 게시판입니다."
             );
             return;
         }
 
         // =====================================================
-        // 5. 게시글 DTO 생성
+        // 5. 부모 게임 정보 확인
+        // =====================================================
+
+        long gameId = category.getParentId();
+
+        if (gameId <= 0) {
+            response.sendError(
+                    HttpServletResponse.SC_BAD_REQUEST,
+                    "게시판의 게임 정보가 올바르지 않습니다."
+            );
+            return;
+        }
+
+        // =====================================================
+        // 6. 게시글 DTO 생성
         // =====================================================
 
         PostDTO post = new PostDTO();
@@ -134,17 +152,17 @@ public class PostWriteServlet extends HttpServlet {
         post.setMemberNo(member.getMemberNo());
 
         // 사용자가 입력한 제목과 내용을 저장합니다.
-        post.setTitle(title);
-        post.setContent(content);
+        post.setTitle(title.trim());
+        post.setContent(content.trim());
 
         // =====================================================
-        // 6. DB에 게시글 저장
+        // 7. DB에 게시글 저장
         // =====================================================
 
         boolean result = postDAO.save(post);
 
         // =====================================================
-        // 7. 저장 결과 처리
+        // 8. 저장 결과 처리
         // =====================================================
 
         if (result) {
@@ -161,6 +179,19 @@ public class PostWriteServlet extends HttpServlet {
         response.sendError(
                 HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                 "게시글 작성에 실패했습니다."
+        );
+    }
+
+    /**
+     * 로그인 페이지로 이동합니다.
+     */
+    private void redirectToLogin(
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) throws IOException {
+
+        response.sendRedirect(
+                request.getContextPath() + "/login.html"
         );
     }
 }
