@@ -1,0 +1,33 @@
+/* =========================================================
+   공통 인터랙션
+   ========================================================= */
+
+.popular-post-row,
+.news-row {
+    transition: all .2s cubic-bezier(.4, 0, .2, 1);
+}
+
+.popular-post-row:hover {
+    background-color: #f7f4fc !important;
+    transform: translateX(4px);
+}
+
+.btn-login,
+.btn-primary,
+.btn-primary-custom {
+    transition: background-color .2s ease, transform .15s ease, box-shadow .2s ease;
+}
+
+.btn-login:hover,
+.btn-primary:hover,
+.btn-primary-custom:hover {
+    box-shadow: 0 4px 12px rgba(105, 65, 198, .35);
+    transform: translateY(-1px);
+}
+
+.author-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 700;
+}
