@@ -1,10 +1,18 @@
 package com.gamecommunity.dto;
 
+/**
+ * CATEGORY 테이블의 카테고리 정보를 전달하는 DTO입니다.
+ *
+ * DEPTH
+ * - 1: 대분류
+ * - 2: 게임
+ * - 3: 게임 게시판
+ */
 public class CategoryDTO {
 
     private Long categoryId;
     private Long parentId;
-    private String parentCategoryName; // 🔥 부모 게임명 추가
+    private String parentCategoryName;
     private String categoryName;
     private int depth;
     private String isActive;
@@ -20,10 +28,6 @@ public class CategoryDTO {
         this.parentCategoryName = parentCategoryName;
     }
 
-    // =========================================================
-    // CATEGORY_ID
-    // =========================================================
-
     public Long getCategoryId() {
         return categoryId;
     }
@@ -31,11 +35,6 @@ public class CategoryDTO {
     public void setCategoryId(Long categoryId) {
         this.categoryId = categoryId;
     }
-
-
-    // =========================================================
-    // PARENT_ID
-    // =========================================================
 
     public Long getParentId() {
         return parentId;
@@ -45,11 +44,6 @@ public class CategoryDTO {
         this.parentId = parentId;
     }
 
-
-    // =========================================================
-    // CATEGORY_NAME
-    // =========================================================
-
     public String getCategoryName() {
         return categoryName;
     }
@@ -57,11 +51,6 @@ public class CategoryDTO {
     public void setCategoryName(String categoryName) {
         this.categoryName = categoryName;
     }
-
-
-    // =========================================================
-    // DEPTH
-    // =========================================================
 
     public int getDepth() {
         return depth;
@@ -71,11 +60,6 @@ public class CategoryDTO {
         this.depth = depth;
     }
 
-
-    // =========================================================
-    // IS_ACTIVE
-    // =========================================================
-
     public String getIsActive() {
         return isActive;
     }
@@ -83,11 +67,6 @@ public class CategoryDTO {
     public void setIsActive(String isActive) {
         this.isActive = isActive;
     }
-
-
-    // =========================================================
-    // CREATED_AT
-    // =========================================================
 
     public String getCreatedAt() {
         return createdAt;
@@ -97,11 +76,6 @@ public class CategoryDTO {
         this.createdAt = createdAt;
     }
 
-
-    // =========================================================
-    // ICON_URL
-    // =========================================================
-
     public String getIconUrl() {
         return iconUrl;
     }
@@ -109,11 +83,6 @@ public class CategoryDTO {
     public void setIconUrl(String iconUrl) {
         this.iconUrl = iconUrl;
     }
-
-
-    // =========================================================
-    // SORT_ORDER
-    // =========================================================
 
     public int getSortOrder() {
         return sortOrder;
