@@ -1,24 +1,5 @@
 function injectMemberInfoStyles() {
-    if (document.getElementById("member-info-style")) return;
-    const style = document.createElement("style");
-    style.id = "member-info-style";
-    style.textContent = `
-        .common-member-info { position:fixed; width:240px; box-sizing:border-box; background:#fff; border:1px solid #ddd; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,.1); overflow:hidden; z-index:9999; }
-        .common-member-info .member-title { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 15px; background:#fff; cursor:grab; user-select:none; font-weight:700; }
-        .common-member-info .member-toggle { display:flex; align-items:center; justify-content:center; width:26px; height:26px; padding:0; border:0; border-radius:4px; background:transparent; color:#555; font-size:22px; line-height:1; cursor:pointer; flex:0 0 26px; }
-        .common-member-info .member-toggle:hover { background:#f1f1f1; color:#111; }
-        .common-member-info #commonMemberContent { padding:0 15px 15px; }
-        .common-member-info #commonMemberContent[hidden] { display:none !important; }
-        .common-member-info.collapsed { width:200px; }
-        .common-member-info.collapsed .member-title { padding:9px 12px; }
-        #categoryManagerRequest { margin-top:12px; padding-top:12px; border-top:1px solid #eee; }
-        #categoryManagerRequest select, #categoryManagerRequest button { width:100%; box-sizing:border-box; margin-top:7px; padding:7px; border-radius:5px; }
-        #categoryManagerRequest select { border:1px solid #ccc; background:#fff; }
-        #categoryManagerRequest button { border:0; background:#6f42c1; color:#fff; font-weight:bold; cursor:pointer; }
-        #categoryManagerRequest button:disabled { background:#aaa; cursor:not-allowed; }
-        .request-message { margin-top:7px; font-size:12px; }
-    `;
-    document.head.appendChild(style);
+    // 회원정보 전용 스타일은 CSS 파일에서 관리하므로 여기서는 별도로 주입하지 않는다.
 }
 
 function initMemberInfoBox() {
@@ -29,7 +10,7 @@ function initMemberInfoBox() {
         wrapper = document.createElement("div");
         wrapper.id = "commonMemberInfo";
         wrapper.innerHTML = `
-            <div class="common-member-info">
+            <div class="common-member-info" hidden>
                 <div class="member-title">
                     <span>👤 회원정보</span>
                     <button type="button" class="member-toggle" aria-label="회원정보 접기">−</button>
@@ -42,47 +23,60 @@ function initMemberInfoBox() {
     const memberBox = wrapper.querySelector(".common-member-info");
     const button = memberBox.querySelector(".member-toggle");
     const content = memberBox.querySelector("#commonMemberContent");
+    const trigger = document.getElementById("memberMenuTrigger");
 
-    if (button && content && button.dataset.bound !== "true") {
-        button.dataset.bound = "true";
-        const saved = localStorage.getItem("gameCommunity_memberBoxCollapsed") === "true";
-        button.onclick = function(event) {
+    // 상단바의 회원정보 버튼과 패널을 연결한다.
+    if (trigger && trigger.dataset.bound !== "true") {
+        trigger.dataset.bound = "true";
+        trigger.addEventListener("click", function (event) {
             event.preventDefault();
-            event.stopPropagation();
-            const collapsed = content.hidden === false;
-            content.hidden = collapsed;
-            button.textContent = collapsed ? "+" : "−";
-            button.setAttribute("aria-label", collapsed ? "회원정보 펼치기" : "회원정보 접기");
-            localStorage.setItem("gameCommunity_memberBoxCollapsed", String(collapsed));
-            memberBox.classList.toggle("collapsed", collapsed);
-            keepMemberBoxInsideViewport(memberBox);
-        };
-        content.hidden = saved;
-        button.textContent = saved ? "+" : "−";
-        button.setAttribute("aria-label", saved ? "회원정보 펼치기" : "회원정보 접기");
-        memberBox.classList.toggle("collapsed", saved);
+            const isOpen = !memberBox.hidden;
+            memberBox.hidden = isOpen;
+            trigger.setAttribute("aria-expanded", String(!isOpen));
+            trigger.classList.toggle("active", !isOpen);
+        });
     }
 
-    restoreMemberBoxPosition(memberBox);
-    makeMemberBoxDraggable(memberBox);
-    keepMemberBoxInsideViewport(memberBox);
+    // 패널 내부의 접기 버튼도 유지한다.
+    if (button && button.dataset.bound !== "true") {
+        button.dataset.bound = "true";
+        button.addEventListener("click", function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            memberBox.hidden = true;
+            if (trigger) {
+                trigger.setAttribute("aria-expanded", "false");
+                trigger.classList.remove("active");
+            }
+        });
+    }
+
     loadMemberInfo();
 }
 
 function loadMemberInfo() {
     const content = document.getElementById("commonMemberContent");
-    fetch("member-info", {method:"GET", credentials:"include"})
-        .then(response => { if (!response.ok) throw new Error("로그인이 필요합니다."); return response.json(); })
+    fetch("member-info", { method: "GET", credentials: "include" })
+        .then(response => {
+            if (!response.ok) throw new Error("로그인이 필요합니다.");
+            return response.json();
+        })
         .then(member => {
             const authLink = document.getElementById("navAuthLink") || document.querySelector('a[href*="login.html"]');
-            if (authLink) { authLink.textContent = "로그아웃"; authLink.href = "logout"; }
+            if (authLink) {
+                authLink.textContent = "로그아웃";
+                authLink.href = "logout";
+            }
+
             if (!content) return;
+
             const likeCount = Number(member.receivedLikeCount) || 0;
             const dislikeCount = Number(member.receivedDislikeCount) || 0;
             const actualLevel = Math.min(Math.floor(likeCount / 10) + 1, 10);
             const currentLikes = actualLevel >= 10 ? 10 : likeCount % 10;
             const progress = Math.max(0, Math.min(100, currentLikes * 10));
             const remaining = actualLevel >= 10 ? 0 : 10 - currentLikes;
+
             content.innerHTML = `
                 <div class="member-row">이름: <strong>${escapeHtml(member.name)}</strong></div>
                 <div class="member-row">아이디: <strong>${escapeHtml(member.username)}</strong></div>
@@ -95,6 +89,7 @@ function loadMemberInfo() {
                 </div>
                 <div class="member-row like">👍 받은 좋아요: <strong>${likeCount}</strong></div>
                 <div class="member-row dislike">👎 받은 나빠요: <strong>${dislikeCount}</strong></div>`;
+
             loadCategoryManagerRequest(content, likeCount);
         })
         .catch(error => {
@@ -106,7 +101,7 @@ function loadMemberInfo() {
 function loadCategoryManagerRequest(content, likeCount) {
     if (likeCount < 50) return;
 
-    fetch("category-manager-request", { credentials:"include" })
+    fetch("category-manager-request", { credentials: "include" })
         .then(response => {
             if (!response.ok) throw new Error("카테고리 관리자 신청 정보를 불러오지 못했습니다.");
             return response.json();
@@ -144,6 +139,7 @@ function submitCategoryManagerRequest() {
     const button = document.getElementById("managerRequestButton");
     const message = document.getElementById("managerRequestMessage");
     if (!select || !button || !message) return;
+
     if (!select.value) {
         message.textContent = "관리할 게임을 선택해주세요.";
         message.style.color = "#d32f2f";
@@ -152,10 +148,11 @@ function submitCategoryManagerRequest() {
 
     button.disabled = true;
     const body = new URLSearchParams({ categoryId: select.value });
+
     fetch("category-manager-request", {
-        method:"POST",
-        credentials:"include",
-        headers:{"Content-Type":"application/x-www-form-urlencoded"},
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body
     })
         .then(response => response.json())
@@ -175,76 +172,12 @@ function submitCategoryManagerRequest() {
         });
 }
 
-function restoreMemberBoxPosition(memberBox) {
-    if (!memberBox) return;
-    const savedLeft = localStorage.getItem("gameCommunity_memberBoxLeft");
-    const savedTop = localStorage.getItem("gameCommunity_memberBoxTop");
-    if (savedLeft !== null && savedTop !== null) {
-        memberBox.style.position = "fixed";
-        memberBox.style.left = savedLeft + "px";
-        memberBox.style.top = savedTop + "px";
-        memberBox.style.right = "auto";
-        memberBox.style.bottom = "auto";
-        memberBox.style.zIndex = "9999";
-    }
-}
-
-function keepMemberBoxInsideViewport(memberBox) {
-    if (!memberBox) return;
-    const rect = memberBox.getBoundingClientRect();
-    const maxLeft = Math.max(0, window.innerWidth - memberBox.offsetWidth);
-    const maxTop = Math.max(0, window.innerHeight - memberBox.offsetHeight);
-    const left = Math.max(0, Math.min(rect.left, maxLeft));
-    const top = Math.max(0, Math.min(rect.top, maxTop));
-    memberBox.style.left = left + "px";
-    memberBox.style.top = top + "px";
-    memberBox.style.right = "auto";
-    memberBox.style.bottom = "auto";
-    localStorage.setItem("gameCommunity_memberBoxLeft", Math.round(left));
-    localStorage.setItem("gameCommunity_memberBoxTop", Math.round(top));
-}
-
-function makeMemberBoxDraggable(memberBox) {
-    if (!memberBox || memberBox.dataset.draggable === "true") return;
-    const dragHandle = memberBox.querySelector(".member-title");
-    if (!dragHandle) return;
-    memberBox.dataset.draggable = "true";
-    let isDragging = false, offsetX = 0, offsetY = 0;
-    dragHandle.addEventListener("mousedown", function(event) {
-        if (event.target.closest(".member-toggle")) return;
-        event.preventDefault();
-        isDragging = true;
-        const rect = memberBox.getBoundingClientRect();
-        offsetX = event.clientX - rect.left;
-        offsetY = event.clientY - rect.top;
-        memberBox.style.position = "fixed";
-        memberBox.style.left = rect.left + "px";
-        memberBox.style.top = rect.top + "px";
-        memberBox.style.right = "auto";
-        memberBox.style.bottom = "auto";
-    });
-    document.addEventListener("mousemove", function(event) {
-        if (!isDragging) return;
-        let left = event.clientX - offsetX;
-        let top = event.clientY - offsetY;
-        const maxLeft = Math.max(0, window.innerWidth - memberBox.offsetWidth);
-        const maxTop = Math.max(0, window.innerHeight - memberBox.offsetHeight);
-        memberBox.style.left = Math.max(0, Math.min(left, maxLeft)) + "px";
-        memberBox.style.top = Math.max(0, Math.min(top, maxTop)) + "px";
-    });
-    document.addEventListener("mouseup", function() {
-        if (!isDragging) return;
-        isDragging = false;
-        keepMemberBoxInsideViewport(memberBox);
-    });
-}
-
-window.addEventListener("resize", function() {
-    const memberBox = document.querySelector(".common-member-info");
-    if (memberBox) keepMemberBoxInsideViewport(memberBox);
-});
-
 function escapeHtml(value) {
     if (value == null) return "";
-    return String(value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;").replace(/'/g,"&#039;");
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
