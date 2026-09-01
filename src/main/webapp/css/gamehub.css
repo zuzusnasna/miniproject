@@ -249,7 +249,7 @@ body {
 .post-row {
     display: grid;
     grid-template-columns: 70px minmax(0,1fr) 110px 90px;
-    gap: 12px;
+    gap: 8px;
     align-items: center;
     padding: 14px 8px;
     border-bottom: 1px solid #eee;
