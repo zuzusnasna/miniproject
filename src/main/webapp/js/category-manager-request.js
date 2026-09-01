@@ -1,4 +1,211 @@
+/* =========================================================
+   카테고리 관리자 / 게시판 생성 신청 관리
+   ========================================================= */
+
+/**
+ * 마이페이지에서
+ * 1. 카테고리 관리자의 내 게임 게시판 생성 영역
+ * 2. 시스템 관리자의 게시판 생성 승인 영역
+ * 3. 시스템 관리자의 카테고리 관리자 권한 승인 영역
+ * 을 각각 권한에 따라 표시합니다.
+ */
 function initCategoryManagerRequestAdmin() {
+    initCategoryBoardCreateSection();
+    initAdminCategoryApproval();
+    initCategoryManagerApproval();
+}
+
+/* =========================================================
+   카테고리 관리자 - 내 게임 게시판 생성
+   ========================================================= */
+async function initCategoryBoardCreateSection() {
+    const section = document.getElementById("categoryManagerSection");
+    if (!section) return;
+
+    try {
+        const response = await fetch("category-create", { credentials: "include" });
+        if (!response.ok) return;
+
+        const data = await response.json();
+
+        if (!data.isManager) return;
+
+        section.style.display = "block";
+
+        const label = document.getElementById("managedGameLabel");
+        if (label) {
+            label.textContent = data.gameName || "현재 관리 게임";
+        }
+    } catch (error) {
+        console.debug("게시판 생성 영역을 표시하지 않습니다.", error);
+    }
+}
+
+/**
+ * 마이페이지의 '생성 요청' 버튼에서 호출합니다.
+ * CategoryCreateServlet은 승인 대기 상태(IS_ACTIVE='N')로 저장합니다.
+ */
+async function requestCreateCategory() {
+    const input = document.getElementById("newCategoryName");
+    const message = document.getElementById("createCategoryMsg");
+    const button = document.querySelector("#categoryManagerSection button");
+
+    if (!input) return;
+
+    const categoryName = input.value.trim();
+
+    if (!categoryName) {
+        setCreateCategoryMessage("게시판 이름을 입력해주세요.", false);
+        input.focus();
+        return;
+    }
+
+    if (button) button.disabled = true;
+    setCreateCategoryMessage("생성 요청을 처리하는 중입니다...", null);
+
+    try {
+        const response = await fetch("category-create", {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: new URLSearchParams({ categoryName })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            setCreateCategoryMessage(data.message || "게시판 생성 요청에 실패했습니다.", false);
+            return;
+        }
+
+        input.value = "";
+        setCreateCategoryMessage(
+            data.message || "게시판 생성 요청이 완료되었습니다. 시스템 관리자 승인 후 공개됩니다.",
+            true
+        );
+    } catch (error) {
+        console.error("게시판 생성 요청 실패:", error);
+        setCreateCategoryMessage("서버 통신 오류가 발생했습니다.", false);
+    } finally {
+        if (button) button.disabled = false;
+    }
+}
+
+function setCreateCategoryMessage(text, success) {
+    const message = document.getElementById("createCategoryMsg");
+    if (!message) return;
+
+    message.textContent = text;
+    message.className = "small mt-1";
+
+    if (success === true) {
+        message.classList.add("text-success");
+    } else if (success === false) {
+        message.classList.add("text-danger");
+    } else {
+        message.classList.add("text-muted");
+    }
+}
+
+/* =========================================================
+   시스템 관리자 - 게시판 생성 승인 / 거절
+   ========================================================= */
+async function initAdminCategoryApproval() {
+    const section = document.getElementById("adminApprovalSection");
+    if (!section) return;
+
+    try {
+        const response = await fetch("admin/categories", { credentials: "include" });
+
+        if (response.status === 401 || response.status === 403) {
+            return;
+        }
+
+        if (!response.ok) return;
+
+        const list = await response.json();
+        section.style.display = "block";
+        renderPendingCategories(list);
+    } catch (error) {
+        console.debug("게시판 승인 영역을 표시하지 않습니다.", error);
+    }
+}
+
+function renderPendingCategories(list) {
+    const tbody = document.getElementById("pendingTableBody");
+    if (!tbody) return;
+
+    tbody.innerHTML = "";
+
+    if (!Array.isArray(list) || list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-muted">승인 대기 중인 게시판이 없습니다.</td></tr>';
+        return;
+    }
+
+    list.forEach(category => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td class="fw-bold">${escapeHtml(category.parentCategoryName || "미지정")}</td>
+            <td class="fw-bold">${escapeHtml(category.categoryName)}</td>
+            <td>${escapeHtml(category.createdAt || "-")}</td>
+            <td>
+                <button type="button"
+                        class="btn btn-sm btn-success me-1"
+                        onclick="processCategoryApproval(${Number(category.categoryId)}, 'approve')">
+                    승인
+                </button>
+                <button type="button"
+                        class="btn btn-sm btn-danger"
+                        onclick="processCategoryApproval(${Number(category.categoryId)}, 'reject')">
+                    거절
+                </button>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+async function processCategoryApproval(categoryId, action) {
+    const message = action === "approve"
+        ? "이 게시판 생성 요청을 승인할까요?"
+        : "이 게시판 생성 요청을 거절할까요?";
+
+    if (!confirm(message)) return;
+
+    try {
+        const response = await fetch("admin/categories", {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: new URLSearchParams({
+                categoryId: String(categoryId),
+                action
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            alert(data.message || "게시판 승인 처리에 실패했습니다.");
+            return;
+        }
+
+        alert(action === "approve" ? "게시판 생성을 승인했습니다." : "게시판 생성 요청을 거절했습니다.");
+        initAdminCategoryApproval();
+    } catch (error) {
+        console.error("게시판 승인 처리 실패:", error);
+        alert("서버 통신 오류가 발생했습니다.");
+    }
+}
+
+/* =========================================================
+   시스템 관리자 - 카테고리 관리자 권한 신청
+   ========================================================= */
+function initCategoryManagerApproval() {
     const adminSection = document.getElementById("adminApprovalSection");
     if (!adminSection) return;
 
@@ -9,6 +216,11 @@ function initCategoryManagerRequestAdmin() {
         })
         .then(list => {
             if (!list) return;
+
+            if (document.getElementById("categoryManagerRequestAdminSection")) {
+                renderCategoryManagerRequests(list);
+                return;
+            }
 
             const section = document.createElement("div");
             section.id = "categoryManagerRequestAdminSection";
@@ -30,6 +242,7 @@ function initCategoryManagerRequestAdmin() {
                     </table>
                 </div>
             `;
+
             adminSection.parentNode.insertBefore(section, adminSection.nextSibling);
             renderCategoryManagerRequests(list);
         })
@@ -39,18 +252,23 @@ function initCategoryManagerRequestAdmin() {
 function loadCategoryManagerRequests() {
     fetch("admin/category-manager-requests", { credentials: "include" })
         .then(res => res.ok ? res.json() : null)
-        .then(list => { if (list) renderCategoryManagerRequests(list); })
+        .then(list => {
+            if (list) renderCategoryManagerRequests(list);
+        })
         .catch(() => {});
 }
 
 function renderCategoryManagerRequests(list) {
     const tbody = document.getElementById("categoryManagerRequestBody");
     if (!tbody) return;
+
     tbody.innerHTML = "";
+
     if (!list.length) {
         tbody.innerHTML = '<tr><td colspan="5" class="text-muted">카테고리 관리자 권한 신청이 없습니다.</td></tr>';
         return;
     }
+
     list.forEach(r => {
         tbody.innerHTML += `
             <tr>
@@ -59,15 +277,20 @@ function renderCategoryManagerRequests(list) {
                 <td class="fw-bold">${escapeHtml(r.categoryName)}</td>
                 <td>${escapeHtml(r.requestedAt)}</td>
                 <td>
-                    <button class="btn btn-sm btn-success me-1" onclick="processCategoryManagerRequest(${r.requestId}, 'approve')">승인</button>
-                    <button class="btn btn-sm btn-danger" onclick="processCategoryManagerRequest(${r.requestId}, 'reject')">거절</button>
+                    <button class="btn btn-sm btn-success me-1"
+                            onclick="processCategoryManagerRequest(${r.requestId}, 'approve')">승인</button>
+                    <button class="btn btn-sm btn-danger"
+                            onclick="processCategoryManagerRequest(${r.requestId}, 'reject')">거절</button>
                 </td>
             </tr>`;
     });
 }
 
 function processCategoryManagerRequest(requestId, action) {
-    const message = action === "approve" ? "이 회원에게 해당 게임의 카테고리 관리자 권한을 승인할까요?" : "카테고리 관리자 권한 신청을 거절할까요?";
+    const message = action === "approve"
+        ? "이 회원에게 해당 게임의 카테고리 관리자 권한을 승인할까요?"
+        : "카테고리 관리자 권한 신청을 거절할까요?";
+
     if (!confirm(message)) return;
 
     fetch("admin/category-manager-requests", {
@@ -82,7 +305,11 @@ function processCategoryManagerRequest(requestId, action) {
                 alert(data.message || "처리에 실패했습니다.");
                 return;
             }
-            alert(action === "approve" ? "카테고리 관리자 권한을 승인했습니다." : "신청을 거절했습니다.");
+
+            alert(action === "approve"
+                ? "카테고리 관리자 권한을 승인했습니다."
+                : "신청을 거절했습니다.");
+
             loadCategoryManagerRequests();
         })
         .catch(() => alert("서버 통신 오류가 발생했습니다."));
@@ -90,5 +317,10 @@ function processCategoryManagerRequest(requestId, action) {
 
 function escapeHtml(value) {
     if (value == null) return "";
-    return String(value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;").replace(/'/g,"&#039;");
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
