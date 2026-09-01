@@ -279,7 +279,7 @@ body {
 .login-input .form-control::placeholder { color: #aaa; }
 .login-input .form-control:hover { border-color: #bdbdbd; }
 .login-input .form-control:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(105,65,198,.12); }
-.btn-login { display: block; width: 100%; height: 48px; padding: 0; margin-top: 4px; border: none; border-radius: 8px; background-color: var(--primary-color); color: #fff; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer; transition: background-color .2s ease, transform .1s ease; }
+.btn-login { display: block; width: 100%; height: 48px; padding: 0; margin-top: 4px; border: none; border-radius: 8px; background-color: var(--primary-color); color: #fff; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer;  }
 .btn-login:hover { background-color: var(--primary-hover); }
 .btn-login:active { transform: scale(.99); }
 .login-links { display: flex; justify-content: center; align-items: center; margin-top: 24px; font-size: 13px; color: #888; }
