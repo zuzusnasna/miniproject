@@ -1,8 +1,4 @@
-
-    /* =========================================================
-       1. 공통 변수 및 초기화
-       ========================================================= */
-
+/* 공통 변수 및 초기화 */
 :root {
     --primary-color: #6941C6;
     --primary-hover: #5332a6;
@@ -12,31 +8,16 @@
     --max-width: 1280px;
 }
 
-* {
-    box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
     margin: 0;
+    background-color: var(--bg-light);
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--text-dark);
     width: 100%;
     overflow-x: hidden;
-    background-color: var(--bg-light);
-    color: var(--text-dark);
-    font-family:
-            'Pretendard',
-            -apple-system,
-            BlinkMacSystemFont,
-            "Segoe UI",
-            Roboto,
-            "Helvetica Neue",
-            Arial,
-            sans-serif;
 }
-
-
-/* =========================================================
-   2. 공통 컨테이너
-   ========================================================= */
 
 .custom-container {
     width: 100%;
@@ -45,19 +26,12 @@ body {
     padding: 0 16px;
 }
 
-
-/* =========================================================
-   3. 사이트 헤더
-   ========================================================= */
-
-.site-header-wrapper {
-    width: 100%;
-}
+.site-header-wrapper { width: 100%; }
 
 .main-header {
-    padding: 14px 0;
     background-color: var(--primary-color);
     color: #fff;
+    padding: 14px 0;
 }
 
 .header-inner {
@@ -67,9 +41,9 @@ body {
 }
 
 .header-inner .logo {
-    color: #fff;
     font-size: 1.4rem;
     font-weight: 800;
+    color: #fff;
     text-decoration: none;
     letter-spacing: -0.5px;
 }
@@ -82,34 +56,27 @@ body {
 
 .user-menu a {
     color: #fff;
+    text-decoration: none;
     font-size: 0.9rem;
     font-weight: 500;
-    text-decoration: none;
     transition: opacity 0.2s ease;
 }
 
-.user-menu a:hover {
-    opacity: 0.85;
-}
+.user-menu a:hover { opacity: 0.85; }
 
 .btn-theme {
-    padding: 4px 10px;
-    border: none;
-    border-radius: 4px;
     background: #fff;
     color: #333;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 4px;
     font-size: 0.85rem;
 }
-
-
-/* =========================================================
-   4. 카테고리 네비게이션
-   ========================================================= */
 
 .category-nav {
     background-color: #fff;
     border-bottom: 1px solid var(--border-color);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
 }
 
 .category-list {
@@ -123,23 +90,13 @@ body {
 
 .category-list a {
     color: #111;
-    font-size: 0.95rem;
     font-weight: 600;
+    font-size: 0.95rem;
     text-decoration: none;
     transition: color 0.2s ease;
 }
 
-.category-list a:hover {
-    color: var(--primary-color);
-}
-
-
-/* =========================================================
-   5. 전체 레이아웃
-   ---------------------------------------------------------
-   왼쪽 : 메인 콘텐츠
-   오른쪽 : 사이드바 / 광고
-   ========================================================= */
+.category-list a:hover { color: var(--primary-color); }
 
 .layout-grid {
     display: grid;
@@ -149,84 +106,48 @@ body {
     margin-bottom: 40px;
 }
 
-/*
- * PC 화면에서는 오른쪽 사이드바를 280px로 고정한다.
- *
- * 기존 320px에서 280px로 줄여
- * 광고 영역이 지나치게 넓어 보이지 않도록 한다.
- */
 @media (min-width: 992px) {
-    .layout-grid {
-        grid-template-columns: 1fr 280px;
-    }
+    .layout-grid { grid-template-columns: 1fr 280px; }
 }
 
-
-/* =========================================================
-   6. 게임 페이지
-   ========================================================= */
-
+/* 게임 페이지 */
 .game-shell {
-    overflow: hidden;
     background: #fff;
     border: 1px solid #e7e7eb;
     border-radius: 14px;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    box-shadow: 0 5px 20px rgba(0,0,0,.05);
 }
 
-
-/* ---------------------------------------------------------
-   게임 배너
-   --------------------------------------------------------- */
-
 .game-banner {
-    display: grid;
-    grid-template-columns:
-        minmax(0, 1fr)
-        minmax(360px, 46%);
-    min-height: 190px;
     padding: 0;
-    background: linear-gradient(
-            135deg,
-            #352064,
-            #6941c6
-    );
+    background: linear-gradient(135deg,#352064,#6941c6);
     color: #fff;
+    display: grid;
+    grid-template-columns: minmax(0,1fr) minmax(360px,46%);
+    min-height: 190px;
 }
 
 .game-banner-main {
+    padding: 28px 32px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     min-width: 0;
-    padding: 28px 32px;
 }
 
-.game-banner h1 {
-    margin: 5px 0;
-    font-size: 2rem;
-    font-weight: 800;
-}
-
-.game-banner p {
-    margin: 0;
-    opacity: 0.85;
-}
-
-
-/* ---------------------------------------------------------
-   게임 인기 게시글
-   --------------------------------------------------------- */
+.game-banner h1 { font-size: 2rem; font-weight: 800; margin: 5px 0; }
+.game-banner p { margin: 0; opacity: .85; }
 
 .game-hot {
-    align-self: stretch;
-    overflow: hidden;
     margin: 18px 22px 18px 0;
     padding: 15px 18px;
-    background: rgba(255, 255, 255, 0.10);
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255,255,255,.10);
+    border: 1px solid rgba(255,255,255,.18);
     border-radius: 13px;
     backdrop-filter: blur(3px);
+    align-self: stretch;
+    overflow: hidden;
 }
 
 .game-hot-head {
@@ -236,161 +157,83 @@ body {
     margin-bottom: 7px;
 }
 
-.game-hot-title {
-    font-size: 0.83rem;
-    font-weight: 800;
-    letter-spacing: 0.01em;
-}
-
-.game-hot-sub {
-    font-size: 0.68rem;
-    opacity: 0.65;
-}
+.game-hot-title { font-size: .83rem; font-weight: 800; letter-spacing: .01em; }
+.game-hot-sub { font-size: .68rem; opacity: .65; }
 
 .game-hot-row {
     display: grid;
-    grid-template-columns:
-        20px
-        minmax(0, 1fr)
-        46px;
+    grid-template-columns: 20px minmax(0,1fr) 46px;
     gap: 7px;
     align-items: center;
     height: 25px;
-    border-top: 1px solid rgba(255, 255, 255, 0.09);
+    border-top: 1px solid rgba(255,255,255,.09);
     cursor: pointer;
 }
 
-.game-hot-row:first-child {
-    border-top: 0;
-}
-
-.game-hot-row:hover .game-hot-post {
-    text-decoration: underline;
-}
-
-.game-hot-rank {
-    font-size: 0.7rem;
-    font-weight: 800;
-    opacity: 0.72;
-}
-
-.game-hot-post {
-    overflow: hidden;
-    color: inherit;
-    font-size: 0.78rem;
-    font-weight: 650;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-.game-hot-like {
-    overflow: hidden;
-    font-size: 0.68rem;
-    text-align: right;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    opacity: 0.72;
-}
-
-.game-hot-empty {
-    padding: 32px 0;
-    font-size: 0.78rem;
-    text-align: center;
-    opacity: 0.68;
-}
-
-
-/* ---------------------------------------------------------
-   게시판 전체 레이아웃
-   --------------------------------------------------------- */
+.game-hot-row:first-child { border-top: 0; }
+.game-hot-row:hover .game-hot-post { text-decoration: underline; }
+.game-hot-rank { font-size: .7rem; font-weight: 800; opacity: .72; }
+.game-hot-post { font-size: .78rem; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.game-hot-like { font-size: .68rem; text-align: right; opacity: .72; white-space: nowrap; }
+.game-hot-empty { font-size: .78rem; opacity: .68; padding: 32px 0; text-align: center; }
 
 .community-layout {
     display: grid;
-    grid-template-columns: 220px minmax(0, 1fr);
+    grid-template-columns: 220px minmax(0,1fr);
     min-height: 520px;
 }
 
-
-/* ---------------------------------------------------------
-   게시판 사이드 메뉴
-   --------------------------------------------------------- */
-
 .board-sidebar {
-    padding: 22px 14px;
     background: #f8f7fb;
     border-right: 1px solid #ece9f3;
+    padding: 22px 14px;
 }
 
 .board-sidebar h3 {
-    margin: 0;
-    padding: 0 10px 12px;
-    color: #777;
-    font-size: 0.9rem;
+    font-size: .9rem;
     font-weight: 800;
+    color: #777;
+    padding: 0 10px 12px;
+    margin: 0;
 }
 
 .board-menu {
     display: block;
     width: 100%;
-    margin-bottom: 5px;
-    padding: 12px 14px;
     border: 0;
-    border-radius: 8px;
     background: transparent;
+    text-align: left;
+    padding: 12px 14px;
+    border-radius: 8px;
     color: #333;
     font-weight: 700;
-    text-align: left;
+    margin-bottom: 5px;
     cursor: pointer;
 }
 
 .board-menu:hover,
 .board-menu.active {
-    background: var(--primary-color);
+    background: #6941c6;
     color: #fff;
 }
 
-
-/* ---------------------------------------------------------
-   게시판 콘텐츠
-   --------------------------------------------------------- */
-
-.board-content {
-    padding: 26px 30px;
-}
+.board-content { padding: 26px 30px; }
 
 .board-head {
     display: flex;
     justify-content: space-between;
     align-items: end;
-    margin-bottom: 8px;
+    border-bottom: 2px solid #6941c6;
     padding-bottom: 14px;
-    border-bottom: 2px solid var(--primary-color);
+    margin-bottom: 8px;
 }
 
-.board-head h2 {
-    margin: 0;
-    font-size: 1.35rem;
-    font-weight: 800;
-}
-
-.board-head p {
-    margin: 0;
-    color: #888;
-    font-size: 0.85rem;
-}
-
-
-/* ---------------------------------------------------------
-   게시글 목록
-   --------------------------------------------------------- */
+.board-head h2 { font-size: 1.35rem; font-weight: 800; margin: 0; }
+.board-head p { font-size: .85rem; color: #888; margin: 0; }
 
 .post-row {
     display: grid;
-    grid-template-columns:
-        70px
-        minmax(0, 1fr)
-        110px
-        90px;
+    grid-template-columns: 70px minmax(0,1fr) 110px 90px;
     gap: 12px;
     align-items: center;
     padding: 14px 8px;
@@ -398,601 +241,132 @@ body {
     cursor: pointer;
 }
 
-.post-row:hover {
-    background: #faf9fd;
-}
-
-.post-title {
-    overflow: hidden;
-    color: #222;
-    font-weight: 700;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-.post-meta {
-    color: #777;
-    font-size: 0.82rem;
-}
-
-.post-empty {
-    padding: 80px 20px;
-    color: #999;
-    text-align: center;
-}
-
-
-/* =========================================================
-   7. 게임 페이지 반응형
-   ========================================================= */
+.post-row:hover { background: #faf9fd; }
+.post-title { font-weight: 700; color: #222; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.post-meta { font-size: .82rem; color: #777; }
+.post-empty { text-align: center; color: #999; padding: 80px 20px; }
 
 @media (max-width: 900px) {
-
-    .game-banner {
-        grid-template-columns: 1fr;
-    }
-
-    .game-hot {
-        margin: 0 22px 20px;
-    }
-
-    .game-banner-main {
-        padding-bottom: 18px;
-    }
+    .game-banner { grid-template-columns: 1fr; }
+    .game-hot { margin: 0 22px 20px; }
+    .game-banner-main { padding-bottom: 18px; }
 }
 
 @media (max-width: 800px) {
-
-    .community-layout {
-        grid-template-columns: 1fr;
-    }
-
+    .community-layout { grid-template-columns: 1fr; }
     .board-sidebar {
+        border-right: 0;
+        border-bottom: 1px solid #ece9f3;
         display: flex;
         gap: 6px;
         overflow: auto;
-        border-right: 0;
-        border-bottom: 1px solid #ece9f3;
     }
-
-    .board-sidebar h3 {
-        display: none;
-    }
-
-    .board-menu {
-        width: auto;
-        margin: 0;
-        white-space: nowrap;
-    }
-
-    .post-row {
-        grid-template-columns:
-            55px
-            minmax(0, 1fr)
-            80px;
-    }
-
-    .post-row .views {
-        display: none;
-    }
+    .board-sidebar h3 { display: none; }
+    .board-menu { white-space: nowrap; width: auto; margin: 0; }
+    .post-row { grid-template-columns: 55px minmax(0,1fr) 80px; }
+    .post-row .views { display: none; }
 }
 
+/* 로그인 페이지 스타일 */
+.login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
+.login-wrapper { width: 100%; max-width: 420px; }
+.login-logo { text-align: center; margin-bottom: 25px; }
+.login-logo a { font-size: 32px; font-weight: 800; color: var(--primary-color); text-decoration: none; letter-spacing: -1px; }
+.login-card { width: 100%; padding: 35px 30px; background-color: #fff; border: 1px solid var(--border-color); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,.05); }
+.login-input { margin-bottom: 26px; }
+.login-input label { display: block; margin-bottom: 9px; font-size: 14px; font-weight: 700; color: #444; }
+.login-input .form-control { display: block; width: 100%; height: 48px; padding: 0 14px; border: 1px solid #d5d5d5; border-radius: 8px; outline: none; background-color: #fff; font-family: inherit; font-size: 15px; color: #333; transition: border-color .2s ease, box-shadow .2s ease; }
+.login-input .form-control::placeholder { color: #aaa; }
+.login-input .form-control:hover { border-color: #bdbdbd; }
+.login-input .form-control:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(105,65,198,.12); }
+.btn-login { display: block; width: 100%; height: 48px; padding: 0; margin-top: 4px; border: none; border-radius: 8px; background-color: var(--primary-color); color: #fff; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer;  }
+.btn-login:hover { background-color: var(--primary-hover); }
+.btn-login:active { transform: scale(.99); }
+.login-links { display: flex; justify-content: center; align-items: center; margin-top: 24px; font-size: 13px; color: #888; }
+.login-links a { color: #777; text-decoration: none; transition: color .2s ease; }
+.login-links a:hover { color: var(--primary-color); }
+.login-links .divider { margin: 0 10px; color: #ddd; }
+.login-footer { margin-top: 25px; text-align: center; font-size: 12px; color: #aaa; }
 
-/* =========================================================
-   8. 로그인 페이지
-   ========================================================= */
+/* 회원 정보 */
+.common-member-info { position: fixed; width: 230px; box-sizing: border-box; padding: 15px; background-color: #fff; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 3px 10px rgba(0,0,0,.08); font-size: 14px; z-index: 9999; }
+.member-title { margin-bottom: 12px; padding-bottom: 9px; border-bottom: 1px solid #eee; font-size: 16px; font-weight: 700; color: #333; }
+.member-row { margin-bottom: 8px; line-height: 1.5; color: #555; }
+.member-row strong { color: #333; }
+.member-level { margin-top: 8px; margin-bottom: 9px; font-size: 15px; }
+.level-section { margin-top: 8px; margin-bottom: 13px; }
+.level-progress-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; font-size: 11px; color: #999; }
+.level-progress-info span:first-child { color: var(--primary-color); font-weight: 700; }
+.level-progress-info span:last-child { color: #aaa; }
+.level-progress { width: 100%; height: 9px; overflow: hidden; background-color: #e9ecef; border-radius: 10px; }
+.level-progress-fill { height: 100%; min-width: 0; max-width: 100%; background-color: var(--primary-color); border-radius: 10px; transition: width .4s ease; }
+.level-progress-text { display: flex; justify-content: space-between; align-items: center; margin-top: 5px; font-size: 11px; color: #666; }
+.level-progress-text span { color: var(--primary-color); font-weight: 700; }
+.level-progress-remaining { margin-top: 4px; font-size: 11px; color: #888; }
+.level-progress-remaining strong { color: var(--primary-color); }
+.common-member-info .like { margin-bottom: 7px; color: #1976d2; font-weight: 700; }
+.common-member-info .dislike { margin-bottom: 0; color: #d32f2f; font-weight: 700; }
+.member-error { color: #d32f2f; }
 
-.login-page {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    padding: 40px 20px;
-}
-
-.login-wrapper {
-    width: 100%;
-    max-width: 420px;
-}
-
-.login-logo {
-    margin-bottom: 25px;
-    text-align: center;
-}
-
-.login-logo a {
-    color: var(--primary-color);
-    font-size: 32px;
-    font-weight: 800;
-    text-decoration: none;
-    letter-spacing: -1px;
-}
-
-.login-card {
-    width: 100%;
-    padding: 35px 30px;
-    background-color: #fff;
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-}
-
-.login-input {
-    margin-bottom: 26px;
-}
-
-.login-input label {
-    display: block;
-    margin-bottom: 9px;
-    color: #444;
-    font-size: 14px;
-    font-weight: 700;
-}
-
-.login-input .form-control {
-    display: block;
-    width: 100%;
-    height: 48px;
-    padding: 0 14px;
-    border: 1px solid #d5d5d5;
-    border-radius: 8px;
-    outline: none;
-    background-color: #fff;
-    color: #333;
-    font-family: inherit;
-    font-size: 15px;
-    transition:
-            border-color 0.2s ease,
-            box-shadow 0.2s ease;
-}
-
-.login-input .form-control::placeholder {
-    color: #aaa;
-}
-
-.login-input .form-control:hover {
-    border-color: #bdbdbd;
-}
-
-.login-input .form-control:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(105, 65, 198, 0.12);
-}
-
-
-/* ---------------------------------------------------------
-   로그인 버튼
-   --------------------------------------------------------- */
-
-.btn-login {
-    display: block;
-    width: 100%;
-    height: 48px;
-    margin-top: 4px;
-    padding: 0;
-    border: none;
-    border-radius: 8px;
-    background-color: var(--primary-color);
-    color: #fff;
-    font-family: inherit;
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-
-    /*
-     * hover / active 애니메이션에 사용되는 공통 transition
-     */
-    transition:
-            background-color 0.2s ease,
-            transform 0.15s ease,
-            box-shadow 0.2s ease;
-}
-
-.btn-login:hover {
-    background-color: var(--primary-hover);
-    box-shadow: 0 4px 12px rgba(105, 65, 198, 0.35);
-    transform: translateY(-1px);
-}
-
-.btn-login:active {
-    transform: scale(0.99);
-}
-
-
-.login-links {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-top: 24px;
-    color: #888;
-    font-size: 13px;
-}
-
-.login-links a {
-    color: #777;
-    text-decoration: none;
-    transition: color 0.2s ease;
-}
-
-.login-links a:hover {
-    color: var(--primary-color);
-}
-
-.login-links .divider {
-    margin: 0 10px;
-    color: #ddd;
-}
-
-.login-footer {
-    margin-top: 25px;
-    color: #aaa;
-    font-size: 12px;
-    text-align: center;
-}
-
-
-/* =========================================================
-   9. 회원 정보 팝업
-   ========================================================= */
-
-.common-member-info {
-    position: fixed;
-    z-index: 9999;
-    width: 230px;
-    padding: 15px;
-    box-sizing: border-box;
-    background-color: #fff;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
-    font-size: 14px;
-}
-
-.member-title {
-    margin-bottom: 12px;
-    padding-bottom: 9px;
-    border-bottom: 1px solid #eee;
-    color: #333;
-    font-size: 16px;
-    font-weight: 700;
-}
-
-.member-row {
-    margin-bottom: 8px;
-    color: #555;
-    line-height: 1.5;
-}
-
-.member-row strong {
-    color: #333;
-}
-
-.member-level {
-    margin-top: 8px;
-    margin-bottom: 9px;
-    font-size: 15px;
-}
-
-.level-section {
-    margin-top: 8px;
-    margin-bottom: 13px;
-}
-
-.level-progress-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 5px;
-    color: #999;
-    font-size: 11px;
-}
-
-.level-progress-info span:first-child {
-    color: var(--primary-color);
-    font-weight: 700;
-}
-
-.level-progress-info span:last-child {
-    color: #aaa;
-}
-
-.level-progress {
-    width: 100%;
-    height: 9px;
-    overflow: hidden;
-    background-color: #e9ecef;
-    border-radius: 10px;
-}
-
-.level-progress-fill {
-    height: 100%;
-    min-width: 0;
-    max-width: 100%;
-    background-color: var(--primary-color);
-    border-radius: 10px;
-    transition: width 0.4s ease;
-}
-
-.level-progress-text {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 5px;
-    color: #666;
-    font-size: 11px;
-}
-
-.level-progress-text span {
-    color: var(--primary-color);
-    font-weight: 700;
-}
-
-.level-progress-remaining {
-    margin-top: 4px;
-    color: #888;
-    font-size: 11px;
-}
-
-.level-progress-remaining strong {
-    color: var(--primary-color);
-}
-
-.common-member-info .like {
-    margin-bottom: 7px;
-    color: #1976d2;
-    font-weight: 700;
-}
-
-.common-member-info .dislike {
-    margin-bottom: 0;
-    color: #d32f2f;
-    font-weight: 700;
-}
-
-.member-error {
-    color: #d32f2f;
-}
-
-
-/* =========================================================
-   10. 우측 사이드바
-   ========================================================= */
-
-.sidebar-card {
-    margin-bottom: 20px;
-    padding: 20px;
-    background: #fff;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    text-align: center;
-}
-
-.btn-primary-custom {
-    display: block;
-    padding: 8px;
-    border: none;
-    border-radius: 6px;
-    background-color: var(--primary-color);
-    color: #fff;
-    font-weight: 600;
-    text-decoration: none;
-
-    transition:
-            background-color 0.2s ease,
-            transform 0.15s ease,
-            box-shadow 0.2s ease;
-}
-
-.btn-primary-custom:hover {
-    background-color: var(--primary-hover);
-    color: #fff;
-    box-shadow: 0 4px 12px rgba(105, 65, 198, 0.35);
-    transform: translateY(-1px);
-}
-
-
-/* =========================================================
-   11. 광고 영역
-   ========================================================= */
-
+/* 우측 사이드바 */
+.sidebar-card { background: #fff; border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; text-align: center; margin-bottom: 20px; }
+.btn-primary-custom { background-color: var(--primary-color); border: none; color: #fff; padding: 8px; font-weight: 600; border-radius: 6px; display: block; text-decoration: none; }
+.btn-primary-custom:hover { background-color: var(--primary-hover); color: #fff; }
+.sidebar-ad { text-align: center; }
+/* 광고 영역 */
 .ad-sidebar {
     display: flex;
     justify-content: flex-end;
 }
 
-/*
- * 광고 자체 크기는 부모 사이드바의 너비를 따른다.
- *
- * layout-grid의 PC 우측 영역이 280px이므로
- * 광고도 최대 280px 범위 안에서 표시된다.
- */
 .ad-slot {
-    width: 100%;
+    width: fit-content;
     background: transparent;
     border: 0;
 }
 
 .ad-label {
+    font-size: .75rem;
+    color: #888;
     display: block;
     margin-bottom: 6px;
-    color: #888;
-    font-size: 0.75rem;
     text-align: right;
 }
 
 .ad-video {
     display: block;
-    width: 100%;
-    height: auto;
+    width: 260px;
+    height: 180px;
     border-radius: 8px;
     object-fit: cover;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 6px rgba(0,0,0,.05);
 }
-
-
-/*
- * 기존 이미지 광고에서도 사용할 수 있도록 유지.
- * .ad-label은 위에서 하나만 정의한다.
- */
-.ad-image {
-    width: 100%;
-    border-radius: 8px;
-    object-fit: cover;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-}
-
-
-/* =========================================================
-   12. 작은 화면
-   ========================================================= */
+.ad-image { width: 100%; border-radius: 8px; object-fit: cover; box-shadow: 0 4px 6px rgba(0,0,0,.05); }
 
 @media (max-width: 600px) {
-
-    .login-page {
-        padding: 20px 15px;
-    }
-
-    .login-card {
-        padding: 30px 22px;
-    }
-
-    .login-logo a {
-        font-size: 28px;
-    }
-
-    .common-member-info {
-        width: 210px;
-    }
+    .login-page { padding: 20px 15px; }
+    .login-card { padding: 30px 22px; }
+    .login-logo a { font-size: 28px; }
+    .common-member-info { width: 210px; }
 }
 
+/* 공통 인터랙션 */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-thumb { background: #c2b5e2; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--primary-color); }
 
-/* =========================================================
-   13. 공통 스크롤바
-   ========================================================= */
+.popular-post-row, .news-row { transition: all .2s cubic-bezier(.4,0,.2,1); }
+.popular-post-row:hover { background-color: #f7f4fc !important; transform: translateX(4px); }
 
-::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-}
+.btn-login, .btn-primary, .btn-primary-custom { transition: background-color .2s ease, transform .15s ease, box-shadow .2s ease; }
+.btn-login:hover, .btn-primary:hover, .btn-primary-custom:hover { box-shadow: 0 4px 12px rgba(105,65,198,.35); transform: translateY(-1px); }
 
-::-webkit-scrollbar-track {
-    background: #f1f1f1;
-}
+.author-tag { display: inline-flex; align-items: center; gap: 4px; font-weight: 700; }
+.game-nav-trigger { position: relative; transition: color .2s ease; }
+.game-nav-trigger::after { content: ''; position: absolute; bottom: 0; left: 50%; width: 0; height: 3px; background: #7c3aed; border-radius: 3px 3px 0 0; transition: width .2s ease, left .2s ease; }
+.game-nav-item:hover .game-nav-trigger::after { width: 100%; left: 0; }
 
-::-webkit-scrollbar-thumb {
-    background: #c2b5e2;
-    border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: var(--primary-color);
-}
-
-
-/* =========================================================
-   14. 공통 인터랙션
-   ========================================================= */
-
-/*
- * 인기 게시글과 뉴스 행의 공통 애니메이션
- */
-.popular-post-row,
-.news-row {
-    transition:
-            all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.popular-post-row:hover {
-    background-color: #f7f4fc !important;
-    transform: translateX(4px);
-}
-
-
-/* ---------------------------------------------------------
-   공통 버튼 hover 효과
-   --------------------------------------------------------- */
-
-/*
- * Bootstrap의 .btn-primary와
- * 프로젝트의 .btn-primary-custom에서
- * 동일한 hover 효과를 사용한다.
- *
- * .btn-login은 로그인 버튼의 active 동작이
- * 따로 있기 때문에 여기서는 별도로 관리한다.
- */
-.btn-primary:hover,
-.btn-primary-custom:hover {
-    box-shadow: 0 4px 12px rgba(105, 65, 198, 0.35);
-    transform: translateY(-1px);
-}
-
-
-/* ---------------------------------------------------------
-   작성자 태그
-   --------------------------------------------------------- */
-
-.author-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-weight: 700;
-}
-
-
-/* ---------------------------------------------------------
-   게임 네비게이션
-   --------------------------------------------------------- */
-
-.game-nav-trigger {
-    position: relative;
-    transition: color 0.2s ease;
-}
-
-.game-nav-trigger::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    width: 0;
-    height: 3px;
-    background: #7c3aed;
-    border-radius: 3px 3px 0 0;
-    transition:
-            width 0.2s ease,
-            left 0.2s ease;
-}
-
-.game-nav-item:hover .game-nav-trigger::after {
-    left: 0;
-    width: 100%;
-}
-
-
-/* ---------------------------------------------------------
-   알림 버튼
-   --------------------------------------------------------- */
-
-.btn-noti-icon {
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    padding: 6px;
-    border: none;
-    border-radius: 50%;
-    background: transparent;
-    color: #fff;
-    cursor: pointer;
-    transition:
-            background-color 0.2s ease,
-            transform 0.15s ease;
-}
-
-.btn-noti-icon:hover {
-    background-color: rgba(255, 255, 255, 0.15);
-    transform: scale(1.08);
-}
-
-.btn-noti-icon svg {
-    display: block;
-}
-
+.btn-noti-icon { background: transparent; border: none; color: #fff; cursor: pointer; padding: 6px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; transition: background-color .2s ease, transform .15s ease; }
+.btn-noti-icon:hover { background-color: rgba(255,255,255,.15); transform: scale(1.08); }
+.btn-noti-icon svg { display: block; }
