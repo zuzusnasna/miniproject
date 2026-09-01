@@ -1,0 +1,38 @@
+/* =========================================================
+   광고 영역
+   ========================================================= */
+
+.ad-sidebar {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.ad-slot {
+    width: fit-content;
+    background: transparent;
+    border: 0;
+}
+
+.ad-label {
+    font-size: .75rem;
+    color: #888;
+    display: block;
+    margin-bottom: 6px;
+    text-align: right;
+}
+
+.ad-video {
+    display: block;
+    width: 220px;
+    height: 900px;
+    border-radius: 8px;
+    object-fit: cover;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, .05);
+}
+
+.ad-image {
+    width: 100%;
+    border-radius: 8px;
+    object-fit: cover;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, .05);
+}
