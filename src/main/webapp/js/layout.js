@@ -1,77 +1,161 @@
-/*
- * GameHub 공통 레이아웃
+/* =========================================================
+   GameHub 공통 레이아웃
+
+   Header / 카테고리 메뉴 / 우측 광고 영역 / 게임 배너를
+   페이지 공통으로 생성하고 적용합니다.
+   ========================================================= */
+
+
+/* =========================================================
+   1. 공통 레이아웃 초기화
+   ========================================================= */
+
+/**
+ * 페이지에서 사용하는 공통 레이아웃을 초기화합니다.
  *
- * Header / 카테고리 메뉴 / 우측 광고 영역을 공통으로 생성한다.
+ * 실행 순서
+ * 1. GameHub 테마 CSS 로드
+ * 2. Header / 카테고리 메뉴 생성
+ * 3. 본문과 광고 영역을 2열 레이아웃으로 구성
+ * 4. 게임 배너 이미지 적용
  */
 function initLayout() {
     loadGameHubTheme();
 
+    /* 이미 Header가 만들어져 있다면 다시 생성하지 않습니다. */
     if (!document.querySelector(".site-header-wrapper")) {
         const headerWrapper = document.createElement("header");
+
         headerWrapper.className = "site-header-wrapper";
         headerWrapper.innerHTML = `
             <div class="main-header">
                 <div class="custom-container header-inner">
                     <a href="home.html" class="logo">GAMEHUB</a>
+
                     <div class="user-menu">
                         <a href="login.html" id="navAuthLink">로그인</a>
                         <a href="mypage.html">마이페이지</a>
-                        <button type="button" class="btn-noti-icon" aria-label="알림" onclick="alert('새로운 알림이 없습니다.')">
-                            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+
+                        <button
+                            type="button"
+                            class="btn-noti-icon"
+                            aria-label="알림"
+                            onclick="alert('새로운 알림이 없습니다.')"
+                        >
+                            <svg
+                                viewBox="0 0 24 24"
+                                width="20"
+                                height="20"
+                                fill="currentColor"
+                                aria-hidden="true"
+                            >
                                 <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5S10.5 3.17 10.5 4v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/>
                             </svg>
                         </button>
-                        <button type="button" class="member-menu-trigger" id="memberMenuTrigger" aria-expanded="false" aria-controls="commonMemberInfo" disabled>
+
+                        <button
+                            type="button"
+                            class="member-menu-trigger"
+                            id="memberMenuTrigger"
+                            aria-expanded="false"
+                            aria-controls="commonMemberInfo"
+                            disabled
+                        >
                             Not login status
                         </button>
                     </div>
                 </div>
             </div>
+
             <nav class="category-nav">
                 <div class="custom-container category-list"></div>
-            </nav>`;
+            </nav>
+        `;
+
         document.body.prepend(headerWrapper);
     }
 
-    const mainContent = document.getElementById("main-content") || document.querySelector("main") || document.querySelector(".board-container");
+    /* =====================================================
+       본문 + 우측 광고 영역 구성
+       ===================================================== */
+    const mainContent =
+        document.getElementById("main-content") ||
+        document.querySelector("main") ||
+        document.querySelector(".board-container");
+
     if (mainContent && !mainContent.closest(".layout-grid")) {
         const layoutContainer = document.createElement("div");
+
         layoutContainer.className = "custom-container layout-grid";
         mainContent.parentNode.insertBefore(layoutContainer, mainContent);
+
         mainContent.classList.add("content-left");
         layoutContainer.appendChild(mainContent);
 
+        /* 우측 광고 영역을 생성합니다. */
         const adSidebar = document.createElement("aside");
+
         adSidebar.className = "content-right ad-sidebar";
         adSidebar.innerHTML = `
             <div class="ad-slot">
                 <span class="ad-label">ADVERTISEMENT</span>
-                <video class="ad-video" autoplay muted loop playsinline>
+
+                <video
+                    class="ad-video"
+                    autoplay
+                    muted
+                    loop
+                    playsinline
+                >
                     <source src="images/gamehub-ad.mp4" type="video/mp4">
                 </video>
-            </div>`;
+            </div>
+        `;
+
         layoutContainer.appendChild(adSidebar);
     }
 
     applyGameBanner();
 }
 
+
+/* =========================================================
+   2. GameHub 테마 CSS 로드
+   ========================================================= */
+
+/**
+ * GameHub 전용 테마 CSS를 페이지에 한 번만 추가합니다.
+ */
 function loadGameHubTheme() {
     if (document.getElementById("gamehub-theme-css")) return;
 
     const link = document.createElement("link");
+
     link.id = "gamehub-theme-css";
     link.rel = "stylesheet";
     link.href = "css/gamehub-theme.css?v=4";
+
     document.head.appendChild(link);
 }
 
+
+/* =========================================================
+   3. 게임 배너 적용
+   ========================================================= */
+
+/**
+ * 현재 gameId에 맞는 게임 배너 이미지를 적용합니다.
+ */
 function applyGameBanner() {
     const banner = document.querySelector(".game-banner");
+
     if (!banner) return;
 
-    const gameId = Number(new URLSearchParams(location.search).get("gameId"));
+    const gameId = Number(
+        new URLSearchParams(location.search).get("gameId")
+    );
 
+    /* 게임별 배너 이미지 주소 */
     const banners = {
         110: "https://shared.steamstatic.com/store_item_assets/steam/apps/216150/44dd4c4c8a5cc5bb860c4fafb317424f1f0db7aa/hero_capsule_2x.jpg",
         120: "https://shared.steamstatic.com/store_item_assets/steam/apps/1956040/header.jpg",
@@ -101,8 +185,12 @@ function applyGameBanner() {
     };
 
     const image = banners[gameId];
+
     if (image) {
-        banner.style.setProperty("--game-banner-image", `url("${image}")`);
+        banner.style.setProperty(
+            "--game-banner-image",
+            `url("${image}")`
+        );
         banner.classList.add("has-game-image");
     }
 }
