@@ -1,0 +1,127 @@
+/* =========================================================
+   회원 정보 / 레벨
+   ========================================================= */
+
+.common-member-info {
+    position: fixed;
+    width: 230px;
+    box-sizing: border-box;
+    padding: 15px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, .08);
+    font-size: 14px;
+    z-index: 9999;
+}
+
+.member-title {
+    margin-bottom: 12px;
+    padding-bottom: 9px;
+    border-bottom: 1px solid #eee;
+    font-size: 16px;
+    font-weight: 700;
+    color: #333;
+}
+
+.member-row {
+    margin-bottom: 8px;
+    line-height: 1.5;
+    color: #555;
+}
+
+.member-row strong {
+    color: #333;
+}
+
+.member-level {
+    margin-top: 8px;
+    margin-bottom: 9px;
+    font-size: 15px;
+}
+
+.level-section {
+    margin-top: 8px;
+    margin-bottom: 13px;
+}
+
+.level-progress-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+    font-size: 11px;
+    color: #999;
+}
+
+.level-progress-info span:first-child {
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.level-progress-info span:last-child {
+    color: #aaa;
+}
+
+.level-progress {
+    width: 100%;
+    height: 9px;
+    overflow: hidden;
+    background-color: #e9ecef;
+    border-radius: 10px;
+}
+
+.level-progress-fill {
+    height: 100%;
+    min-width: 0;
+    max-width: 100%;
+    background-color: var(--primary-color);
+    border-radius: 10px;
+    transition: width .4s ease;
+}
+
+.level-progress-text {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 5px;
+    font-size: 11px;
+    color: #666;
+}
+
+.level-progress-text span {
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.level-progress-remaining {
+    margin-top: 4px;
+    font-size: 11px;
+    color: #888;
+}
+
+.level-progress-remaining strong {
+    color: var(--primary-color);
+}
+
+.common-member-info .like {
+    margin-bottom: 7px;
+    color: #1976d2;
+    font-weight: 700;
+}
+
+.common-member-info .dislike {
+    margin-bottom: 0;
+    color: #d32f2f;
+    font-weight: 700;
+}
+
+.member-error {
+    color: #d32f2f;
+}
+
+@media (max-width: 600px) {
+    .common-member-info {
+        width: 210px;
+    }
+}
