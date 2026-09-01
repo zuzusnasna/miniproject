@@ -15,9 +15,9 @@ import java.util.List;
  * 게시글 목록 조회 요청을 처리하는 Servlet입니다.
  *
  * 요청 흐름
- * 1. categoryId가 전달되었는지 확인
- * 2. 특정 게시판이면 해당 게시판의 글 조회
- * 3. categoryId가 없으면 전체 글 조회
+ * 1. categoryId 확인
+ * 2. 특정 게시판이면 해당 게시판의 게시글 조회
+ * 3. categoryId가 없으면 전체 게시글 조회
  * 4. 조회 결과를 JSON 배열로 변환
  * 5. 브라우저에 JSON 응답
  */
@@ -36,53 +36,79 @@ public class PostListServlet extends HttpServlet {
             HttpServletResponse response
     ) throws IOException {
 
-        // 브라우저에서 JSON으로 받을 수 있도록 응답 형식을 지정합니다.
+        // =====================================================
+        // 1. 응답 형식 설정
+        // =====================================================
+
         response.setContentType("application/json; charset=UTF-8");
 
         // =====================================================
-        // 1. 게시판 번호 확인
+        // 2. categoryId 확인
         // =====================================================
 
         String categoryIdParam =
                 request.getParameter("categoryId");
 
-        List<PostDTO> postList;
-
         // =====================================================
-        // 2. 특정 게시판의 게시글 조회
+        // 3. 게시글 조회
         // =====================================================
 
-        if (categoryIdParam != null && !categoryIdParam.isBlank()) {
+        List<PostDTO> postList = getPostList(categoryIdParam, response);
 
-            long categoryId;
-
-            try {
-                // URL의 문자열 categoryId를 숫자로 변환합니다.
-                categoryId = Long.parseLong(categoryIdParam);
-            } catch (NumberFormatException e) {
-                // 숫자로 변환할 수 없다면 잘못된 요청입니다.
-                response.sendError(
-                        HttpServletResponse.SC_BAD_REQUEST,
-                        "잘못된 categoryId입니다."
-                );
-                return;
-            }
-
-            // 해당 게시판에 작성된 게시글만 조회합니다.
-            postList = postDAO.findByCategoryId(categoryId);
-
-        } else {
-
-            // =================================================
-            // 3. 게시판 번호가 없으면 전체 게시글 조회
-            // =================================================
-
-            postList = postDAO.findAll();
+        // categoryId가 잘못된 경우 getPostList()에서 이미 응답을 보냈습니다.
+        if (postList == null) {
+            return;
         }
 
         // =====================================================
-        // 4. 조회 결과를 JSON 배열로 변환
+        // 4. 게시글 목록을 JSON으로 변환
         // =====================================================
+
+        String json = createJson(postList);
+
+        // =====================================================
+        // 5. JSON 응답 반환
+        // =====================================================
+
+        response.getWriter().write(json);
+    }
+
+    /**
+     * categoryId가 있으면 해당 게시판의 글을 조회하고,
+     * 없으면 전체 게시글을 조회합니다.
+     */
+    private List<PostDTO> getPostList(
+            String categoryIdParam,
+            HttpServletResponse response
+    ) throws IOException {
+
+        // categoryId가 전달되지 않은 경우 전체 게시글을 조회합니다.
+        if (categoryIdParam == null || categoryIdParam.isBlank()) {
+            return postDAO.findAll();
+        }
+
+        long categoryId;
+
+        try {
+            // URL의 문자열 categoryId를 숫자로 변환합니다.
+            categoryId = Long.parseLong(categoryIdParam);
+        } catch (NumberFormatException e) {
+            // 숫자로 변환할 수 없으면 잘못된 요청입니다.
+            response.sendError(
+                    HttpServletResponse.SC_BAD_REQUEST,
+                    "잘못된 categoryId입니다."
+            );
+            return null;
+        }
+
+        // 해당 게시판에 작성된 게시글만 조회합니다.
+        return postDAO.findByCategoryId(categoryId);
+    }
+
+    /**
+     * 게시글 목록을 JSON 배열 문자열로 변환합니다.
+     */
+    private String createJson(List<PostDTO> postList) {
 
         StringBuilder json = new StringBuilder("[");
 
@@ -90,20 +116,18 @@ public class PostListServlet extends HttpServlet {
 
             PostDTO post = postList.get(i);
 
-            // JSON 객체 사이에는 쉼표가 필요합니다.
-            // 첫 번째 객체 앞에는 쉼표를 넣지 않습니다.
+            // 두 번째 게시글부터는 앞에 쉼표를 추가합니다.
             if (i > 0) {
                 json.append(',');
             }
 
             // 닉네임이 있으면 닉네임을 사용하고,
             // 없으면 username을 대신 사용합니다.
-            String writerName =
-                    post.getNickname() != null
-                            ? post.getNickname()
-                            : post.getUsername();
+            String writerName = post.getNickname() != null
+                    ? post.getNickname()
+                    : post.getUsername();
 
-            // 게시글 하나를 JSON 객체로 만듭니다.
+            // 게시글 하나를 JSON 객체로 변환합니다.
             json.append('{')
                     .append("\"postId\":")
                     .append(post.getPostId())
@@ -141,11 +165,9 @@ public class PostListServlet extends HttpServlet {
                     .append('}');
         }
 
-        // JSON 배열을 닫습니다.
         json.append(']');
 
-        // 완성된 게시글 목록을 브라우저에 전달합니다.
-        response.getWriter().write(json.toString());
+        return json.toString();
     }
 
     /**
