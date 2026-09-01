@@ -1,33 +1,24 @@
 package com.gamecommunity.dto;
 
+/**
+ * 게시글 정보를 전달하는 DTO입니다.
+ */
 public class PostDTO {
 
     private Long postId;
     private Long categoryId;
     private Long memberNo;
-
     private String username;
     private String title;
     private String content;
-
     private int viewCount;
     private int likeCount;
     private int dislikeCount;
-
     private String isNotice;
     private String isDeleted;
-
     private String createdAt;
     private String updatedAt;
     private String nickname;
-
-    public String getNickname() {
-        return nickname;
-    }
-
-    public void setNickname(String nickname) {
-        this.nickname = nickname;
-    }
 
     public Long getPostId() {
         return postId;
@@ -37,7 +28,6 @@ public class PostDTO {
         this.postId = postId;
     }
 
-
     public Long getCategoryId() {
         return categoryId;
     }
@@ -45,7 +35,6 @@ public class PostDTO {
     public void setCategoryId(Long categoryId) {
         this.categoryId = categoryId;
     }
-
 
     public Long getMemberNo() {
         return memberNo;
@@ -55,7 +44,6 @@ public class PostDTO {
         this.memberNo = memberNo;
     }
 
-
     public String getUsername() {
         return username;
     }
@@ -63,7 +51,6 @@ public class PostDTO {
     public void setUsername(String username) {
         this.username = username;
     }
-
 
     public String getTitle() {
         return title;
@@ -73,7 +60,6 @@ public class PostDTO {
         this.title = title;
     }
 
-
     public String getContent() {
         return content;
     }
@@ -81,7 +67,6 @@ public class PostDTO {
     public void setContent(String content) {
         this.content = content;
     }
-
 
     public int getViewCount() {
         return viewCount;
@@ -91,7 +76,6 @@ public class PostDTO {
         this.viewCount = viewCount;
     }
 
-
     public int getLikeCount() {
         return likeCount;
     }
@@ -99,7 +83,6 @@ public class PostDTO {
     public void setLikeCount(int likeCount) {
         this.likeCount = likeCount;
     }
-
 
     public int getDislikeCount() {
         return dislikeCount;
@@ -109,7 +92,6 @@ public class PostDTO {
         this.dislikeCount = dislikeCount;
     }
 
-
     public String getIsNotice() {
         return isNotice;
     }
@@ -117,7 +99,6 @@ public class PostDTO {
     public void setIsNotice(String isNotice) {
         this.isNotice = isNotice;
     }
-
 
     public String getIsDeleted() {
         return isDeleted;
@@ -127,7 +108,6 @@ public class PostDTO {
         this.isDeleted = isDeleted;
     }
 
-
     public String getCreatedAt() {
         return createdAt;
     }
@@ -136,12 +116,19 @@ public class PostDTO {
         this.createdAt = createdAt;
     }
 
-
     public String getUpdatedAt() {
         return updatedAt;
     }
 
     public void setUpdatedAt(String updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getNickname() {
+        return nickname;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
     }
 }
