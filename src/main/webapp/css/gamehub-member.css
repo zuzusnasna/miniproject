@@ -11,7 +11,6 @@
     top: calc(100% + 8px);
     right: 0;
     width: 260px;
-    box-sizing: border-box;
     padding: 15px;
     background: #fff;
     border: 1px solid #ddd;
