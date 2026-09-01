@@ -1,5 +1,8 @@
 package com.gamecommunity.dto;
 
+/**
+ * 회원 정보를 전달하는 DTO입니다.
+ */
 public class MemberDTO {
 
     private Long memberNo;
@@ -13,14 +16,6 @@ public class MemberDTO {
     private String accountStatus;
     private int receivedLikeCount;
     private int receivedDislikeCount;
-
-    public String getAccountStatus() {
-        return accountStatus;
-    }
-
-    public void setAccountStatus(String accountStatus) {
-        this.accountStatus = accountStatus;
-    }
 
     public Long getMemberNo() {
         return memberNo;
@@ -86,9 +81,18 @@ public class MemberDTO {
         this.nickname = nickname;
     }
 
+    public String getAccountStatus() {
+        return accountStatus;
+    }
+
+    public void setAccountStatus(String accountStatus) {
+        this.accountStatus = accountStatus;
+    }
+
     public int getReceivedLikeCount() {
         return receivedLikeCount;
     }
+
     public void setReceivedLikeCount(int receivedLikeCount) {
         this.receivedLikeCount = receivedLikeCount;
     }
@@ -96,9 +100,8 @@ public class MemberDTO {
     public int getReceivedDislikeCount() {
         return receivedDislikeCount;
     }
+
     public void setReceivedDislikeCount(int receivedDislikeCount) {
         this.receivedDislikeCount = receivedDislikeCount;
     }
-
-
 }
