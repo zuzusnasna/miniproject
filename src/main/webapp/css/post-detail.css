@@ -1,0 +1,184 @@
+/* =========================================================
+   게시글 상세 페이지
+   ========================================================= */
+
+.post-detail-wrap {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto 32px;
+    padding: 0 16px;
+    box-sizing: border-box;
+}
+
+/* 게임 이름이 표시되는 상단 배너 */
+.post-context-banner {
+    margin-bottom: 16px;
+    padding: 22px 26px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #352064, #6941c6);
+    color: #fff;
+    box-shadow: 0 3px 12px rgba(53, 32, 100, 0.12);
+}
+
+.post-context-banner .game-name {
+    margin: 0;
+    font-size: 1.55rem;
+    font-weight: 800;
+}
+
+.post-context-banner .description {
+    margin: 5px 0 0;
+    font-size: 0.92rem;
+    opacity: 0.84;
+}
+
+/* 왼쪽 게시판 + 오른쪽 게시글 영역 */
+.post-community-layout {
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+}
+
+/* 게시판 사이드바 */
+.post-board-sidebar {
+    background: #f8f7fb;
+    border: 1px solid #ece9f3;
+    border-radius: 12px;
+    padding: 18px 12px;
+}
+
+.post-board-sidebar h3 {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: #777;
+    padding: 0 10px 10px;
+    margin: 0;
+}
+
+.post-board-link {
+    display: block;
+    width: 100%;
+    padding: 12px 14px;
+    margin-bottom: 5px;
+    border-radius: 8px;
+    color: #333;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.post-board-link:hover,
+.post-board-link.active {
+    background: #6941c6;
+    color: #fff;
+}
+
+/* 게시글 본문 카드 */
+.post-detail-card {
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    padding: 28px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
+}
+
+.post-detail-card h1 {
+    margin-bottom: 16px;
+    font-size: 1.8rem;
+    font-weight: 800;
+}
+
+/* 작성자 / 조회수 / 작성일 */
+.info {
+    color: #666;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #ddd;
+}
+
+/* 게시글 내용 */
+.content {
+    min-height: 300px;
+    padding: 30px 10px;
+    white-space: pre-wrap;
+    border-bottom: 1px solid #ddd;
+}
+
+/* 좋아요 영역 */
+.like-area {
+    margin-top: 32px;
+    padding: 24px;
+    background: #faf8fd;
+    border: 1px solid #ede8f5;
+    border-radius: 12px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+}
+
+.like-button,
+.dislike-button {
+    padding: 10px 24px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    border-radius: 50px;
+    border: 1px solid transparent;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.like-button {
+    background-color: #eef4ff;
+    color: #1976d2;
+    border-color: #c7dcff;
+}
+
+.dislike-button {
+    background-color: #fff1f1;
+    color: #d32f2f;
+    border-color: #ffcdd2;
+}
+
+.like-button:hover,
+.dislike-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.count {
+    font-weight: bold;
+    margin-left: 5px;
+}
+
+/* 목록 / 삭제 버튼 */
+.buttons {
+    margin-top: 25px;
+    text-align: right;
+}
+
+.delete-button {
+    margin-left: 8px;
+}
+
+/* 모바일 화면 */
+@media (max-width: 800px) {
+    .post-community-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .post-board-sidebar {
+        display: flex;
+        gap: 6px;
+        overflow: auto;
+    }
+
+    .post-board-sidebar h3 {
+        display: none;
+    }
+
+    .post-board-link {
+        white-space: nowrap;
+        width: auto;
+        margin: 0;
+    }
+}
