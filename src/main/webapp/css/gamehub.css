@@ -329,8 +329,8 @@ body {
 ::-webkit-scrollbar-thumb { background: #c2b5e2; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--primary-color); }
 
-.post-row, .popular-post-row, .news-row { transition: all .2s cubic-bezier(.4,0,.2,1); }
-.post-row:hover, .popular-post-row:hover { background-color: #f7f4fc !important; transform: translateX(4px); }
+.popular-post-row, .news-row { transition: all .2s cubic-bezier(.4,0,.2,1); }
+.popular-post-row:hover { background-color: #f7f4fc !important; transform: translateX(4px); }
 
 .btn-login, .btn-primary, .btn-primary-custom { transition: background-color .2s ease, transform .15s ease, box-shadow .2s ease; }
 .btn-login:hover, .btn-primary:hover, .btn-primary-custom:hover { box-shadow: 0 4px 12px rgba(105,65,198,.35); transform: translateY(-1px); }
