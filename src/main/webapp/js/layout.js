@@ -50,11 +50,11 @@ function initLayout() {
 
         // 오른쪽 광고 영역도 공통 레이아웃에서 한 번만 생성한다.
         const adSidebar = document.createElement("aside");
-        adSidebar.className = "content-right ad-sidebar";
+        adSidebar.className = "content-right sidebar-ad";
         adSidebar.innerHTML = `
-            <div class="ad-slot" aria-label="광고 영역">
+            <div aria-label="광고 영역">
                 <span class="ad-label">ADVERTISEMENT</span>
-                <video class="ad-video" autoplay muted loop playsinline>
+                <video class="ad-image" autoplay muted loop playsinline>
                     <source src="images/gamehub-ad.mp4" type="video/mp4">
                 </video>
             </div>`;
