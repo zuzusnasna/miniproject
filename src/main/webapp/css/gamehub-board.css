@@ -1,0 +1,133 @@
+/* =========================================================
+   게시판
+   ========================================================= */
+
+.community-layout {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    min-height: 520px;
+}
+
+.board-sidebar {
+    background: #f8f7fb;
+    border-right: 1px solid #ece9f3;
+    padding: 22px 14px;
+}
+
+.board-sidebar h3 {
+    font-size: .9rem;
+    font-weight: 800;
+    color: #777;
+    padding: 0 10px 12px;
+    margin: 0;
+}
+
+.board-menu {
+    display: block;
+    width: 100%;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    padding: 12px 14px;
+    border-radius: 8px;
+    color: #333;
+    font-weight: 700;
+    margin-bottom: 5px;
+    cursor: pointer;
+}
+
+.board-menu:hover,
+.board-menu.active {
+    background: #6941c6;
+    color: #fff;
+}
+
+.board-content {
+    padding: 26px 30px;
+}
+
+.board-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    border-bottom: 2px solid #6941c6;
+    padding-bottom: 14px;
+    margin-bottom: 8px;
+}
+
+.board-head h2 {
+    font-size: 1.35rem;
+    font-weight: 800;
+    margin: 0;
+}
+
+.board-head p {
+    font-size: .85rem;
+    color: #888;
+    margin: 0;
+}
+
+.post-row {
+    display: grid;
+    grid-template-columns: 70px minmax(0, 1fr) 110px 90px;
+    gap: 8px;
+    align-items: center;
+    padding: 14px 8px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+}
+
+.post-row:hover {
+    background: #faf9fd;
+}
+
+.post-title {
+    font-weight: 700;
+    color: #222;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.post-meta {
+    font-size: .82rem;
+    color: #777;
+}
+
+.post-empty {
+    text-align: center;
+    color: #999;
+    padding: 80px 20px;
+}
+
+@media (max-width: 800px) {
+    .community-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .board-sidebar {
+        border-right: 0;
+        border-bottom: 1px solid #ece9f3;
+        display: flex;
+        gap: 6px;
+        overflow: auto;
+    }
+
+    .board-sidebar h3 {
+        display: none;
+    }
+
+    .board-menu {
+        white-space: nowrap;
+        width: auto;
+        margin: 0;
+    }
+
+    .post-row {
+        grid-template-columns: 55px minmax(0, 1fr) 80px;
+    }
+
+    .post-row .views {
+        display: none;
+    }
+}
