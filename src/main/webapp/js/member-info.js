@@ -1,11 +1,13 @@
 function injectMemberInfoStyles() {
-    // 회원정보 전용 스타일은 CSS 파일에서 관리하므로 여기서는 별도로 주입하지 않는다.
+    // 회원정보 전용 스타일은 CSS 파일에서 관리한다.
 }
 
 function initMemberInfoBox() {
     injectMemberInfoStyles();
 
     let wrapper = document.getElementById("commonMemberInfo");
+    const userMenu = document.querySelector(".user-menu");
+
     if (!wrapper) {
         wrapper = document.createElement("div");
         wrapper.id = "commonMemberInfo";
@@ -17,15 +19,23 @@ function initMemberInfoBox() {
                 </div>
                 <div id="commonMemberContent">Not login status</div>
             </div>`;
-        document.body.appendChild(wrapper);
+
+        // 회원정보 창은 상단바의 회원정보 버튼 바로 아래에서 열리도록 한다.
+        if (userMenu) {
+            userMenu.appendChild(wrapper);
+        } else {
+            document.body.appendChild(wrapper);
+        }
     }
 
     const memberBox = wrapper.querySelector(".common-member-info");
-    const button = memberBox.querySelector(".member-toggle");
-    const content = memberBox.querySelector("#commonMemberContent");
+    const button = memberBox?.querySelector(".member-toggle");
+    const content = memberBox?.querySelector("#commonMemberContent");
     const trigger = document.getElementById("memberMenuTrigger");
 
-    // 로그인 여부를 확인하기 전에는 회원정보 버튼을 비활성 상태로 표시한다.
+    if (!memberBox || !content) return;
+
+    // 기본 상태는 비로그인 상태로 표시한다.
     if (trigger) {
         trigger.disabled = true;
         trigger.textContent = "Not login status";
@@ -33,13 +43,11 @@ function initMemberInfoBox() {
         trigger.classList.remove("active");
     }
 
-    // 상단바의 회원정보 버튼과 패널을 연결한다.
+    // 상단바 회원정보 버튼과 패널을 연결한다.
     if (trigger && trigger.dataset.bound !== "true") {
         trigger.dataset.bound = "true";
         trigger.addEventListener("click", function (event) {
             event.preventDefault();
-
-            // 비로그인 상태에서는 회원정보 패널을 열 수 없다.
             if (trigger.disabled) return;
 
             const isOpen = !memberBox.hidden;
@@ -49,7 +57,7 @@ function initMemberInfoBox() {
         });
     }
 
-    // 패널 내부의 접기 버튼도 유지한다.
+    // 패널 내부 접기 버튼.
     if (button && button.dataset.bound !== "true") {
         button.dataset.bound = "true";
         button.addEventListener("click", function (event) {
@@ -82,7 +90,6 @@ function loadMemberInfo() {
                 authLink.href = "logout";
             }
 
-            // 로그인 확인이 끝난 뒤에만 회원정보 버튼을 활성화한다.
             if (trigger) {
                 trigger.disabled = false;
                 trigger.innerHTML = '회원정보 <span class="member-menu-arrow">▼</span>';
@@ -116,7 +123,6 @@ function loadMemberInfo() {
         .catch(error => {
             console.debug("비로그인 상태:", error.message);
 
-            // 비로그인 상태에서는 패널을 열 수 없도록 유지한다.
             const memberBox = document.querySelector("#commonMemberInfo .common-member-info");
             if (memberBox) memberBox.hidden = true;
 
