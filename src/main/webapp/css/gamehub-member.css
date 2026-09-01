@@ -1,27 +1,61 @@
 /* =========================================================
    회원 정보 / 레벨
+   ---------------------------------------------------------
+   회원정보는 화면 위에 떠 있는 창이 아니라
+   상단바에서 열고 닫는 드롭다운 패널로 표시한다.
    ========================================================= */
 
+/* 회원정보 드롭다운 패널 */
 .common-member-info {
-    position: fixed;
-    width: 230px;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 260px;
     box-sizing: border-box;
     padding: 15px;
-    background-color: #fff;
+    background: #fff;
     border: 1px solid #ddd;
     border-radius: 10px;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, .08);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .12);
     font-size: 14px;
-    z-index: 9999;
+    z-index: 1100;
+}
+
+/* HTML의 hidden 속성이 테마 CSS 때문에 무시되지 않도록 한다. */
+.common-member-info[hidden] {
+    display: none !important;
 }
 
 .member-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     margin-bottom: 12px;
     padding-bottom: 9px;
     border-bottom: 1px solid #eee;
     font-size: 16px;
     font-weight: 700;
     color: #333;
+}
+
+/* 패널 안의 닫기 버튼 */
+.member-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: 0;
+    border-radius: 5px;
+    background: transparent;
+    color: #666;
+    cursor: pointer;
+}
+
+.member-toggle:hover {
+    background: #f1f1f1;
+    color: #222;
 }
 
 .member-row {
@@ -120,8 +154,49 @@
     color: #d32f2f;
 }
 
+/* 상단바의 회원정보 버튼 */
+.member-menu-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 9px 12px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: #475467;
+    font: inherit;
+    font-size: .9rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.member-menu-trigger:hover,
+.member-menu-trigger.active {
+    color: var(--primary-color);
+    background: #f2efff;
+}
+
+.member-menu-arrow {
+    font-size: .65rem;
+    transition: transform .2s ease;
+}
+
+.member-menu-trigger.active .member-menu-arrow {
+    transform: rotate(180deg);
+}
+
+/* 헤더 안에 드롭다운을 배치할 기준점 */
+.main-header .header-inner {
+    position: relative;
+}
+
 @media (max-width: 600px) {
     .common-member-info {
-        width: 210px;
+        width: min(260px, calc(100vw - 30px));
+    }
+
+    .member-menu-trigger {
+        padding: 7px 8px;
+        font-size: .78rem;
     }
 }
