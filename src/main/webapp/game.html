@@ -37,9 +37,6 @@
 </main>
 <script src="js/common.js"></script>
 <script>
-    // =========================================================================
-    // [기존 코드 영역 1] 게임 메타데이터 및 기본 변수 설정
-    // =========================================================================
     const GAME_DATA = {
         110:{name:'리니지',genre:'RPG'},120:{name:'블레이드앤소울',genre:'RPG'},130:{name:'메이플스토리',genre:'RPG'},140:{name:'로스트아크',genre:'RPG'},
         210:{name:'서든어택',genre:'FPS/TPS'},220:{name:'오버워치',genre:'FPS/TPS'},230:{name:'발로란트',genre:'FPS/TPS'},240:{name:'배틀그라운드',genre:'FPS/TPS'},
@@ -55,8 +52,6 @@
     const requestedGameId = Number(params.get('gameId'));
     const gameId = GAME_DATA[requestedGameId] ? requestedGameId : 110;
     const game = GAME_DATA[gameId];
-
-    // ★ [수정된 부분] 고정 배열 대신 DB에서 동적으로 채울 빈 배열 선언
     let boards = [];
     const requestedCategoryId = Number(params.get('categoryId'));
     let currentBoard = requestedCategoryId || (gameId * 10 + 1);
@@ -65,10 +60,6 @@
     document.getElementById('gameName').textContent = game.name;
     document.getElementById('gameDescription').textContent = game.name + ' 유저들의 정보와 이야기를 나누는 공간입니다.';
 
-
-    // =========================================================================
-    // [기존 코드 영역 2] UI 렌더링 및 계산 유틸리티 함수들 (변경 없음)
-    // =========================================================================
     function updateWriteLink() {
         document.getElementById('writeLink').href = `post-write.html?gameId=${gameId}&categoryId=${currentBoard}`;
     }
@@ -85,14 +76,13 @@
             renderMenu();
             renderPosts();
             updateWriteLink();
+            initCategoryBoardCreateButton();
         }));
     }
 
     function renderPosts() {
         const board = boards.find(item => item.id === currentBoard) || boards[0];
-        if (board) {
-            document.getElementById('boardTitle').textContent = board.name;
-        }
+        if (board) document.getElementById('boardTitle').textContent = board.name;
         const list = allPosts.filter(post => Number(post.categoryId) === currentBoard);
         const box = document.getElementById('postList');
         if (!list.length) {
@@ -101,11 +91,11 @@
         }
         box.innerHTML = list.map(post =>
             `<div class="post-row" onclick="location.href='post-detail?postId=${post.postId}'">
-            <div class="post-meta">#${post.postId}</div>
-            <div class="post-title">${esc(post.title)}</div>
-            <div class="post-meta">👤 ${esc(post.nickname || post.username)}</div>
-            <div class="post-meta views">조회 ${post.viewCount}</div>
-        </div>`
+                <div class="post-meta">#${post.postId}</div>
+                <div class="post-title">${esc(post.title)}</div>
+                <div class="post-meta">👤 ${esc(post.nickname || post.username)}</div>
+                <div class="post-meta views">조회 ${post.viewCount}</div>
+            </div>`
         ).join('');
     }
 
@@ -126,10 +116,10 @@
         }
         box.innerHTML = list.map((post, index) =>
             `<div class="game-hot-row" onclick="location.href='post-detail?postId=${post.postId}'" title="${esc(post.title)}">
-            <span class="game-hot-rank">${index + 1}</span>
-            <span class="game-hot-post">${esc(post.title)}</span>
-            <span class="game-hot-like">👍 ${Number(post.likeCount) || 0}</span>
-        </div>`
+                <span class="game-hot-rank">${index + 1}</span>
+                <span class="game-hot-post">${esc(post.title)}</span>
+                <span class="game-hot-like">👍 ${Number(post.likeCount) || 0}</span>
+            </div>`
         ).join('');
     }
 
@@ -142,28 +132,18 @@
             .replace(/'/g, '&#039;');
     }
 
-
-    // =========================================================================
-    // [★ 새로 추가/변경된 영역 ★] DB 카테고리 실시간 조회 및 연동 로직
-    // =========================================================================
-    // 1. 서버에서 승인된(IS_ACTIVE='Y') 전체 카테고리 목록을 가져옵니다.
     fetch('categories')
         .then(response => {
             if (!response.ok) throw new Error('카테고리 로드 실패');
             return response.json();
         })
         .then(categoryList => {
-            // 2. DEPTH가 3(게시판)이고 부모가 현재 게임 ID(gameId)인 것만 필터링
             const activeBoards = categoryList.filter(c => Number(c.depth) === 3 && Number(c.parentId) === gameId);
 
             if (activeBoards.length > 0) {
-                // 🔥 [수정] categoryId 기준으로 오름차순 정렬 (XX1: 자유, XX2: 질문, XX3: 공략이 최상단 고정됨)[cite: 2]
                 activeBoards.sort((a, b) => Number(a.categoryId) - Number(b.categoryId));
-
-                // 정렬된 순서대로 boards 배열에 담기[cite: 2]
                 boards = activeBoards.map(c => ({ id: c.categoryId, name: c.categoryName }));
             } else {
-                // DB 데이터가 비어있을 때를 대비한 기본 3개 폴백[cite: 2]
                 boards = [
                     { id: gameId * 10 + 1, name: '자유게시판' },
                     { id: gameId * 10 + 2, name: '질문게시판' },
@@ -171,16 +151,14 @@
                 ];
             }
 
-            // 현재 선택된 게시판 ID가 목록에 없으면 첫 번째 게시판(자유게시판)으로 초기화[cite: 2]
-            if (!boards.some(b => b.id === currentBoard)) {
-                currentBoard = boards[0].id;
-            }
+            if (!boards.some(b => b.id === currentBoard)) currentBoard = boards[0].id;
 
-            // 사이드바 메뉴 렌더링 및 글쓰기 링크 세팅[cite: 2]
             renderMenu();
             updateWriteLink();
 
-            // 3. 게시판 탭 구성이 끝난 후 게시글 목록을 불러옵니다.[cite: 2]
+            // 반드시 renderMenu() 이후에 호출하여 신청 버튼이 덮어써지지 않게 합니다.
+            initCategoryBoardCreateButton();
+
             return fetch('posts');
         })
         .then(response => {
@@ -192,11 +170,11 @@
             renderPosts();
             renderGameHotPosts();
         })
-        .catch(() => {
+        .catch(error => {
+            console.error(error);
             document.getElementById('postList').innerHTML = '<div class="post-empty text-danger">데이터를 불러오지 못했습니다.</div>';
             document.getElementById('gameHotPosts').innerHTML = '<div class="game-hot-empty">인기글을 불러오지 못했습니다.</div>';
         });
-    // =========================================================================
 </script>
 </body>
 </html>
