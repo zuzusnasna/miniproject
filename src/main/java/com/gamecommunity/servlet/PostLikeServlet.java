@@ -18,8 +18,9 @@ import java.io.IOException;
  * 1. 로그인 여부 확인
  * 2. 게시글 번호 확인
  * 3. 추천 타입 확인
- * 4. DB에 추천 저장
- * 5. 현재 추천 수를 조회해서 JSON으로 반환
+ * 4. 회원 번호 확인
+ * 5. 추천 저장
+ * 6. 결과와 최신 추천 수를 JSON으로 반환
  */
 @WebServlet("/post-like")
 public class PostLikeServlet extends HttpServlet {
@@ -37,30 +38,30 @@ public class PostLikeServlet extends HttpServlet {
     ) throws IOException {
 
         request.setCharacterEncoding("UTF-8");
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
+        response.setContentType("application/json; charset=UTF-8");
 
         // =====================================================
         // 1. 로그인 여부 확인
         // =====================================================
 
-        // 기존 세션만 확인합니다.
         HttpSession session = request.getSession(false);
 
         if (session == null) {
-            response.sendError(
+            sendError(
+                    response,
                     HttpServletResponse.SC_UNAUTHORIZED,
                     "로그인이 필요합니다."
             );
             return;
         }
 
-        // 세션에 저장된 로그인 회원 정보를 가져옵니다.
+        // 로그인할 때 세션에 저장한 회원 정보를 가져옵니다.
         MemberDTO member =
                 (MemberDTO) session.getAttribute("member");
 
         if (member == null) {
-            response.sendError(
+            sendError(
+                    response,
                     HttpServletResponse.SC_UNAUTHORIZED,
                     "로그인이 필요합니다."
             );
@@ -74,7 +75,8 @@ public class PostLikeServlet extends HttpServlet {
         String postIdParam = request.getParameter("postId");
 
         if (postIdParam == null || postIdParam.isBlank()) {
-            response.sendError(
+            sendError(
+                    response,
                     HttpServletResponse.SC_BAD_REQUEST,
                     "게시글 번호가 없습니다."
             );
@@ -86,7 +88,8 @@ public class PostLikeServlet extends HttpServlet {
         try {
             postId = Long.parseLong(postIdParam);
         } catch (NumberFormatException e) {
-            response.sendError(
+            sendError(
+                    response,
                     HttpServletResponse.SC_BAD_REQUEST,
                     "잘못된 게시글 번호입니다."
             );
@@ -100,22 +103,23 @@ public class PostLikeServlet extends HttpServlet {
         String likeType = request.getParameter("likeType");
 
         if (likeType == null || likeType.isBlank()) {
-            response.sendError(
+            sendError(
+                    response,
                     HttpServletResponse.SC_BAD_REQUEST,
                     "추천 타입이 없습니다."
             );
             return;
         }
 
-        // 소문자로 전달되더라도 LIKE / DISLIKE로 처리할 수 있도록
-        // 대문자로 통일합니다.
+        // 전달된 값의 대소문자를 통일합니다.
         likeType = likeType.toUpperCase();
 
-        // 허용되는 추천 타입은 LIKE와 DISLIKE 두 가지뿐입니다.
+        // 추천 타입은 LIKE와 DISLIKE만 허용합니다.
         if (!"LIKE".equals(likeType)
                 && !"DISLIKE".equals(likeType)) {
 
-            response.sendError(
+            sendError(
+                    response,
                     HttpServletResponse.SC_BAD_REQUEST,
                     "잘못된 추천 타입입니다."
             );
@@ -132,7 +136,7 @@ public class PostLikeServlet extends HttpServlet {
         // 5. 추천 저장
         // =====================================================
 
-        // DAO에서 중복 추천 여부를 확인한 뒤 DB에 저장합니다.
+        // DAO에서 중복 추천 여부를 확인하고 추천을 저장합니다.
         boolean result = postLikeDAO.addLike(
                 postId,
                 memberNo,
@@ -140,33 +144,11 @@ public class PostLikeServlet extends HttpServlet {
         );
 
         // =====================================================
-        // 6. 추천 저장 결과 처리
+        // 6. 추천 저장 성공
         // =====================================================
 
         if (result) {
-
-            // 추천 저장에 성공하면 최신 추천 수를 다시 조회합니다.
-            int likeCount = postLikeDAO.getLikeCount(postId);
-            int dislikeCount = postLikeDAO.getDislikeCount(postId);
-
-            // 최신 좋아요 / 나빠요 개수를 JSON으로 반환합니다.
-            response.getWriter().write(
-                    "{"
-                            + "\"success\":true,"
-                            + "\"likeCount\":" + likeCount + ","
-                            + "\"dislikeCount\":" + dislikeCount
-                            + "}"
-            );
-
-            // 개발 중 결과를 확인할 수 있도록 콘솔에 기록합니다.
-            if ("LIKE".equals(likeType)) {
-                System.out.println("좋아요 성공");
-            } else {
-                System.out.println("나빠요 성공");
-            }
-
-            System.out.println("현재 좋아요 수 = " + likeCount);
-            System.out.println("현재 나빠요 수 = " + dislikeCount);
+            sendSuccess(response, postId);
             return;
         }
 
@@ -181,7 +163,61 @@ public class PostLikeServlet extends HttpServlet {
                         + "\"message\":\"이미 좋아요 또는 나빠요를 누른 게시글입니다.\""
                         + "}"
         );
+    }
 
-        System.out.println("추천 실패 - 이미 좋아요/나빠요를 누름");
+    /**
+     * 추천 저장 성공 시 최신 좋아요 / 나빠요 수를 조회해서 반환합니다.
+     */
+    private void sendSuccess(
+            HttpServletResponse response,
+            long postId
+    ) throws IOException {
+
+        int likeCount = postLikeDAO.getLikeCount(postId);
+        int dislikeCount = postLikeDAO.getDislikeCount(postId);
+
+        response.getWriter().write(
+                "{"
+                        + "\"success\":true,"
+                        + "\"likeCount\":" + likeCount + ","
+                        + "\"dislikeCount\":" + dislikeCount
+                        + "}"
+        );
+    }
+
+    /**
+     * 요청 처리 중 문제가 발생했을 때
+     * HTTP 상태 코드와 메시지를 함께 반환합니다.
+     */
+    private void sendError(
+            HttpServletResponse response,
+            int status,
+            String message
+    ) throws IOException {
+
+        response.setStatus(status);
+
+        response.getWriter().write(
+                "{\"success\":false,\"message\":\""
+                        + escapeJson(message)
+                        + "\"}"
+        );
+    }
+
+    /**
+     * JSON 문자열에 사용할 수 있도록 특수문자를 처리합니다.
+     */
+    private String escapeJson(String value) {
+
+        if (value == null) {
+            return "";
+        }
+
+        return value
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\r", "\\r")
+                .replace("\n", "\\n")
+                .replace("\t", "\\t");
     }
 }
